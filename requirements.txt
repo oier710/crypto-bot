@@ -3,5 +3,4 @@ numpy>=1.24
 requests>=2.31
 python-dotenv>=1.0
 matplotlib>=3.7
-hyperliquid-python-sdk>=0.10
-eth-account>=0.10
+web3>=6.0
