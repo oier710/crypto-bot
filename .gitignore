@@ -1,0 +1,20 @@
+# secretos — NUNCA subir
+.env
+*.key
+*.pem
+
+# datos y resultados grandes
+data/*.csv
+data/*.parquet
+results/*.csv
+results/*.png
+logs/*.log
+
+# python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# sistema
+.DS_Store
