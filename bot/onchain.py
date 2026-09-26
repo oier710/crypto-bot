@@ -240,6 +240,10 @@ def run_cycle(dry_run: bool, signals: bool = True):
     equity, pf = portfolio(ch, prices)
     today = datetime.now(timezone.utc).date().isoformat()
 
+    if equity < MIN_TRADE_USD * 2:
+        log.warning("Sin fondos suficientes en Arbitrum (equity %.2f USD). Nada que hacer hasta que lleguen.", equity)
+        return
+
     if st["peak_equity"] is None or equity > st["peak_equity"]:
         st["peak_equity"] = equity
     if st["day"] != today:
