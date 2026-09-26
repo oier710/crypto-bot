@@ -1,0 +1,44 @@
+name: crypto-bot
+
+on:
+  schedule:
+    - cron: "7 * * * *"      # cada hora a los :07 UTC (00:07 UTC = ciclo diario; resto = stops)
+  workflow_dispatch:         # botón "Run workflow" para lanzarlo a mano
+
+permissions:
+  contents: write            # para guardar logs/ y el estado en el repo
+
+concurrency:
+  group: bot
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Ejecutar bot
+        env:
+          WALLET_ADDRESS: ${{ secrets.WALLET_ADDRESS }}
+          WALLET_PRIVATE_KEY: ${{ secrets.WALLET_PRIVATE_KEY }}
+          ARB_RPC_URL: ${{ secrets.ARB_RPC_URL || 'https://arb1.arbitrum.io/rpc' }}
+        run: python scripts/run_onchain.py --auto
+
+      - name: Guardar estado y logs
+        if: always()
+        run: |
+          git config user.name "crypto-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add -f logs/onchain_state.json logs/onchain_trades.csv logs/onchain.log || true
+          git diff --cached --quiet || git commit -m "bot: $(date -u +'%Y-%m-%d %H:%M') UTC"
+          git pull --rebase --autostash || true
+          git push || true
