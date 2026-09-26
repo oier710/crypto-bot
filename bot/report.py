@@ -30,7 +30,8 @@ def summary_table(metrics: list[dict]) -> pd.DataFrame:
 def fmt(df: pd.DataFrame) -> str:
     d = df.copy()
     for col in ["net_return_pct", "cagr_pct", "max_drawdown_pct", "win_rate", "avg_trade_pct", "fees_pct_of_capital"]:
-        d[col] = (d[col] * 100).map("{:+.1f}%".format)
+        if col in d:
+            d[col] = (d[col] * 100).map("{:+.1f}%".format)
     d["sharpe"] = d["sharpe"].map("{:.2f}".format)
     d["profit_factor"] = d["profit_factor"].map(lambda x: "inf" if x == float("inf") else f"{x:.2f}")
     return d.to_string(index=False)

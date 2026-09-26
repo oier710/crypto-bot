@@ -6,10 +6,13 @@ EJECUTAR DESDE LA TERMINAL DEL MAC (necesita acceso a internet sin proxy):
     source .venv/bin/activate
     python scripts/fetch_data.py
 
-Descarga ~2 años de velas 1h y 4h de BTC, ETH y SOL desde Binance futures
+Descarga ~2 años de velas 1h y 4h de BTC, ETH y SOL desde Coinbase
 (histórico profundo) y el funding rate de Hyperliquid (para modelar su coste).
 """
 import sys
+import warnings
+
+warnings.filterwarnings("ignore")  # silenciar aviso de LibreSSL en macOS
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
@@ -21,7 +24,7 @@ if __name__ == "__main__":
     for sym in UNIVERSE.symbols:
         for tf in UNIVERSE.timeframes:
             print(f"Descargando {sym} {tf} ({UNIVERSE.history_days} días)…")
-            df = data.fetch_binance(sym, tf, UNIVERSE.history_days)
+            df = data.fetch_history(sym, tf, UNIVERSE.history_days)
             p = data.save(df, sym, tf)
             print(f"  -> {p.name}: {len(df)} velas, {df.timestamp.min()} … {df.timestamp.max()}")
         try:
