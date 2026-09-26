@@ -48,7 +48,18 @@ python scripts/fetch_data.py
 
 # 2. Backtest de todas las estrategias
 python scripts/run_backtest.py
+
+# 3. Bot en Hyperliquid (requiere .env; ver .env.example)
+python scripts/run_live.py --dry-run   # muestra qué haría, no envía nada
+python scripts/run_live.py --once      # un ciclo real
+python scripts/run_live.py --loop      # ejecuta cada día a las 00:05 UTC
 ```
+
+## Estrategia v1 (decidida el 2026-09-26, ver journal/)
+
+Tendencia EMA 20/60 + ADX ≥ 20 en gráfico **diario**, largo y corto, **BTC + ETH** con el capital
+dividido, 75 % del capital de cada activo por posición, stop 2×ATR(14) colocado en el exchange.
+Del orden de 1-2 operaciones al mes. Validada con walk-forward (año 2 a ciegas: +62 %, DD −11 %).
 
 ## Fases
 
