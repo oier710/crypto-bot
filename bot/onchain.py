@@ -191,7 +191,9 @@ def record_equity(equity: float, pf: dict, prices: dict):
                 f"{min(b['ETH_native'], GAS_RESERVE_ETH):.5f}\n")
 
 
-def record(coin, side, usd, price, reason):
+def record(coin, side, usd, price, reason, dry_run=False):
+    if dry_run:
+        return  # las simulaciones no entran en la contabilidad
     new = not TRADES_FILE.exists()
     with TRADES_FILE.open("a") as f:
         if new:
@@ -233,7 +235,7 @@ def sell_to_usdc(ch: Chain, coin: str, usd: float, prices: dict, reason: str):
     else:
         amount = int(min(amt_tokens, raw[WBTC]) * 10 ** DECIMALS[token])
         ch.swap(PATHS["BTC"]["sell"], amount)
-    record(coin, "SELL", usd, prices[coin], reason)
+    record(coin, "SELL", usd, prices[coin], reason, ch.dry_run)
 
 
 def buy_from_usdc(ch: Chain, coin: str, usd: float, prices: dict, reason: str):
@@ -242,7 +244,7 @@ def buy_from_usdc(ch: Chain, coin: str, usd: float, prices: dict, reason: str):
     if usd < MIN_TRADE_USD:
         return
     ch.swap(PATHS[coin]["buy"], int(usd * 1e6))
-    record(coin, "BUY", usd, prices[coin], reason)
+    record(coin, "BUY", usd, prices[coin], reason, ch.dry_run)
 
 
 def run_cycle(dry_run: bool, signals: bool = True):
