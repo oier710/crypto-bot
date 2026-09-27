@@ -33,6 +33,7 @@ LOG_DIR = ROOT / "logs"
 LOG_DIR.mkdir(exist_ok=True)
 STATE_FILE = LOG_DIR / "onchain_state.json"
 TRADES_FILE = LOG_DIR / "onchain_trades.csv"
+EQUITY_FILE = LOG_DIR / "equity.csv"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s",
                     handlers=[logging.FileHandler(LOG_DIR / "onchain.log"), logging.StreamHandler()])
@@ -178,6 +179,18 @@ def save_state(s):
     STATE_FILE.write_text(json.dumps(s, indent=2))
 
 
+def record_equity(equity: float, pf: dict, prices: dict):
+    """Una fila por ejecución: base de la contabilidad."""
+    new = not EQUITY_FILE.exists()
+    b, v = pf["raw"], pf["val"]
+    with EQUITY_FILE.open("a") as f:
+        if new:
+            f.write("time,equity_usd,usdc,eth_usd,btc_usd,eth_qty,btc_qty,eth_price,btc_price,gas_eth\n")
+        f.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')},{equity:.2f},{b[USDC]:.2f},{v['ETH']:.2f},{v['BTC']:.2f},"
+                f"{b[WETH] + max(b['ETH_native'] - GAS_RESERVE_ETH, 0):.6f},{b[WBTC]:.6f},{prices['ETH']:.2f},{prices['BTC']:.2f},"
+                f"{min(b['ETH_native'], GAS_RESERVE_ETH):.5f}\n")
+
+
 def record(coin, side, usd, price, reason):
     new = not TRADES_FILE.exists()
     with TRADES_FILE.open("a") as f:
@@ -243,6 +256,7 @@ def run_cycle(dry_run: bool, signals: bool = True):
     if equity < MIN_TRADE_USD * 2:
         log.warning("Sin fondos suficientes en Arbitrum (equity %.2f USD). Nada que hacer hasta que lleguen.", equity)
         return
+    record_equity(equity, pf, prices)
 
     if st["peak_equity"] is None or equity > st["peak_equity"]:
         st["peak_equity"] = equity

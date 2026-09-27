@@ -38,7 +38,7 @@ jobs:
         run: |
           git config user.name "crypto-bot"
           git config user.email "bot@users.noreply.github.com"
-          git add -f logs/onchain_state.json logs/onchain_trades.csv logs/onchain.log || true
+          git add -f logs/onchain_state.json logs/onchain_trades.csv logs/onchain.log logs/equity.csv || true
           git diff --cached --quiet || git commit -m "bot: $(date -u +'%Y-%m-%d %H:%M') UTC"
           git pull --rebase --autostash || true
           git push || true
