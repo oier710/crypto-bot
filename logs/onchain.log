@@ -44,3 +44,6 @@
 2026-09-27 01:19:24,160 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | dry_run=False
 2026-09-27 01:19:24,620 INFO Balances: USDC 28.92 | WETH 0.00000 | ETH nativo 0.01765 (reserva gas 0.0015) | WBTC 0.000515 -> equity 115.87 USD
 2026-09-27 01:19:24,620 INFO Chequeo de stops completado.
+2026-09-27 02:21:10,366 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | dry_run=False
+2026-09-27 02:21:11,397 INFO Balances: USDC 28.92 | WETH 0.00000 | ETH nativo 0.01765 (reserva gas 0.0015) | WBTC 0.000515 -> equity 116.10 USD
+2026-09-27 02:21:11,400 INFO Chequeo de stops completado.
