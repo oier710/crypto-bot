@@ -1,12 +1,12 @@
 {
   "peak_equity": 116.55397075599782,
-  "day": "2026-09-28",
-  "day_start_equity": 116.02492696922275,
+  "day": "2026-09-29",
+  "day_start_equity": 115.36684604639589,
   "halted": false,
   "halt_reason": "",
   "stops": {
     "ETH": 2480.6059456548014,
     "BTC": 79109.64303059799
   },
-  "last_signal_day": "2026-09-28"
+  "last_signal_day": "2026-09-29"
 }
