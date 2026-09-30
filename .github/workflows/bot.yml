@@ -3,10 +3,22 @@ name: crypto-bot
 on:
   schedule:
     - cron: "7 * * * *"      # cada hora a los :07 UTC (00:07 UTC = ciclo diario; resto = stops)
-  workflow_dispatch:         # botón "Run workflow" para lanzarlo a mano
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "auto = ciclo normal | dry-run = solo mirar, no firma | test-short = abre y cierra un corto pequeño"
+        type: choice
+        default: auto
+        options: [auto, dry-run, test-short]
+      test_coin:
+        description: "Activo para test-short"
+        default: ETH
+      test_usd:
+        description: "Tamaño en USD para test-short"
+        default: "10"
 
 permissions:
-  contents: write            # para guardar logs/ y el estado en el repo
+  contents: write
 
 concurrency:
   group: bot
@@ -15,7 +27,9 @@ concurrency:
 jobs:
   run:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    env:
+      MODE: ${{ github.event.inputs.mode || 'auto' }}
     steps:
       - uses: actions/checkout@v4
 
@@ -31,10 +45,17 @@ jobs:
           WALLET_ADDRESS: ${{ secrets.WALLET_ADDRESS }}
           WALLET_PRIVATE_KEY: ${{ secrets.WALLET_PRIVATE_KEY }}
           ARB_RPC_URL: ${{ secrets.ARB_RPC_URL || 'https://arb1.arbitrum.io/rpc' }}
-        run: python scripts/run_onchain.py --auto
+          SHORTS_ENABLED: ${{ vars.SHORTS_ENABLED || '1' }}
+          SHORT_MAX_USD: ${{ vars.SHORT_MAX_USD || '1000000000' }}
+        run: |
+          case "$MODE" in
+            dry-run)    python scripts/run_onchain.py --dry-run ;;
+            test-short) python scripts/run_onchain.py --test-short "${{ github.event.inputs.test_coin }}" "${{ github.event.inputs.test_usd }}" ;;
+            *)          python scripts/run_onchain.py --auto ;;
+          esac
 
       - name: Guardar estado y logs
-        if: always()
+        if: always() && env.MODE != 'dry-run'
         run: |
           git config user.name "crypto-bot"
           git config user.email "bot@users.noreply.github.com"

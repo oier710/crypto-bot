@@ -1,8 +1,11 @@
-"""Bot on-chain (Uniswap en Arbitrum).
+"""Bot on-chain (Uniswap + Aave en Arbitrum).
 
-    python scripts/run_onchain.py --dry-run    # muestra balances, señales y qué haría; no firma nada
-    python scripts/run_onchain.py --once       # un ciclo diario real
-    python scripts/run_onchain.py --loop       # cada hora comprueba stops; a las 00:05 UTC ciclo diario
+    python scripts/run_onchain.py --dry-run          # lee todo (wallet, Aave, señales) y muestra qué haría; no firma
+    python scripts/run_onchain.py --once             # un ciclo diario real
+    python scripts/run_onchain.py --stops            # solo stops y salud de Aave
+    python scripts/run_onchain.py --auto             # stops siempre; ciclo diario si es la hora 00 UTC (cron)
+    python scripts/run_onchain.py --test-short ETH 10   # abre un corto de 10$ y lo cierra (prueba de mecánica)
+    python scripts/run_onchain.py --loop             # bucle local (no recomendado; usar GitHub Actions)
 """
 import argparse
 import sys
@@ -23,17 +26,20 @@ def main():
     ap = argparse.ArgumentParser()
     g = ap.add_mutually_exclusive_group(required=True)
     g.add_argument("--dry-run", action="store_true")
-    g.add_argument("--once", action="store_true", help="un ciclo diario completo (señales + stops)")
-    g.add_argument("--stops", action="store_true", help="solo comprobar stops (para ejecución horaria externa)")
-    g.add_argument("--auto", action="store_true", help="stops siempre; ciclo diario solo si es la hora 00 UTC (para cron)")
+    g.add_argument("--once", action="store_true")
+    g.add_argument("--stops", action="store_true")
+    g.add_argument("--auto", action="store_true")
     g.add_argument("--loop", action="store_true")
+    g.add_argument("--test-short", nargs=2, metavar=("COIN", "USD"))
     a = ap.parse_args()
+    if a.test_short:
+        onchain.test_short(a.test_short[0].upper(), float(a.test_short[1]))
+        return
     if a.stops:
         onchain.run_cycle(dry_run=False, signals=False)
         return
     if a.auto:
-        daily = datetime.now(timezone.utc).hour == DAILY_HOUR_UTC
-        onchain.run_cycle(dry_run=False, signals=daily)
+        onchain.run_cycle(dry_run=False, signals=datetime.now(timezone.utc).hour == DAILY_HOUR_UTC)
         return
     if not a.loop:
         onchain.run_cycle(dry_run=a.dry_run, signals=True)
@@ -49,7 +55,6 @@ def main():
                 last_daily = now.date()
         except Exception as e:  # noqa: BLE001
             onchain.log.exception("ciclo fallido: %s", e)
-        # dormir hasta el minuto 05 de la próxima hora
         nxt = now.replace(minute=5, second=0, microsecond=0)
         while nxt <= datetime.now(timezone.utc):
             nxt += timedelta(hours=1)
