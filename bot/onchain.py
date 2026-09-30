@@ -69,8 +69,9 @@ ATR_N = 14
 MIN_TRADE_USD = 5.0
 MAX_SLIPPAGE = 0.005
 GAS_RESERVE_ETH = 0.0015
-HF_MIN = 1.35                 # factor de salud mínimo en Aave; por debajo se cierran los cortos
-HF_TARGET_MIN = 1.6           # al abrir un corto, el HF resultante debe quedar por encima
+HF_MIN = 1.25                 # factor de salud mínimo en Aave; por debajo se cierran los cortos
+HF_TARGET_MIN = 1.5           # al abrir un corto, el HF resultante debe quedar por encima
+LIQ_THRESHOLD = 0.78          # umbral de liquidación del USDC como garantía en Aave (conservador)
 SHORTS_ENABLED = os.getenv("SHORTS_ENABLED", "1") == "1"
 SHORT_MAX_USD = float(os.getenv("SHORT_MAX_USD", "1e9"))   # tope por corto (fase de prueba)
 
@@ -328,11 +329,18 @@ def buy_long(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason: s
 # ---------------------------------------------------------------------- cortos
 def open_short(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason: str):
     """Deposita todo el USDC libre en Aave, pide prestado `usd` del token y lo vende por USDC (que también deposita)."""
-    usd = min(usd, SHORT_MAX_USD)
+    b = pf["raw"]
+    # tamaño máximo que deja HF >= HF_TARGET_MIN con la garantía disponible (USDC libre + USDC ya en Aave − deuda actual)
+    debt_now = b["debt_WETH"] * prices["ETH"] + b["debt_WBTC"] * prices["BTC"]
+    collateral = b[USDC] + b["aUSDC"]
+    max_usd = max((collateral * LIQ_THRESHOLD - debt_now * HF_TARGET_MIN) / (HF_TARGET_MIN - LIQ_THRESHOLD), 0.0)
+    if max_usd < usd:
+        log.info("CORTO %s: tamaño limitado por garantía %.2f$ -> %.2f$", coin, usd, max_usd)
+    usd = min(usd, SHORT_MAX_USD, max_usd)
     if usd < MIN_TRADE_USD:
+        log.info("CORTO %s: sin garantía suficiente (%.2f$), no se abre", coin, usd)
         return
     token = ASSETS[coin]
-    b = pf["raw"]
     if b[USDC] > 1:
         ch.aave_supply_usdc(b[USDC] - 0.5)
     amount = int(usd / prices[coin] * 10 ** DECIMALS[token])
@@ -342,6 +350,10 @@ def open_short(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason:
     hf = ch.health_factor() if not ch.dry_run else 9.9
     log.info("CORTO %s abierto: %.2f$ | HF %.2f", coin, usd, hf)
     record(coin, "SHORT", usd, prices[coin], reason, ch.dry_run)
+    if hf < HF_MIN:
+        log.warning("HF %.2f tras abrir < %.2f: cerrando el corto por seguridad", hf, HF_MIN)
+        _, pf2 = portfolio(ch, prices)
+        close_short(ch, coin, prices, pf2, "HF insuficiente")
 
 
 def close_short(ch: Chain, coin: str, prices: dict, pf: dict, reason: str):
