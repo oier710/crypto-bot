@@ -19,7 +19,10 @@ FECHA_INICIO = "2026-09-26"
 
 
 def main():
-    eq = pd.read_csv(LOGS / "equity.csv", parse_dates=["time"]) if (LOGS / "equity.csv").exists() else pd.DataFrame()
+    EQ_COLS = ["time", "equity_usd", "usdc", "eth_usd", "btc_usd", "eth_qty", "btc_qty", "eth_price", "btc_price", "gas_eth",
+               "ausdc", "debt_eth_usd", "debt_btc_usd", "hf"]
+    eq = (pd.read_csv(LOGS / "equity.csv", header=None, skiprows=1, names=EQ_COLS, parse_dates=["time"])
+          if (LOGS / "equity.csv").exists() else pd.DataFrame())
     tr = pd.read_csv(LOGS / "onchain_trades.csv", parse_dates=["time"]) if (LOGS / "onchain_trades.csv").exists() else pd.DataFrame()
     tr = tr[~tr.reason.astype(str).str.contains("dry-run")] if len(tr) else tr
 
@@ -36,7 +39,8 @@ def main():
             f"- Capital inicial: **{CAPITAL_INICIAL:.2f} $** ({FECHA_INICIO})",
             f"- Valor actual: **{equity:.2f} $**  →  P&L **{pnl:+.2f} $ ({pnl / CAPITAL_INICIAL:+.2%})** en {days} días",
             f"- Máximo alcanzado: {peak.iloc[-1]:.2f} $ · Caída máxima desde máximo: {dd:+.2%}",
-            f"- Cartera: USDC {last.usdc:.2f} $ · ETH {last.eth_usd:.2f} $ ({last.eth_qty:.5f}) · BTC {last.btc_usd:.2f} $ ({last.btc_qty:.6f}) · gas {last.gas_eth:.4f} ETH",
+            f"- Cartera: USDC {last.usdc:.2f} $ · ETH neto {last.eth_usd:.2f} $ · BTC neto {last.btc_usd:.2f} $ · gas {last.gas_eth:.4f} ETH"
+            + (f" · en Aave {last.ausdc:.2f} $ · deuda ETH {last.debt_eth_usd:.2f} $ / BTC {last.debt_btc_usd:.2f} $ · HF {('∞' if last.hf > 1e6 else f'{last.hf:.2f}')}" if pd.notna(last.get("hf")) else ""),
             f"- Precios: ETH {last.eth_price:,.0f} $ · BTC {last.btc_price:,.0f} $",
             "",
         ]
@@ -53,7 +57,7 @@ def main():
         lines += ["(sin datos de equity todavía)", ""]
 
     if len(tr):
-        lines += ["## Operaciones", f"- Total: {len(tr)} (compras {int((tr.side == 'BUY').sum())}, ventas {int((tr.side == 'SELL').sum())})",
+        lines += ["## Operaciones", f"- Total: {len(tr)} (compras {int((tr.side == 'BUY').sum())}, ventas {int((tr.side == 'SELL').sum())}, cortos {int((tr.side == 'SHORT').sum())}, cierres de corto {int((tr.side == 'COVER').sum())})",
                   f"- Volumen operado: {tr.usd.sum():.2f} $ · coste estimado fees+slippage (~0.1 %): {tr.usd.sum() * 0.001:.2f} $", "",
                   "| Fecha | Activo | Lado | USD | Precio | Motivo |", "|---|---|---|---|---|---|"]
         for _, r in tr.iterrows():

@@ -392,6 +392,13 @@ def run_cycle(dry_run: bool, signals: bool = True):
         return
     record_equity(equity, pf, prices)
 
+    now_iso = datetime.now(timezone.utc).isoformat(timespec="seconds")
+    if st.get("last_run"):
+        gap_h = (datetime.now(timezone.utc) - datetime.fromisoformat(st["last_run"])).total_seconds() / 3600
+        if gap_h > 2:
+            log.warning("HUECO: %.1f h desde la ejecución anterior (GitHub no ejecutó alguna hora)", gap_h)
+            st["gaps"] = st.get("gaps", 0) + 1
+    st["last_run"] = now_iso
     if st["peak_equity"] is None or equity > st["peak_equity"]:
         st["peak_equity"] = equity
     if st["day"] != today:
