@@ -2,7 +2,10 @@ name: crypto-bot
 
 on:
   schedule:
-    - cron: "7 * * * *"      # cada hora a los :07 UTC (00:07 UTC = ciclo diario; resto = stops)
+    # Dos disparos por hora: GitHub descarta a veces ejecuciones programadas (plan gratuito);
+    # con dos, perder una no deja hueco. ~1.440 min/mes, dentro de los 2.000 gratis.
+    # El ciclo diario lo hace la primera ejecución de cada día UTC; el resto revisa stops.
+    - cron: "13,43 * * * *"
   workflow_dispatch:
     inputs:
       mode:

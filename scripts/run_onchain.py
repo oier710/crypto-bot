@@ -39,7 +39,11 @@ def main():
         onchain.run_cycle(dry_run=False, signals=False)
         return
     if a.auto:
-        onchain.run_cycle(dry_run=False, signals=datetime.now(timezone.utc).hour == DAILY_HOUR_UTC)
+        # Ciclo diario en la primera ejecución del día UTC (no solo a las 00h): si GitHub se salta
+        # la ejecución de medianoche, la siguiente que llegue lo hace. Las velas usadas son siempre
+        # las diarias ya cerradas, así que da igual la hora.
+        today = datetime.now(timezone.utc).date().isoformat()
+        onchain.run_cycle(dry_run=False, signals=onchain.load_state().get("last_signal_day") != today)
         return
     if not a.loop:
         onchain.run_cycle(dry_run=a.dry_run, signals=True)
