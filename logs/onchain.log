@@ -532,3 +532,6 @@
 2026-10-03 18:42:40,504 INFO USDC 28.86 (wallet 28.86 + Aave 0.00) | ETH neto 43.31$ | BTC neto 43.76$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 115.92 USD
 2026-10-03 18:42:40,505 WARNING HUECO: 5.1 h desde la ejecución anterior (GitHub no ejecutó alguna hora)
 2026-10-03 18:42:41,004 INFO Chequeo de stops completado.
+2026-10-03 20:42:32,283 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
+2026-10-03 20:42:34,521 INFO USDC 28.86 (wallet 28.86 + Aave 0.00) | ETH neto 43.35$ | BTC neto 43.72$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 115.93 USD
+2026-10-03 20:42:36,158 INFO Chequeo de stops completado.
