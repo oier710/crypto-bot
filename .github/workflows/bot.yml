@@ -2,10 +2,11 @@ name: crypto-bot
 
 on:
   schedule:
-    # Dos disparos por hora: GitHub descarta a veces ejecuciones programadas (plan gratuito);
-    # con dos, perder una no deja hueco. ~1.440 min/mes, dentro de los 2.000 gratis.
+    # Disparador principal: cron-job.org llama cada hora (a los :25) a workflow_dispatch por la API,
+    # porque el reloj interno de GitHub deja de lanzar ejecuciones programadas (fallo conocido, oct-2026).
+    # Este cron queda solo de respaldo. Total ~1.440 min/mes, dentro de los 2.000 gratis.
     # El ciclo diario lo hace la primera ejecución de cada día UTC; el resto revisa stops.
-    - cron: "13,43 * * * *"
+    - cron: "55 * * * *"
   workflow_dispatch:
     inputs:
       mode:
