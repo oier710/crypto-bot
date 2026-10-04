@@ -1,70 +1,44 @@
 # crypto-bot
 
-Experimento de trading sistemático con capital inicial de 100 $ en Hyperliquid.
-Objetivo: crecimiento lento y consistente con riesgo controlado. No es un esquema
-de enriquecimiento rápido.
+Bot de trading sistemático con capital pequeño (referencia 115.75 $, 26-sep-2026).
+Objetivo: crecimiento lento y consistente con riesgo controlado.
 
-## Principios
+## Cómo funciona
 
-1. **Nada toca dinero real sin backtest y paper trading previos.**
-2. **Fees, slippage y funding se modelan siempre.** Con 100 $ deciden el resultado.
-3. **Sin apalancamiento por defecto.**
-4. **El bot solo puede operar, nunca retirar.** Usa una *agent wallet* de Hyperliquid.
-5. **La clave principal de MetaMask no se escribe en ningún sitio.** Ni en el chat, ni en la carpeta.
-6. **Límites de pérdida codificados.** Si se superan, el bot cierra posiciones y se apaga.
-7. **Todo queda registrado** en `logs/` y en `journal/`.
+- **Estrategia v2**: tendencia EMA 20/60 + ADX ≥ 20 en velas **diarias** de BTC y ETH, largos y cortos.
+  75 % de cada mitad del capital por posición, stop 2×ATR(14). Límites: −5 % en un día o −25 % desde
+  máximo → cierra todo y se para (`halted`).
+- **Dónde opera**: Uniswap V3 (largos) y Aave V3 (cortos sintéticos) en Arbitrum One, con una cuenta
+  de MetaMask dedicada solo a esto.
+- **Quién lo lanza**: cron-job.org llama cada hora a `workflow_dispatch` de GitHub Actions
+  (`.github/workflows/bot.yml`); el cron interno de GitHub queda de respaldo. Cada ejecución revisa
+  stops y salud de Aave; la primera de cada día UTC hace además el ciclo de señales.
+- **Registro**: cada ejecución hace commit de `logs/` (estado, operaciones, valor de cartera, log).
 
 ## Estructura
 
 ```
-crypto-bot/
-├── bot/
-│   ├── config.py        # parámetros globales (fees, riesgo, activos)
-│   ├── data.py          # descarga de velas (Binance para histórico, Hyperliquid para live)
-│   ├── indicators.py    # indicadores técnicos (puro pandas/numpy)
-│   ├── strategies/      # una estrategia por archivo, reglas explícitas
-│   ├── backtest.py      # motor de simulación con fees
-│   └── report.py        # métricas y tablas
-├── scripts/
-│   ├── fetch_data.py    # EJECUTAR EN TU TERMINAL: descarga datos a data/
-│   └── run_backtest.py  # backtest de todas las estrategias sobre data/
-├── data/                # CSVs de velas (ignorados por git)
-├── results/             # salidas de backtests
-├── logs/                # logs de ejecución
-├── journal/             # diario de decisiones y revisiones semanales
-├── .env.example         # plantilla; copia a .env y rellena (nunca se sube a git)
-└── requirements.txt
+bot/onchain.py          ejecutor real (Uniswap + Aave)
+bot/strategies/         reglas (trend_ema = la que se usa; las otras, para investigación)
+bot/backtest.py         motor de backtest con costes
+bot/data.py, indicators.py, config.py, report.py
+scripts/run_onchain.py  punto de entrada del bot (--auto, --dry-run, --test-short ...)
+scripts/report.py       informe de contabilidad (results/report.md + gráfico)
+scripts/run_backtest.py, analyze_v1.py, analyze_v2.py, pattern_study.py, fetch_data.py   investigación
+journal/                diario de decisiones
+results/                resultados de backtests
+logs/                   lo escribe el bot (no editar a mano)
 ```
 
-## Uso (desde la Terminal del Mac)
+## Uso manual
 
-```bash
-cd ~/Desktop/crypto-bot
-python3 -m venv .venv && source .venv/bin/activate
-pip install -r requirements.txt
+- Parar el bot: desactivar el job en cron-job.org **y** el workflow en GitHub → Actions.
+- Ejecutar a mano: Actions → crypto-bot → Run workflow (`auto`, `dry-run` o `test-short`).
+- Informe: `python scripts/report.py`.
 
-# 1. Descargar datos históricos (BTC, ETH, SOL; 1h y 4h; ~2 años)
-python scripts/fetch_data.py
+## Reglas
 
-# 2. Backtest de todas las estrategias
-python scripts/run_backtest.py
-
-# 3. Bot en Hyperliquid (requiere .env; ver .env.example)
-python scripts/run_live.py --dry-run   # muestra qué haría, no envía nada
-python scripts/run_live.py --once      # un ciclo real
-python scripts/run_live.py --loop      # ejecuta cada día a las 00:05 UTC
-```
-
-## Estrategia v1 (decidida el 2026-09-26, ver journal/)
-
-Tendencia EMA 20/60 + ADX ≥ 20 en gráfico **diario**, largo y corto, **BTC + ETH** con el capital
-dividido, 75 % del capital de cada activo por posición, stop 2×ATR(14) colocado en el exchange.
-Del orden de 1-2 operaciones al mes. Validada con walk-forward (año 2 a ciegas: +62 %, DD −11 %).
-
-## Fases
-
-- [x] Fase 0 — Infraestructura (este repo)
-- [ ] Fase 1 — Datos históricos descargados
-- [ ] Fase 2 — Backtesting de estrategias candidatas; selección
-- [ ] Fase 3 — Paper trading en Hyperliquid testnet (2-4 semanas)
-- [ ] Fase 4 — Dinero real: 100 USDC, revisión semanal
+1. Nada toca dinero real sin backtest y prueba previa.
+2. Fees, slippage y gas se modelan siempre.
+3. Las claves nunca se escriben en el chat ni se suben al repo.
+4. Los cambios de código los sube Oier (`git pull && git add ... && git commit && git push`).
