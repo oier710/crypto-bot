@@ -628,3 +628,11 @@
 2026-10-04 23:25:30,243 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
 2026-10-04 23:25:32,132 INFO USDC 28.86 (wallet 28.86 + Aave 0.00) | ETH neto 44.07$ | BTC neto 44.61$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 117.53 USD
 2026-10-04 23:25:33,639 INFO Chequeo de stops completado.
+2026-10-05 00:05:01,108 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
+2026-10-05 00:05:01,945 INFO USDC 28.86 (wallet 28.86 + Aave 0.00) | ETH neto 43.96$ | BTC neto 44.54$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 117.35 USD
+2026-10-05 00:05:02,596 INFO USDC 28.86 (wallet 28.86 + Aave 0.00) | ETH neto 43.96$ | BTC neto 44.54$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 117.35 USD
+2026-10-05 00:05:08,722 INFO BTC cierre=86507.11 señal=+1 ATR=2229.22 tengo=+44.54$ objetivo=+44.01$
+2026-10-05 00:05:14,928 INFO ETH cierre=2726.66 señal=+1 ATR=85.47 tengo=+43.96$ objetivo=+44.01$
+2026-10-05 00:05:15,514 INFO USDC 28.86 (wallet 28.86 + Aave 0.00) | ETH neto 43.96$ | BTC neto 44.54$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 117.35 USD
+2026-10-05 00:05:16,673 INFO USDC 28.86 (wallet 28.86 + Aave 0.00) | ETH neto 43.96$ | BTC neto 44.54$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 117.35 USD
+2026-10-05 00:05:16,674 INFO Ciclo diario completado. Stops: {'ETH': 2480.6059456548014, 'BTC': 79109.64303059799}
