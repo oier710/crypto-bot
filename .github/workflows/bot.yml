@@ -30,8 +30,11 @@ concurrency:
 
 jobs:
   run:
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # Dos colas de máquinas distintas: si GitHub satura una ("job was not acquired by Runner"), la otra sigue.
+    # - cron-job.org (workflow_dispatch, cada hora a los :25) -> ubuntu-slim (1 vCPU, cola propia; límite 15 min, el bot tarda <1 min)
+    # - cron interno de respaldo (:55)                         -> ubuntu-24.04 fijo (no le afecta la migración de ubuntu-latest del 19-oct-2026)
+    runs-on: ${{ github.event_name == 'schedule' && 'ubuntu-24.04' || 'ubuntu-slim' }}
+    timeout-minutes: 12
     env:
       MODE: ${{ github.event.inputs.mode || 'auto' }}
     steps:
