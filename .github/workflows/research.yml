@@ -1,0 +1,54 @@
+name: research
+
+# Investigación (backtests). No toca fondos ni usa secretos: solo descarga precios públicos
+# de Coinbase, simula y guarda los resultados en results/.
+# Se ejecuta sola al subir un script de investigación nuevo, o a mano (Run workflow).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "scripts/research_*.py"
+      - ".github/workflows/research.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: research
+  cancel-in-progress: false
+
+jobs:
+  research:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Ejecutar investigación
+        run: |
+          for f in scripts/research_*.py; do
+            echo "=== $f ==="
+            python "$f"
+          done
+
+      - name: Guardar resultados
+        if: always()
+        run: |
+          git config user.name "crypto-bot-research"
+          git config user.email "bot@users.noreply.github.com"
+          git add -f results/research_*.txt results/research_*.csv || true
+          git diff --cached --quiet && exit 0
+          git commit -m "research: resultados $(date -u +'%Y-%m-%d %H:%M') UTC"
+          for i in 1 2 3 4 5; do
+            git pull --rebase --autostash && git push && exit 0
+            sleep 10
+          done
+          exit 1
