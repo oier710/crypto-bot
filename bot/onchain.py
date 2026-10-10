@@ -5,7 +5,18 @@ Modelo por activo (BTC, ETH), al cierre diario:
   señal -1 -> CORTO sintético vía Aave: depositar USDC como garantía, pedir prestado el token,
               venderlo por USDC (que también se deposita como garantía). Se gana si baja.
   señal  0 -> todo en USDC.
-Cada hora: stops (largos: precio <= stop; cortos: precio >= stop) y factor de salud de Aave.
+Cada ejecución (cada 15 min): gestión de la posición abierta, stops y factor de salud de Aave.
+
+v3 (2026-10-10, investigación de octubre, idea de Oier): ventas parciales + reentrada en máximo nuevo.
+  - Al entrar: stop fijo a 2xATR (como en v2).
+  - +1.5 ATR a favor -> se vende 1/3 de la posición y el stop sube a precio de entrada (+costes).
+  - +3 ATR a favor   -> se vende otro 1/3. El último tercio sigue hasta el stop o el cambio de señal.
+  - Reentrada: si tras una venta parcial el precio corrige >= 1 ATR desde el máximo y después
+    marca un MÁXIMO NUEVO (señal diaria aún a favor), se recompra lo vendido; el stop de toda la
+    posición sube a precio - 1.5 ATR y los niveles de parciales se recalculan desde ese precio.
+  - En cortos, todo en espejo (mínimos en vez de máximos).
+  Backtest 3 años (results/research_2026_10b.txt): +68.7 % / caída máx. −16.2 % / 11 meses en rojo de 33,
+  frente a +99.7 % / −24.1 % / 13 de la v2. Elegida por consistencia (criterio de Oier).
 
 Seguridad:
   - Clave privada en .env / secreto de GitHub. Solo la cuenta del experimento.
@@ -72,6 +83,11 @@ GAS_RESERVE_ETH = 0.0015
 HF_MIN = 1.25                 # factor de salud mínimo en Aave; por debajo se cierran los cortos
 HF_TARGET_MIN = 1.5           # al abrir un corto, el HF resultante debe quedar por encima
 LIQ_THRESHOLD = 0.78          # umbral de liquidación del USDC como garantía en Aave (conservador)
+PT_LEVELS = (1.5, 3.0)        # ventas parciales (1/3 cada una) a +1.5 y +3 ATR desde la referencia
+RH_PULLBACK_ATR = 1.0         # corrección mínima tras una parcial para aceptar el máximo nuevo
+RH_RESTOP_ATR = 1.5           # al recomprar, stop de toda la posición a precio - 1.5 ATR (nunca baja)
+BE_COST = 0.002               # stop "a entrada" = entrada * (1 ± 0.2 %) para cubrir los costes
+PARTIAL_OUT = 0.95            # la posición está "recortada" si queda < 95 % del tamaño completo
 SHORTS_ENABLED = os.getenv("SHORTS_ENABLED", "1") == "1"
 SHORT_MAX_USD = float(os.getenv("SHORT_MAX_USD", "1e9"))   # tope por corto (fase de prueba)
 
@@ -232,6 +248,12 @@ class Chain:
         if not self.dry_run:
             self._send(self.pool.functions.borrow(token, amount, 2, 0, self.address))
 
+    def aave_repay(self, token, amount: int):
+        log.info("AAVE repay %s %s", amount, token[:8])
+        if not self.dry_run:
+            self.ensure_allowance(token, self.pool_addr, amount)
+            self._send(self.pool.functions.repay(token, amount, 2, self.address))
+
     def aave_repay_all(self, token):
         log.info("AAVE repay todo %s", token[:8])
         if not self.dry_run:
@@ -246,7 +268,12 @@ def load_state():
     return {"peak_equity": None, "day": None, "day_start_equity": None, "halted": False, "halt_reason": "", "stops": {}, "last_signal_day": None}
 
 
+_DRY_RUN = False
+
+
 def save_state(s):
+    if _DRY_RUN:          # --dry-run no debe dejar parciales/stops que nunca ocurrieron
+        return
     STATE_FILE.write_text(json.dumps(s, indent=2))
 
 
@@ -356,20 +383,222 @@ def open_short(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason:
         close_short(ch, coin, prices, pf2, "HF insuficiente")
 
 
-def close_short(ch: Chain, coin: str, prices: dict, pf: dict, reason: str):
-    """Retira USDC, recompra exactamente la deuda (+0.5 %), repaga todo."""
+HF_WITHDRAW_MIN = 1.01        # al retirar garantía para recomprar, el HF no baja de aquí
+
+
+def _max_withdraw(b: dict, prices: dict) -> float:
+    """USDC que se puede sacar de Aave dejando HF >= HF_WITHDRAW_MIN (con umbral conservador)."""
+    debt_usd = b["debt_WETH"] * prices["ETH"] + b["debt_WBTC"] * prices["BTC"]
+    return max(b["aUSDC"] - debt_usd * HF_WITHDRAW_MIN / LIQ_THRESHOLD, 0.0)
+
+
+def _cover(ch: Chain, coin: str, qty: float | None, prices: dict) -> float:
+    """Recompra y devuelve `qty` tokens de deuda (None = toda). Si la garantía no permite sacar todo el
+    USDC de una vez (Aave no deja bajar el HF de 1), lo hace por tramos: cada repago libera garantía.
+    Devuelve los USD cubiertos."""
     token = ASSETS[coin]
-    debt = pf["raw"][f"debt_{'WETH' if coin == 'ETH' else 'WBTC'}"]
-    if debt <= 0:
-        return
-    usd = debt * prices[coin]
-    need_usdc = usd * 1.02
-    ch.aave_withdraw_usdc(min(need_usdc, pf["raw"]["aUSDC"]))
-    amount_out = int(debt * 1.005 * 10 ** DECIMALS[token])
-    ch.swap_exact_out(PATHS[coin]["buy"], amount_out)
-    ch.aave_repay_all(token)
+    key = f"debt_{'WETH' if coin == 'ETH' else 'WBTC'}"
+    px = prices[coin]
+    covered = 0.0
+    for _ in range(8):
+        b = ch.balances()
+        debt = b[key]
+        left = debt if qty is None else min(qty - covered / px, debt)
+        if debt <= 0 or left * px < 0.01:
+            break
+        full = left >= debt * 0.98
+        buy_q = debt * 1.005 if full else left
+        need = buy_q * px * 1.02 - b[USDC]
+        if need > 0 and b["aUSDC"] > 0.01:
+            w = min(need, _max_withdraw(b, prices), b["aUSDC"])
+            if w > 0.01:
+                ch.aave_withdraw_usdc(w)
+                b = ch.balances()
+        afford = b[USDC] / (px * 1.02)
+        if ch.dry_run:
+            afford = buy_q
+        if afford < buy_q:          # tramo: lo que permite la garantía liberada
+            full, buy_q = False, afford
+        if buy_q * px < 0.5:
+            log.error("CORTO %s: no se puede recomprar más (USDC %.2f, deuda %.6f)", coin, b[USDC], debt)
+            break
+        amount = int(buy_q * 10 ** DECIMALS[token])
+        ch.swap_exact_out(PATHS[coin]["buy"], amount)
+        if full:
+            ch.aave_repay_all(token)
+            covered += debt * px
+        else:
+            ch.aave_repay(token, amount)
+            covered += buy_q * px
+        if ch.dry_run:
+            break
+    return covered
+
+
+def close_short(ch: Chain, coin: str, prices: dict, pf: dict, reason: str) -> bool:
+    """Recompra toda la deuda del token y la repaga (por tramos si la garantía lo exige).
+    Devuelve True si la deuda queda saldada."""
+    key = f"debt_{'WETH' if coin == 'ETH' else 'WBTC'}"
+    if pf["raw"][key] <= 0:
+        return True
+    usd = _cover(ch, coin, None, prices)
+    left = 0.0 if ch.dry_run else ch.balances()[key]
+    if usd > 0:
+        record(coin, "COVER", usd, prices[coin], reason, ch.dry_run)
+    if left * prices[coin] > 0.5:
+        log.error("CORTO %s NO cerrado del todo: queda deuda %.6f (%.2f$). Se reintenta en la próxima ejecución.",
+                  coin, left, left * prices[coin])
+        return False
     log.info("CORTO %s cerrado: %.2f$", coin, usd)
+    return True
+
+
+def cover_short_part(ch: Chain, coin: str, qty: float, prices: dict, pf: dict, reason: str):
+    """Recompra y devuelve `qty` tokens de la deuda de un corto (cierre parcial)."""
+    debt = pf["raw"][f"debt_{'WETH' if coin == 'ETH' else 'WBTC'}"]
+    qty = min(qty, debt)
+    if qty * prices[coin] < MIN_TRADE_USD:
+        return
+    if qty >= debt * 0.98:
+        close_short(ch, coin, prices, pf, reason)
+        return
+    usd = _cover(ch, coin, qty, prices)
+    log.info("CORTO %s recortado: %.2f$", coin, usd)
     record(coin, "COVER", usd, prices[coin], reason, ch.dry_run)
+
+
+# --------------------------------------------- v3: gestión de la posición abierta
+def last_entry_price(coin: str, side: int) -> float | None:
+    """Precio de la última entrada registrada (BUY para largos, SHORT para cortos)."""
+    if not TRADES_FILE.exists():
+        return None
+    want = "BUY" if side == 1 else "SHORT"
+    px = None
+    for line in TRADES_FILE.read_text().splitlines()[1:]:
+        f = line.split(",")
+        if len(f) >= 5 and f[1] == coin and f[2] == want:
+            px = float(f[4])
+    return px
+
+
+def new_pos(side: int, price: float, atr: float, qty: float, sig: int) -> dict:
+    return dict(side=side, entry=price, ref=price, atr=atr, atr_today=atr, full_qty=qty,
+                pt_done=0, extreme=price, pb=0.0, sig=sig)
+
+
+def adopt_position(st: dict, c: str, v: float, px: float) -> dict | None:
+    """Posición abierta con la v2 (sin datos de v3): reconstruye entrada y ATR desde el stop fijo."""
+    sp = st["stops"].get(c)
+    if not sp:
+        return None
+    side = 1 if v > 0 else -1
+    entry = last_entry_price(c, side) or px
+    atr = abs(entry - sp) / STOP_ATR
+    if atr <= 0:
+        return None
+    pos = new_pos(side, entry, atr, abs(v) / px, side)
+    pos["extreme"] = max(entry, px) if side == 1 else min(entry, px)
+    log.info("v3: adopto %s %s abierto (entrada %.2f, ATR %.2f, %.6f): parciales a %.2f y %.2f",
+             c, "largo" if side == 1 else "corto", entry, atr, pos["full_qty"],
+             entry + side * PT_LEVELS[0] * atr, entry + side * PT_LEVELS[1] * atr)
+    return pos
+
+
+def reduce_position(ch: Chain, c: str, side: int, qty: float, prices: dict, pf: dict, reason: str):
+    if side == 1:
+        sell_long(ch, c, qty * prices[c], prices, reason)
+    else:
+        cover_short_part(ch, c, qty, prices, pf, reason)
+
+
+def add_position(ch: Chain, c: str, side: int, qty: float, prices: dict, pf: dict, reason: str):
+    if side == 1:
+        buy_long(ch, c, qty * prices[c], prices, pf, reason)
+    else:
+        open_short(ch, c, qty * prices[c], prices, pf, reason)
+
+
+def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, allow_rebuy: bool = True):
+    """Cada ejecución: parciales, stop a entrada, stop, reentrada en máximo nuevo (en este orden)."""
+    pos_all = st.setdefault("pos", {})
+    for c in SYMBOLS:
+        v, px = pf["val"][c], prices[c]
+        sp = st["stops"].get(c)
+        if abs(v) < MIN_TRADE_USD:
+            pos_all.pop(c, None)
+            continue
+        side = 1 if v > 0 else -1
+        pos = pos_all.get(c)
+        if pos is None or pos["side"] != side:
+            pos = adopt_position(st, c, v, px)
+            if pos is None:
+                continue
+            pos_all[c] = pos
+        qty_now = abs(v) / px
+        new_extreme = side * (px - pos["extreme"]) > 0
+        partial_out = qty_now < pos["full_qty"] * PARTIAL_OUT
+        if partial_out and not new_extreme:
+            pos["pb"] = max(pos["pb"], side * (pos["extreme"] - px) / pos["atr"])
+        pos["extreme"] = max(pos["extreme"], px) if side == 1 else min(pos["extreme"], px)
+        fav = side * (px - pos["ref"]) / pos["atr"]
+        traded = False
+        # 1) venta parcial
+        if pos["pt_done"] < len(PT_LEVELS) and fav >= PT_LEVELS[pos["pt_done"]]:
+            q = min(pos["full_qty"] / 3, qty_now)
+            n = pos["pt_done"] + 1
+            if qty_now <= pos["full_qty"] * (1 - n / 3) * 1.02:
+                # ya está recortada (p. ej. ejecución anterior que vendió pero no llegó a guardar estado)
+                log.warning("PARCIAL %d %s: ya hecha (quedan %.6f de %.6f), solo actualizo estado",
+                            n, c, qty_now, pos["full_qty"])
+            else:
+                log.warning("PARCIAL %d %s %s: %.2f (+%.1f ATR desde %.2f) -> cierro 1/3 (%.2f$)",
+                            n, "largo" if side == 1 else "corto", c, px, fav, pos["ref"], q * px)
+                reduce_position(ch, c, side, q, prices, pf, f"parcial {n}")
+                traded = True
+            pos["pt_done"], pos["pb"] = n, 0.0
+            be = pos["entry"] * (1 + side * BE_COST)
+            if sp is not None:
+                st["stops"][c] = sp = max(sp, be) if side == 1 else min(sp, be)
+                log.info("%s stop a entrada: %.2f", c, sp)
+        # 2) stop
+        if sp is not None and ((side == 1 and px <= sp) or (side == -1 and px >= sp)):
+            if traded:
+                _, pf = portfolio(ch, prices)
+            v = pf["val"][c]
+            log.warning("STOP %s %s: %.2f %s %.2f", "largo" if side == 1 else "corto", c, px,
+                        "<=" if side == 1 else ">=", sp)
+            if side == 1 and v >= MIN_TRADE_USD:
+                sell_long(ch, c, v, prices, "stop")
+            elif side == -1 and v <= -MIN_TRADE_USD:
+                if not close_short(ch, c, prices, pf, "stop"):
+                    continue          # deuda pendiente: se mantienen stop y posición y se reintenta
+            st["stops"].pop(c, None)
+            pos_all.pop(c, None)
+            st.setdefault("stopped_today", {})[c] = today
+            continue
+        # 3) reentrada en máximo nuevo tras corrección
+        q = pos["full_qty"] - qty_now
+        if (allow_rebuy and not traded and partial_out and new_extreme and pos["pb"] >= RH_PULLBACK_ATR
+                and pos.get("sig") == side and q * px >= MIN_TRADE_USD):
+            a = pos.get("atr_today") or pos["atr"]
+            log.warning("REENTRADA %s en %s nuevo %.2f (corrección %.1f ATR): recompro %.2f$",
+                        c, "máximo" if side == 1 else "mínimo", px, pos["pb"], q * px)
+            add_position(ch, c, side, q, prices, pf, "reentrada máximo nuevo")
+            _, pf = portfolio(ch, prices)
+            added = q if ch.dry_run else abs(pf["val"][c]) / px - qty_now
+            if added * px < MIN_TRADE_USD:
+                log.warning("REENTRADA %s no ejecutada (sin USDC/garantía suficiente); estado sin cambios", c)
+                continue
+            pos["entry"] = (pos["entry"] * qty_now + px * added) / (qty_now + added)
+            pos.update(ref=px, atr=a, pt_done=0, pb=0.0)
+            if sp is not None:
+                ns = px - side * RH_RESTOP_ATR * a
+                st["stops"][c] = max(sp, ns) if side == 1 else min(sp, ns)
+                log.info("%s stop sube a %.2f; parciales a %.2f y %.2f", c, st["stops"][c],
+                         px + side * PT_LEVELS[0] * a, px + side * PT_LEVELS[1] * a)
+        if traded:
+            _, pf = portfolio(ch, prices)
+    return pf
 
 
 def tidy_aave(ch: Chain):
@@ -381,6 +610,8 @@ def tidy_aave(ch: Chain):
 
 # ----------------------------------------------------------------------- ciclo
 def run_cycle(dry_run: bool, signals: bool = True):
+    global _DRY_RUN
+    _DRY_RUN = dry_run
     ch = Chain(dry_run)
     st = load_state()
     prices = {s: spot(s) for s in SYMBOLS}
@@ -418,6 +649,7 @@ def run_cycle(dry_run: bool, signals: bool = True):
             elif pf["val"][c] >= MIN_TRADE_USD:
                 sell_long(ch, c, pf["val"][c], prices, "límite de riesgo")
         tidy_aave(ch)
+        st["stops"], st["pos"] = {}, {}
         st.update(halted=True, halt_reason=reason)
         save_state(st)
         return
@@ -427,25 +659,32 @@ def run_cycle(dry_run: bool, signals: bool = True):
         log.warning("HF %.2f < %.2f: cerrando cortos por seguridad", pf["hf"], HF_MIN)
         for c in SYMBOLS:
             if pf["val"][c] <= -MIN_TRADE_USD:
-                close_short(ch, c, prices, pf, "factor de salud bajo")
-                st["stops"].pop(c, None)
+                if close_short(ch, c, prices, pf, "factor de salud bajo"):
+                    st["stops"].pop(c, None)
+                    st.get("pos", {}).pop(c, None)
         tidy_aave(ch)
         equity, pf = portfolio(ch, prices)
 
-    # --- stops (cada ejecución) ---
-    for c in SYMBOLS:
-        sp = st["stops"].get(c)
-        v = pf["val"][c]
-        if not sp:
-            continue
-        if v >= MIN_TRADE_USD and prices[c] <= sp:
-            log.warning("STOP largo %s: %.2f <= %.2f", c, prices[c], sp)
-            sell_long(ch, c, v, prices, "stop")
-            st["stops"].pop(c, None); st.setdefault("stopped_today", {})[c] = today
-        elif v <= -MIN_TRADE_USD and prices[c] >= sp:
-            log.warning("STOP corto %s: %.2f >= %.2f", c, prices[c], sp)
-            close_short(ch, c, prices, pf, "stop")
-            st["stops"].pop(c, None); st.setdefault("stopped_today", {})[c] = today
+    # --- posición abierta: parciales, stops, reentrada (cada ejecución) ---
+    try:
+        # en la primera ejecución del día no se recompra: primero manda la señal diaria nueva
+        pf = manage_positions(ch, st, prices, pf, today, allow_rebuy=not signals)
+    except Exception as e:  # noqa: BLE001 - si la v3 falla, los stops de siempre siguen protegiendo
+        log.exception("ERROR en gestión v3 (%s): aplico solo los stops", e)
+        _, pf = portfolio(ch, prices)
+        for c in SYMBOLS:
+            sp, v = st["stops"].get(c), pf["val"][c]
+            if sp and v >= MIN_TRADE_USD and prices[c] <= sp:
+                sell_long(ch, c, v, prices, "stop")
+            elif sp and v <= -MIN_TRADE_USD and prices[c] >= sp:
+                if not close_short(ch, c, prices, pf, "stop"):
+                    continue
+            else:
+                continue
+            st["stops"].pop(c, None)
+            st.get("pos", {}).pop(c, None)
+            st.setdefault("stopped_today", {})[c] = today
+        _, pf = portfolio(ch, prices)
     if not signals:
         tidy_aave(ch)
         save_state(st)
@@ -466,6 +705,12 @@ def run_cycle(dry_run: bool, signals: bool = True):
         target = per_asset if sig == 1 else (-min(per_asset, SHORT_MAX_USD) if sig == -1 else 0.0)
         if st.get("stopped_today", {}).get(c) == today:
             target = 0.0
+        pos = st.get("pos", {}).get(c)
+        if pos and sig == pos["side"] and abs(have) >= MIN_TRADE_USD:
+            # v3: la operación sigue abierta -> no se redimensiona (las parciales/recompras las gestiona
+            # manage_positions); solo se actualizan señal y ATR del día para la próxima reentrada
+            target = have
+            pos.update(sig=sig, atr_today=atr)
         log.info("%s cierre=%.2f señal=%+d ATR=%.2f tengo=%+.2f$ objetivo=%+.2f$", c, df.close.iloc[-1], sig, atr, have, target)
         plan[c] = dict(sig=sig, atr=atr, have=have, target=target)
 
@@ -476,14 +721,18 @@ def run_cycle(dry_run: bool, signals: bool = True):
             sell_long(ch, c, have if target <= 0 else have - target, prices, f"señal {p['sig']:+d}")
             if target <= 0:
                 st["stops"].pop(c, None)
+                st.get("pos", {}).pop(c, None)
         elif have <= -MIN_TRADE_USD and target >= 0:
-            close_short(ch, c, prices, pf, f"señal {p['sig']:+d}")
-            st["stops"].pop(c, None)
+            if close_short(ch, c, prices, pf, f"señal {p['sig']:+d}"):
+                st["stops"].pop(c, None)
+                st.get("pos", {}).pop(c, None)
+            else:
+                p["target"] = have    # no abrir nada nuevo mientras quede deuda
     # 2) aperturas
     equity, pf = portfolio(ch, prices)
     for c, p in plan.items():
         have, target = pf["val"][c], p["target"]
-        if target > 0 and target - max(have, 0) > MIN_TRADE_USD:
+        if target > 0 and have > -MIN_TRADE_USD and target - max(have, 0) > MIN_TRADE_USD:
             buy_long(ch, c, target - max(have, 0), prices, pf, f"señal {p['sig']:+d}")
         elif target < 0 and have > -MIN_TRADE_USD:
             open_short(ch, c, -target, prices, pf, f"señal {p['sig']:+d}")
@@ -491,17 +740,23 @@ def run_cycle(dry_run: bool, signals: bool = True):
     # 3) stops: toda posición tiene stop; nuevas entradas lo fijan hoy
     tidy_aave(ch)
     equity, pf = portfolio(ch, prices)
+    pos_all = st.setdefault("pos", {})
     for c, p in plan.items():
         v = pf["val"][c]
-        if v >= MIN_TRADE_USD and p["target"] > 0:
-            st["stops"].setdefault(c, prices[c] - STOP_ATR * p["atr"])
-        elif v <= -MIN_TRADE_USD and p["target"] < 0:
-            st["stops"].setdefault(c, prices[c] + STOP_ATR * p["atr"])
+        side = 1 if v >= MIN_TRADE_USD and p["target"] > 0 else (-1 if v <= -MIN_TRADE_USD and p["target"] < 0 else 0)
+        if side:
+            st["stops"].setdefault(c, prices[c] - side * STOP_ATR * p["atr"])
+            if c not in pos_all or pos_all[c]["side"] != side:
+                pos_all[c] = new_pos(side, prices[c], p["atr"], abs(v) / prices[c], p["sig"])
+                log.info("%s nueva operación %s: entrada %.2f stop %.2f parciales a %.2f y %.2f", c,
+                         "larga" if side == 1 else "corta", prices[c], st["stops"][c],
+                         prices[c] + side * PT_LEVELS[0] * p["atr"], prices[c] + side * PT_LEVELS[1] * p["atr"])
         elif abs(v) < MIN_TRADE_USD:
             st["stops"].pop(c, None)
+            pos_all.pop(c, None)
     st["last_signal_day"] = today
     save_state(st)
-    log.info("Ciclo diario completado. Stops: %s", st["stops"])
+    log.info("Ciclo diario completado. Stops: %s | posiciones: %s", st["stops"], {c: dict(entrada=round(p["entry"], 2), parciales=p["pt_done"], ref=round(p["ref"], 2)) for c, p in st.get("pos", {}).items()})
 
 
 # ---------------------------------------------------------- prueba de cortos

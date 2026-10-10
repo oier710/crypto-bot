@@ -2,10 +2,11 @@ name: crypto-bot
 
 on:
   schedule:
-    # Disparador principal: cron-job.org llama cada hora (a los :25) a workflow_dispatch por la API,
+    # Disparador principal: cron-job.org llama cada 15 min (:05 :20 :35 :50) a workflow_dispatch por la API,
     # porque el reloj interno de GitHub deja de lanzar ejecuciones programadas (fallo conocido, oct-2026).
-    # Este cron queda solo de respaldo. Total ~1.440 min/mes, dentro de los 2.000 gratis.
-    # El ciclo diario lo hace la primera ejecución de cada día UTC; el resto revisa stops.
+    # Este cron queda solo de respaldo. Repo público -> minutos de Actions gratis e ilimitados.
+    # El ciclo diario lo hace la primera ejecución de cada día UTC; el resto gestiona la posición
+    # (ventas parciales, stops, reentrada en máximo nuevo).
     - cron: "55 * * * *"
   workflow_dispatch:
     inputs:
@@ -31,7 +32,7 @@ concurrency:
 jobs:
   run:
     # Dos colas de máquinas distintas: si GitHub satura una ("job was not acquired by Runner"), la otra sigue.
-    # - cron-job.org (workflow_dispatch, cada hora a los :25) -> ubuntu-slim (1 vCPU, cola propia; límite 15 min, el bot tarda <1 min)
+    # - cron-job.org (workflow_dispatch, cada 15 min)          -> ubuntu-slim (1 vCPU, cola propia; límite 15 min, el bot tarda <1 min)
     # - cron interno de respaldo (:55)                         -> ubuntu-24.04 fijo (no le afecta la migración de ubuntu-latest del 19-oct-2026)
     runs-on: ${{ github.event_name == 'schedule' && 'ubuntu-24.04' || 'ubuntu-slim' }}
     timeout-minutes: 12
@@ -39,6 +40,10 @@ jobs:
       MODE: ${{ github.event.inputs.mode || 'auto' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # siempre el último estado de main (no el commit del momento en que se encoló la ejecución):
+          # evita que una ejecución en cola repita una venta parcial con un estado viejo
+          ref: main
 
       - uses: actions/setup-python@v5
         with:
