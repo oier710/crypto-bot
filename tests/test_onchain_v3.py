@@ -109,6 +109,14 @@ oc.indicators = types.SimpleNamespace(atr=lambda df, n: pd.Series([[ATR[c] for c
 
 tmp = Path(tempfile.mkdtemp())
 oc.STATE_FILE, oc.TRADES_FILE, oc.EQUITY_FILE = tmp / "state.json", tmp / "trades.csv", tmp / "equity.csv"
+oc.PNL_FILE = tmp / "pnl.csv"
+
+
+def pnl_rows():
+    if not oc.PNL_FILE.exists():
+        return []
+    import csv
+    return list(csv.DictReader(oc.PNL_FILE.open()))
 oc.TRADES_FILE.write_text("time,coin,side,usd,price,reason\n"
                           "2026-09-26T21:47:46+00:00,BTC,BUY,43.39,84136.07,señal +1\n"
                           "2026-10-08T15:26:05+00:00,ETH,SELL,39.72,2461.76,stop\n"
@@ -163,6 +171,11 @@ check(abs(eth_qty() - q0 * 2 / 3) / q0 < 0.01, f"queda 2/3 de ETH ({eth_qty():.6
 be = 2477.55 * 1.002
 check(abs(st["stops"]["ETH"] - be) < 0.01, f"stop ETH sube a entrada {be:.2f} (es {st['stops']['ETH']:.2f})")
 check(st["pos"]["ETH"]["pt_done"] == 1, "pt_done = 1")
+r = pnl_rows()
+exp = q0 / 3 * (lvl1 + 1 - 2477.55)
+check(len(r) == 1 and r[0]["evento"] == "parcial 1" and abs(float(r[0]["bruto_usd"]) - exp) < 0.02,
+      f"P&L apuntado: parcial 1 bruto {r[0]['bruto_usd'] if r else '-'} (esperado {exp:.2f})")
+check(float(r[0]["neto_usd"]) < float(r[0]["bruto_usd"]), "neto descuenta costes")
 
 print("\n== 4. Ciclo diario con señal +1: NO recompra lo vendido (no redimensiona)")
 st = run(daily=True)
@@ -204,6 +217,12 @@ st = run(daily=True)
 check(eth_qty() * P["ETH"] > 30, f"día siguiente: reentra ({eth_qty() * P['ETH']:.2f}$)")
 check(st["pos"]["ETH"]["entry"] == P["ETH"] and st["pos"]["ETH"]["pt_done"] == 0, "nueva operación con datos v3")
 
+r = pnl_rows()
+check(r[-1]["evento"] == "stop" and abs(float(r[-1]["total_usd"]) - sum(float(x["neto_usd"]) for x in r)) < 0.02,
+      f"stop apuntado y total acumulado cuadra ({r[-1]['total_usd']})")
+check(abs(float(r[-1]["operacion_usd"]) - sum(float(x["neto_usd"]) for x in r)) < 0.02,
+      "resultado de la operación completa = parciales + recompra + stop")
+
 print("\n== 9. Cambio de señal a -1 en ETH: cierra el largo y abre corto")
 SIG["ETH"] = -1
 st = run(daily=True)
@@ -217,6 +236,9 @@ print("\n== 10. Corto: parcial al bajar 1.5 ATR, stop a entrada, y cierre en el 
 st = run(eth=ps["ref"] - 1.5 * ps["atr"] - 1)
 check(abs(FakeChain.state["debt_WETH"] - d0 * 2 / 3) / d0 < 0.02, f"deuda baja a 2/3 ({FakeChain.state['debt_WETH']:.5f})")
 check(abs(st["stops"]["ETH"] - ps["entry"] * 0.998) < 0.01, "stop del corto baja a entrada")
+r = pnl_rows()
+check(r[-1]["lado"] == "corto" and r[-1]["evento"] == "parcial 1" and float(r[-1]["bruto_usd"]) > 0,
+      f"parcial del corto apuntada con ganancia bruta {r[-1]['bruto_usd']}")
 st = run(eth=ps["entry"] * 0.998 + 1)
 check(FakeChain.state["debt_WETH"] < 1e-9, "corto cerrado en el stop a entrada")
 check("ETH" not in st.get("pos", {}), "posición borrada")

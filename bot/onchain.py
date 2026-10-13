@@ -49,6 +49,7 @@ LOG_DIR.mkdir(exist_ok=True)
 STATE_FILE = LOG_DIR / "onchain_state.json"
 TRADES_FILE = LOG_DIR / "onchain_trades.csv"
 EQUITY_FILE = LOG_DIR / "equity.csv"
+PNL_FILE = LOG_DIR / "pnl.csv"            # resultado de cada cierre (total o parcial)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s",
                     handlers=[logging.FileHandler(LOG_DIR / "onchain.log"), logging.StreamHandler()])
@@ -298,6 +299,61 @@ def record(coin, side, usd, price, reason, dry_run=False):
         f.write(f"{datetime.now(timezone.utc).isoformat()},{coin},{side},{usd:.2f},{price:.2f},{reason}\n")
 
 
+# ------------------------------------------------------- contabilidad (P&L)
+PNL_HEADER = "time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,costes_usd,neto_usd,neto_pct,operacion_usd,total_usd\n"
+
+
+def trade_cost(usd: float, side: int) -> float:
+    """Coste estimado de un swap: comisión Uniswap + deslizamiento (0.10 %) + gas; cortos +0.10 % de Aave."""
+    return abs(usd) * (0.001 + (0.001 if side == -1 else 0.0)) + 0.03
+
+
+def pnl_total() -> float:
+    """Resultado realizado acumulado (última fila de logs/pnl.csv)."""
+    if not PNL_FILE.exists():
+        return 0.0
+    rows = PNL_FILE.read_text().strip().splitlines()
+    return float(rows[-1].split(",")[-1]) if len(rows) > 1 else 0.0
+
+
+def realize(st: dict, coin: str, side: int, qty: float, exit_px: float, event: str, dry_run: bool,
+            closes_op: bool):
+    """Apunta el resultado de cerrar `qty` (parcial o total). Neto = bruto − coste de salida − parte proporcional
+    de los costes de entrada/recompras de esa operación. Nunca lanza: la contabilidad no puede bloquear el bot."""
+    if dry_run or qty <= 0:
+        return
+    try:
+        _realize(st, coin, side, qty, exit_px, event, closes_op)
+    except Exception:  # noqa: BLE001
+        log.exception("no se pudo apuntar el resultado de %s", coin)
+
+
+def _realize(st: dict, coin: str, side: int, qty: float, exit_px: float, event: str, closes_op: bool):
+    pos = st.get("pos", {}).get(coin) or {}
+    entry = pos.get("entry") or last_entry_price(coin, side) or exit_px
+    held = max(pos.get("qty_now", qty), qty)
+    pending = pos.get("cost_pending", trade_cost(qty * entry, side))
+    entry_cost = pending * min(qty / held, 1.0) if held > 0 else pending
+    gross = side * qty * (exit_px - entry)
+    costs = trade_cost(qty * exit_px, side) + entry_cost
+    net = gross - costs
+    op = pos.get("op_pnl", 0.0) + net
+    total = pnl_total() + net
+    if pos:
+        pos["cost_pending"] = max(pending - entry_cost, 0.0)
+        pos["op_pnl"] = op
+    new = not PNL_FILE.exists()
+    with PNL_FILE.open("a") as f:
+        if new:
+            f.write(PNL_HEADER)
+        f.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')},{coin},{'largo' if side == 1 else 'corto'},"
+                f"{event},{qty:.8f},{entry:.2f},{exit_px:.2f},{gross:.2f},{costs:.2f},{net:.2f},"
+                f"{net / (qty * entry) * 100 if entry else 0:.2f},{op:.2f},{total:.2f}\n")
+    log.warning("RESULTADO %s %s (%s): bruto %+.2f$ costes %.2f$ -> neto %+.2f$%s | realizado acumulado %+.2f$",
+                coin, "largo" if side == 1 else "corto", event, gross, costs, net,
+                f" | operación completa {op:+.2f}$" if closes_op else "", total)
+
+
 # ------------------------------------------------------------------- cartera
 def portfolio(ch: Chain, prices: dict) -> tuple[float, dict]:
     """Equity = USDC (wallet + Aave) + largos − deuda de cortos. val[c] = exposición neta en USD (+largo/−corto)."""
@@ -504,6 +560,17 @@ def adopt_position(st: dict, c: str, v: float, px: float) -> dict | None:
     return pos
 
 
+def realize_close(st: dict, c: str, v: float, px: float, event: str, dry_run: bool):
+    """Cierre total de la posición c (v = exposición neta en USD antes de cerrar)."""
+    if abs(v) < MIN_TRADE_USD:
+        return
+    side = 1 if v > 0 else -1
+    q = abs(v) / px
+    st.setdefault("pos", {}).setdefault(c, {}).setdefault("qty_now", q)
+    st["pos"][c]["qty_now"] = q
+    realize(st, c, side, q, px, event, dry_run, closes_op=True)
+
+
 def reduce_position(ch: Chain, c: str, side: int, qty: float, prices: dict, pf: dict, reason: str):
     if side == 1:
         sell_long(ch, c, qty * prices[c], prices, reason)
@@ -535,6 +602,9 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
                 continue
             pos_all[c] = pos
         qty_now = abs(v) / px
+        pos["qty_now"] = qty_now
+        pos.setdefault("cost_pending", trade_cost(qty_now * pos["entry"], side))
+        pos.setdefault("op_pnl", 0.0)
         new_extreme = side * (px - pos["extreme"]) > 0
         partial_out = qty_now < pos["full_qty"] * PARTIAL_OUT
         if partial_out and not new_extreme:
@@ -554,6 +624,8 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
                 log.warning("PARCIAL %d %s %s: %.2f (+%.1f ATR desde %.2f) -> cierro 1/3 (%.2f$)",
                             n, "largo" if side == 1 else "corto", c, px, fav, pos["ref"], q * px)
                 reduce_position(ch, c, side, q, prices, pf, f"parcial {n}")
+                realize(st, c, side, q, px, f"parcial {n}", ch.dry_run, closes_op=False)
+                pos["qty_now"] = qty_now - q
                 traded = True
             pos["pt_done"], pos["pb"] = n, 0.0
             be = pos["entry"] * (1 + side * BE_COST)
@@ -572,6 +644,7 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
             elif side == -1 and v <= -MIN_TRADE_USD:
                 if not close_short(ch, c, prices, pf, "stop"):
                     continue          # deuda pendiente: se mantienen stop y posición y se reintenta
+            realize_close(st, c, v, px, "stop", ch.dry_run)
             st["stops"].pop(c, None)
             pos_all.pop(c, None)
             st.setdefault("stopped_today", {})[c] = today
@@ -590,7 +663,8 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
                 log.warning("REENTRADA %s no ejecutada (sin USDC/garantía suficiente); estado sin cambios", c)
                 continue
             pos["entry"] = (pos["entry"] * qty_now + px * added) / (qty_now + added)
-            pos.update(ref=px, atr=a, pt_done=0, pb=0.0)
+            pos.update(ref=px, atr=a, pt_done=0, pb=0.0, qty_now=qty_now + added)
+            pos["cost_pending"] = pos.get("cost_pending", 0.0) + trade_cost(added * px, side)
             if sp is not None:
                 ns = px - side * RH_RESTOP_ATR * a
                 st["stops"][c] = max(sp, ns) if side == 1 else min(sp, ns)
@@ -646,8 +720,10 @@ def run_cycle(dry_run: bool, signals: bool = True):
         for c in SYMBOLS:
             if pf["val"][c] <= -MIN_TRADE_USD:
                 close_short(ch, c, prices, pf, "límite de riesgo")
+                realize_close(st, c, pf["val"][c], prices[c], "límite de riesgo", ch.dry_run)
             elif pf["val"][c] >= MIN_TRADE_USD:
                 sell_long(ch, c, pf["val"][c], prices, "límite de riesgo")
+                realize_close(st, c, pf["val"][c], prices[c], "límite de riesgo", ch.dry_run)
         tidy_aave(ch)
         st["stops"], st["pos"] = {}, {}
         st.update(halted=True, halt_reason=reason)
@@ -660,6 +736,7 @@ def run_cycle(dry_run: bool, signals: bool = True):
         for c in SYMBOLS:
             if pf["val"][c] <= -MIN_TRADE_USD:
                 if close_short(ch, c, prices, pf, "factor de salud bajo"):
+                    realize_close(st, c, pf["val"][c], prices[c], "factor de salud bajo", ch.dry_run)
                     st["stops"].pop(c, None)
                     st.get("pos", {}).pop(c, None)
         tidy_aave(ch)
@@ -681,6 +758,10 @@ def run_cycle(dry_run: bool, signals: bool = True):
                     continue
             else:
                 continue
+            try:
+                realize_close(st, c, v, prices[c], "stop", ch.dry_run)
+            except Exception:  # noqa: BLE001 - la contabilidad nunca debe impedir el stop
+                log.exception("no se pudo apuntar el resultado de %s", c)
             st["stops"].pop(c, None)
             st.get("pos", {}).pop(c, None)
             st.setdefault("stopped_today", {})[c] = today
@@ -720,10 +801,15 @@ def run_cycle(dry_run: bool, signals: bool = True):
         if have >= MIN_TRADE_USD and (target <= 0 or (target - have) < -MIN_TRADE_USD and abs(target - have) / have > 0.25):
             sell_long(ch, c, have if target <= 0 else have - target, prices, f"señal {p['sig']:+d}")
             if target <= 0:
+                realize_close(st, c, have, prices[c], f"señal {p['sig']:+d}", ch.dry_run)
+            else:
+                realize(st, c, 1, (have - target) / prices[c], prices[c], f"ajuste señal {p['sig']:+d}", ch.dry_run, False)
+            if target <= 0:
                 st["stops"].pop(c, None)
                 st.get("pos", {}).pop(c, None)
         elif have <= -MIN_TRADE_USD and target >= 0:
             if close_short(ch, c, prices, pf, f"señal {p['sig']:+d}"):
+                realize_close(st, c, have, prices[c], f"señal {p['sig']:+d}", ch.dry_run)
                 st["stops"].pop(c, None)
                 st.get("pos", {}).pop(c, None)
             else:
@@ -748,6 +834,7 @@ def run_cycle(dry_run: bool, signals: bool = True):
             st["stops"].setdefault(c, prices[c] - side * STOP_ATR * p["atr"])
             if c not in pos_all or pos_all[c]["side"] != side:
                 pos_all[c] = new_pos(side, prices[c], p["atr"], abs(v) / prices[c], p["sig"])
+                pos_all[c].update(qty_now=abs(v) / prices[c], cost_pending=trade_cost(abs(v), side), op_pnl=0.0)
                 log.info("%s nueva operación %s: entrada %.2f stop %.2f parciales a %.2f y %.2f", c,
                          "larga" if side == 1 else "corta", prices[c], st["stops"][c],
                          prices[c] + side * PT_LEVELS[0] * p["atr"], prices[c] + side * PT_LEVELS[1] * p["atr"])
@@ -756,6 +843,7 @@ def run_cycle(dry_run: bool, signals: bool = True):
             pos_all.pop(c, None)
     st["last_signal_day"] = today
     save_state(st)
+    log.info("Resultado realizado acumulado: %+.2f$ | equity %.2f$ (%+.2f$ desde 115.75$)", pnl_total(), equity, equity - 115.75)
     log.info("Ciclo diario completado. Stops: %s | posiciones: %s", st["stops"], {c: dict(entrada=round(p["entry"], 2), parciales=p["pt_done"], ref=round(p["ref"], 2)) for c, p in st.get("pos", {}).items()})
 
 
