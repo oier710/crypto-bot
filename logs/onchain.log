@@ -4401,3 +4401,6 @@
 2026-10-17 22:21:07,187 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
 2026-10-17 22:21:07,894 INFO USDC 27.07 (wallet 27.07 + Aave 0.00) | ETH neto 40.00$ | BTC neto 41.82$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 108.89 USD
 2026-10-17 22:21:08,432 INFO Chequeo de stops completado.
+2026-10-17 22:36:02,279 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
+2026-10-17 22:36:03,591 INFO USDC 27.07 (wallet 27.07 + Aave 0.00) | ETH neto 40.02$ | BTC neto 41.84$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 108.93 USD
+2026-10-17 22:36:04,510 INFO Chequeo de stops completado.
