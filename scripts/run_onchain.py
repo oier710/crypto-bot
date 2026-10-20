@@ -66,4 +66,9 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:  # noqa: BLE001
+        # Que el motivo quede en logs/onchain.log (antes solo salía en la consola de GitHub, que caduca).
+        onchain.log.exception("EJECUCIÓN FALLIDA: %s: %s", type(e).__name__, e)
+        raise
