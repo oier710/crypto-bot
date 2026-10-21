@@ -5518,3 +5518,17 @@
 2026-10-20 23:51:38,993 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
 2026-10-20 23:51:41,273 INFO USDC 27.07 (wallet 27.07 + Aave 0.00) | ETH neto 41.01$ | BTC neto 42.74$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 110.81 USD
 2026-10-20 23:51:43,028 INFO Chequeo de stops completado.
+2026-10-21 00:06:59,625 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
+2026-10-21 00:07:00,572 INFO USDC 27.07 (wallet 27.07 + Aave 0.00) | ETH neto 40.97$ | BTC neto 42.71$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 110.74 USD
+2026-10-21 00:07:01,294 INFO USDC 27.07 (wallet 27.07 + Aave 0.00) | ETH neto 40.97$ | BTC neto 42.71$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 110.74 USD
+2026-10-21 00:07:08,054 INFO BTC cierre=82938.26 señal=+0 ATR=2104.10 tengo=+42.71$ objetivo=+0.00$
+2026-10-21 00:07:14,896 INFO ETH cierre=2446.62 señal=+1 ATR=95.39 tengo=+40.97$ objetivo=+40.97$
+2026-10-21 00:07:15,619 INFO SWAP 0x2f2a25 -> 0xaf88d0 | in=51524 out~42573560
+2026-10-21 00:07:15,719 INFO approve 0x2f2a25 -> 0x68b346
+2026-10-21 00:07:16,677 INFO tx ok 9b06643ae7f0c2a5dda929c79093b0680eb946a58204f68a615691664266e65c gas=56757
+2026-10-21 00:07:17,697 INFO tx ok 8aa5b37e199eb5db24e0707b0d089c85dc7c42b0ae25310b752baa2e7364594e gas=211519
+2026-10-21 00:07:17,698 WARNING RESULTADO BTC largo (señal +0): bruto -0.64$ costes 0.15$ -> neto -0.79$ | operación completa -0.79$ | realizado acumulado -4.46$
+2026-10-21 00:07:18,426 INFO USDC 69.64 (wallet 69.64 + Aave 0.00) | ETH neto 40.97$ | BTC neto 0.00$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 110.61 USD
+2026-10-21 00:07:19,734 INFO USDC 69.64 (wallet 69.64 + Aave 0.00) | ETH neto 40.97$ | BTC neto 0.00$ | deuda ETH 0.00000 BTC 0.000000 | HF ∞ -> equity 110.61 USD
+2026-10-21 00:07:19,736 INFO Resultado realizado acumulado: -4.46$ | equity 110.61$ (-5.14$ desde 115.75$)
+2026-10-21 00:07:19,737 INFO Ciclo diario completado. Stops: {'ETH': 2290.9282014921605} | posiciones: {'ETH': {'entrada': 2477.55, 'parciales': 0, 'ref': 2477.55}}
