@@ -20,19 +20,22 @@ FECHA_INICIO = "2026-09-26"
 
 def main():
     EQ_COLS = ["time", "equity_usd", "usdc", "eth_usd", "btc_usd", "eth_qty", "btc_qty", "eth_price", "btc_price", "gas_eth",
-               "ausdc", "debt_eth_usd", "debt_btc_usd", "hf"]
+               "ausdc", "debt_eth_usd", "debt_btc_usd", "hf",
+               "arb_usd", "arb_qty", "arb_price", "debt_arb_usd", "accum_usd", "equity_total"]   # v4: 20 columnas
     eq = (pd.read_csv(LOGS / "equity.csv", header=None, skiprows=1, names=EQ_COLS, parse_dates=["time"])
           if (LOGS / "equity.csv").exists() else pd.DataFrame())
+    if len(eq):
+        eq["equity_total"] = eq["equity_total"].fillna(eq["equity_usd"])   # filas antiguas: sin acumulación
     tr = pd.read_csv(LOGS / "onchain_trades.csv", parse_dates=["time"]) if (LOGS / "onchain_trades.csv").exists() else pd.DataFrame()
     tr = tr[~tr.reason.astype(str).str.contains("dry-run")] if len(tr) else tr
 
     lines = [f"# Informe crypto-bot — {pd.Timestamp.now(tz='UTC'):%Y-%m-%d %H:%M} UTC", ""]
     if len(eq):
         last = eq.iloc[-1]
-        equity = float(last.equity_usd)
+        equity = float(last.equity_total)   # total = trading + acumulado
         pnl = equity - CAPITAL_INICIAL
-        peak = eq.equity_usd.cummax()
-        dd = float(((eq.equity_usd - peak) / peak).min())
+        peak = eq.equity_total.cummax()
+        dd = float(((eq.equity_total - peak) / peak).min())
         days = max((eq.time.iloc[-1] - pd.Timestamp(FECHA_INICIO, tz="UTC")).days, 1)
         lines += [
             "## Resumen",
@@ -45,7 +48,7 @@ def main():
             "",
         ]
         # semana a semana
-        w = eq.set_index("time").equity_usd.resample("W-SAT").last().dropna()
+        w = eq.set_index("time").equity_total.resample("W-SAT").last().dropna()
         if len(w) > 1:
             lines += ["## Por semana", "| Semana (cierre sábado) | Valor | Variación |", "|---|---|---|"]
             prev = CAPITAL_INICIAL
@@ -75,7 +78,7 @@ def main():
         matplotlib.use("Agg")
         import matplotlib.pyplot as plt
         fig, ax = plt.subplots(figsize=(10, 4))
-        ax.plot(eq.time, eq.equity_usd, lw=1.2)
+        ax.plot(eq.time, eq.equity_total, lw=1.2)
         ax.axhline(CAPITAL_INICIAL, color="grey", ls="--", lw=0.8, label="capital inicial")
         ax.set_ylabel("USD")
         ax.grid(alpha=0.3)

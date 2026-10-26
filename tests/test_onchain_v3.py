@@ -24,11 +24,12 @@ for h in list(logging.getLogger().handlers):  # no escribir en logs/onchain.log 
     if isinstance(h, logging.FileHandler):
         logging.getLogger().removeHandler(h)
 
-P = {"ETH": 2495.0, "BTC": 82774.0}
-SIG = {"ETH": 1, "BTC": 1}
-ATR = {"ETH": 90.0, "BTC": 2264.0}
+P = {"ETH": 2495.0, "BTC": 82774.0, "ARB": 0.30}
+SIG = {"ETH": 1, "BTC": 1, "ARB": 0}
+ATR = {"ETH": 90.0, "BTC": 2264.0, "ARB": 0.02}
 COST = 0.001
-PRICE = {oc.USDC: lambda: 1.0, oc.WETH: lambda: P["ETH"], oc.WBTC: lambda: P["BTC"]}
+PRICE = {oc.USDC: lambda: 1.0, oc.WETH: lambda: P["ETH"], oc.WBTC: lambda: P["BTC"], oc.ARB: lambda: P["ARB"]}
+DEBTKEY = {oc.WETH: "debt_ETH", oc.WBTC: "debt_BTC", oc.ARB: "debt_ARB"}
 
 
 class FakeChain:
@@ -42,7 +43,7 @@ class FakeChain:
         return dict(self.b)
 
     def health_factor(self):
-        debt = self.b["debt_WETH"] * P["ETH"] + self.b["debt_WBTC"] * P["BTC"]
+        debt = self.b["debt_ETH"] * P["ETH"] + self.b["debt_BTC"] * P["BTC"] + self.b["debt_ARB"] * P["ARB"]
         return 1e9 if debt <= 0 else self.b["aUSDC"] * oc.LIQ_THRESHOLD / debt
 
     def _move(self, tin, tout, amt_in_tokens):
@@ -72,26 +73,26 @@ class FakeChain:
 
     def aave_withdraw_usdc(self, usd):
         usd = self.b["aUSDC"] if usd is None else min(usd, self.b["aUSDC"])
-        debt = self.b["debt_WETH"] * P["ETH"] + self.b["debt_WBTC"] * P["BTC"]
+        debt = self.b["debt_ETH"] * P["ETH"] + self.b["debt_BTC"] * P["BTC"] + self.b["debt_ARB"] * P["ARB"]
         if debt > 0 and (self.b["aUSDC"] - usd) * oc.LIQ_THRESHOLD / debt < 1.0:
             raise RuntimeError(f"Aave revierte: retiro {usd:.2f} dejaría HF < 1")
         self.b["aUSDC"] -= usd
         self.b[oc.USDC] += usd
 
     def aave_borrow(self, token, amount):
-        k = "debt_WETH" if token == oc.WETH else "debt_WBTC"
+        k = DEBTKEY[token]
         q = amount / 10 ** oc.DECIMALS[token]
         self.b[k] += q
         self.b[token] += q
 
     def aave_repay(self, token, amount):
-        k = "debt_WETH" if token == oc.WETH else "debt_WBTC"
+        k = DEBTKEY[token]
         q = min(amount / 10 ** oc.DECIMALS[token], self.b[k], self.b[token])
         self.b[k] -= q
         self.b[token] -= q
 
     def aave_repay_all(self, token):
-        k = "debt_WETH" if token == oc.WETH else "debt_WBTC"
+        k = DEBTKEY[token]
         q = min(self.b[k], self.b[token])
         self.b[k] -= q
         self.b[token] -= q
@@ -109,6 +110,7 @@ oc.indicators = types.SimpleNamespace(atr=lambda df, n: pd.Series([[ATR[c] for c
 
 tmp = Path(tempfile.mkdtemp())
 oc.STATE_FILE, oc.TRADES_FILE, oc.EQUITY_FILE = tmp / "state.json", tmp / "trades.csv", tmp / "equity.csv"
+oc.ACCUM_FILE = tmp / "accum.csv"
 oc.PNL_FILE = tmp / "pnl.csv"
 
 
@@ -125,8 +127,8 @@ today = pd.Timestamp.now(tz="UTC").date().isoformat()
 oc.save_state({"peak_equity": 117.9, "day": today, "day_start_equity": 111.2, "halted": False, "halt_reason": "",
                "stops": {"BTC": 79109.64303059799, "ETH": 2290.9282014921605}, "last_signal_day": today,
                "gaps": 4, "stopped_today": {}})
-FakeChain.state = {"ETH_native": 0.0015, oc.USDC: 27.07, oc.WETH: 0.016754, oc.WBTC: 0.000515,
-                   "aUSDC": 0.0, "debt_WETH": 0.0, "debt_WBTC": 0.0}
+FakeChain.state = {"ETH_native": 0.0015, oc.USDC: 27.07, oc.WETH: 0.016754, oc.WBTC: 0.000515, oc.ARB: 0.0,
+                   "aUSDC": 0.0, "debt_ETH": 0.0, "debt_BTC": 0.0, "debt_ARB": 0.0}
 
 fails = []
 
@@ -226,21 +228,21 @@ check(abs(float(r[-1]["operacion_usd"]) - sum(float(x["neto_usd"]) for x in r)) 
 print("\n== 9. Cambio de señal a -1 en ETH: cierra el largo y abre corto")
 SIG["ETH"] = -1
 st = run(daily=True)
-check(FakeChain.state["debt_WETH"] > 0, f"corto abierto (deuda {FakeChain.state['debt_WETH']:.5f} ETH)")
+check(FakeChain.state["debt_ETH"] > 0, f"corto abierto (deuda {FakeChain.state['debt_ETH']:.5f} ETH)")
 ps = st["pos"]["ETH"]
 check(ps["side"] == -1, "posición v3 corta")
 check(st["stops"]["ETH"] > P["ETH"], "stop del corto por encima")
-d0 = FakeChain.state["debt_WETH"]
+d0 = FakeChain.state["debt_ETH"]
 
 print("\n== 10. Corto: parcial al bajar 1.5 ATR, stop a entrada, y cierre en el stop")
 st = run(eth=ps["ref"] - 1.5 * ps["atr"] - 1)
-check(abs(FakeChain.state["debt_WETH"] - d0 * 2 / 3) / d0 < 0.02, f"deuda baja a 2/3 ({FakeChain.state['debt_WETH']:.5f})")
+check(abs(FakeChain.state["debt_ETH"] - d0 * 2 / 3) / d0 < 0.02, f"deuda baja a 2/3 ({FakeChain.state['debt_ETH']:.5f})")
 check(abs(st["stops"]["ETH"] - ps["entry"] * 0.998) < 0.01, "stop del corto baja a entrada")
 r = pnl_rows()
 check(r[-1]["lado"] == "corto" and r[-1]["evento"] == "parcial 1" and float(r[-1]["bruto_usd"]) > 0,
       f"parcial del corto apuntada con ganancia bruta {r[-1]['bruto_usd']}")
 st = run(eth=ps["entry"] * 0.998 + 1)
-check(FakeChain.state["debt_WETH"] < 1e-9, "corto cerrado en el stop a entrada")
+check(FakeChain.state["debt_ETH"] < 1e-9, "corto cerrado en el stop a entrada")
 check("ETH" not in st.get("pos", {}), "posición borrada")
 
 print("\n== 11. BTC sigue intacto durante todo")
@@ -249,7 +251,7 @@ check(abs(FakeChain.state[oc.WBTC] - 0.000515) < 1e-9, "BTC sin tocar")
 print("\n== 11b. Corto de tamaño máximo (HF 1.5): el cierre por stop funciona (por tramos)")
 SIG["ETH"] = -1
 P["ETH"] = 2500.0
-FakeChain.state.update({oc.USDC: 27.0, oc.WETH: 0.0, "aUSDC": 0.0, "debt_WETH": 0.0})
+FakeChain.state.update({oc.USDC: 27.0, oc.WETH: 0.0, "aUSDC": 0.0, "debt_ETH": 0.0})
 eq0, _ = oc.portfolio(FakeChain(), P)
 s = oc.load_state()
 s.update(stopped_today={}, last_signal_day=None, peak_equity=eq0, day_start_equity=eq0, halted=False)
@@ -257,11 +259,11 @@ s["stops"].pop("ETH", None); s.get("pos", {}).pop("ETH", None)
 oc.save_state(s)
 st = run(daily=True)
 hf0 = FakeChain().health_factor()
-d0 = FakeChain.state["debt_WETH"]
+d0 = FakeChain.state["debt_ETH"]
 print(f"  corto abierto {d0 * P['ETH']:.2f}$ con HF {hf0:.2f}")
 check(d0 > 0 and hf0 < 1.6, "corto al máximo que permite la garantía")
 st = run(eth=st["stops"]["ETH"] + 1)
-check(FakeChain.state["debt_WETH"] < 1e-9, f"deuda saldada (queda {FakeChain.state['debt_WETH']:.8f})")
+check(FakeChain.state["debt_ETH"] < 1e-9, f"deuda saldada (queda {FakeChain.state['debt_ETH']:.8f})")
 check(FakeChain.state["aUSDC"] < 0.01 and FakeChain.state[oc.USDC] > 10, f"USDC recuperado {FakeChain.state[oc.USDC]:.2f}")
 SIG["ETH"] = 1
 
@@ -276,8 +278,8 @@ check("BTC" not in st["stops"], "stop BTC borrado")
 oc.manage_positions = real
 
 def fresh(state_chain, pos=None, stops=None):
-    FakeChain.state = {"ETH_native": 0.0015, oc.USDC: 0.0, oc.WETH: 0.0, oc.WBTC: 0.0,
-                       "aUSDC": 0.0, "debt_WETH": 0.0, "debt_WBTC": 0.0} | state_chain
+    FakeChain.state = {"ETH_native": 0.0015, oc.USDC: 0.0, oc.WETH: 0.0, oc.WBTC: 0.0, oc.ARB: 0.0,
+                       "aUSDC": 0.0, "debt_ETH": 0.0, "debt_BTC": 0.0, "debt_ARB": 0.0} | state_chain
     e, _ = oc.portfolio(FakeChain(), P)
     oc.save_state({"peak_equity": e, "day": today, "day_start_equity": e, "halted": False, "halt_reason": "",
                    "stops": stops or {}, "pos": pos or {}, "last_signal_day": today, "stopped_today": {}})
@@ -313,10 +315,94 @@ SIG["ETH"] = 1
 print("\n== 16. Si el corto no se puede cerrar (HF al límite), mantiene stop y posición para reintentar")
 P["ETH"] = 2500.0
 pos = oc.new_pos(-1, 2400.0, 50.0, 0.04, -1)
-fresh({"aUSDC": 0.04 * 2500 / oc.LIQ_THRESHOLD * 1.005, "debt_WETH": 0.04}, {"ETH": pos}, {"ETH": 2499.0})
+fresh({"aUSDC": 0.04 * 2500 / oc.LIQ_THRESHOLD * 1.005, "debt_ETH": 0.04}, {"ETH": pos}, {"ETH": 2499.0})
 st = run(eth=2500.0)
-check(FakeChain.state["debt_WETH"] > 0.039, "deuda sigue (Aave no deja retirar)")
+check(FakeChain.state["debt_ETH"] > 0.039, "deuda sigue (Aave no deja retirar)")
 check("ETH" in st["stops"] and "ETH" in st["pos"], "stop y posición se mantienen")
+
+print("\n== 17. ARB (código preparado, no activo): con SYMBOLS=BTC,ETH,ARB abre largo 1/3 y luego corto")
+oc.SYMBOLS = ("BTC", "ETH", "ARB")
+P.update(ETH=2500.0, BTC=80000.0, ARB=0.30); SIG.update(ETH=0, BTC=0, ARB=1)
+fresh({oc.USDC: 90.0})
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+arb_usd = FakeChain.state[oc.ARB] * P["ARB"]
+check(abs(arb_usd - 90 * 0.75 / 3) / 22.5 < 0.03, f"ARB largo ≈ 22.5$ (es {arb_usd:.2f}$)")
+check("ARB" in st["stops"] and "ARB" in st["pos"], "stop y posición v3 de ARB")
+SIG["ARB"] = -1
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+check(FakeChain.state[oc.ARB] * P["ARB"] < 1 and FakeChain.state["debt_ARB"] > 0, f"ARB corto abierto (deuda {FakeChain.state['debt_ARB']:.2f} ARB)")
+SIG["ARB"] = 0
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+check(FakeChain.state["debt_ARB"] < 1e-9, "corto ARB cerrado por señal 0")
+oc.SYMBOLS = ("BTC", "ETH")
+
+print("\n== 18. Acumulación: 30 % de la ganancia realizada nueva compra BTC y ETH y se aparta")
+SIG.update(ETH=0, BTC=0, ARB=0)
+fresh({oc.USDC: 150.0})
+import csv as _csv
+oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,costes_usd,neto_usd,neto_pct,operacion_usd,total_usd\n"
+                       "2026-11-01T00:00:00+00:00,ETH,largo,señal +0,0.01,2000,2500,5.00,0.10,4.90,24.5,4.90,4.90\n")
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+acc = st["accum"]
+check(abs(acc["pending_usd"] - 4.90 * 0.30) < 0.01 and not acc["qty"], f"ganancia 4.90$ -> 1.47$ pendientes, aún sin comprar (<5$ por moneda)")
+check(abs(acc["hwm"] - 4.90) < 0.01, "máximo realizado = 4.90")
+oc.PNL_FILE.write_text(oc.PNL_FILE.read_text() + "2026-11-02T00:00:00+00:00,BTC,largo,señal +0,0.001,80000,120000,40.00,0.20,39.80,49.7,39.80,44.70\n")
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+usdc0 = FakeChain.state[oc.USDC]
+st = run(daily=True)
+acc = st["accum"]
+exp_pend = 44.70 * 0.30
+check(acc["qty"].get("BTC", 0) > 0 and acc["qty"].get("ETH", 0) > 0, f"compra BTC y ETH ({acc['qty']})")
+check(abs(acc["cost_usd"] - 2 * (exp_pend / 2)) < 0.05 and acc["pending_usd"] < 0.05, f"gastados {acc['cost_usd']:.2f}$ (esperado {exp_pend:.2f}$), pendiente {acc['pending_usd']:.2f}$")
+check(abs(usdc0 - FakeChain.state[oc.USDC] - acc["cost_usd"]) < 0.05, "el USDC bajó justo lo gastado")
+eq_tr, pf = oc.portfolio(FakeChain(), P)
+check(abs(pf["accum_usd"] - acc["cost_usd"] * (1 - COST)) < 0.1 and abs(pf["val"]["BTC"]) < 0.01 and abs(pf["val"]["ETH"]) < 0.01,
+      f"las monedas acumuladas no cuentan como posición (val BTC {pf['val']['BTC']:.2f}, ETH {pf['val']['ETH']:.2f}; acumulado {pf['accum_usd']:.2f}$)")
+check(abs(eq_tr + pf["accum_usd"] - 150 * (1 - 0) + acc["cost_usd"] * COST) < 0.2, f"equity trading {eq_tr:.2f} + acumulado = total")
+# pérdida posterior: no se vende lo acumulado y no se acumula más hasta superar el máximo
+oc.PNL_FILE.write_text(oc.PNL_FILE.read_text() + "2026-11-03T00:00:00+00:00,ETH,largo,stop,0.01,2500,2000,-5.00,0.10,-5.10,-20,-5.10,39.60\n")
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+q_before = dict(acc["qty"])
+st = run(daily=True)
+check(st["accum"]["qty"] == q_before and abs(st["accum"]["hwm"] - 44.70) < 0.01, "tras una pérdida: nada nuevo, máximo se mantiene en 44.70")
+# señal +1 en ETH con monedas acumuladas: la posición se abre aparte y un stop no toca lo acumulado
+SIG["ETH"] = 1
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+tr_eth = st["pos"]["ETH"]["qty_now"]
+check(abs(FakeChain.state[oc.WETH] - (tr_eth + st["accum"]["qty"]["ETH"])) < 1e-6, "WETH en wallet = posición de trading + acumulado")
+st = run(eth=st["stops"]["ETH"] - 1)
+check(abs(FakeChain.state[oc.WETH] - st["accum"]["qty"]["ETH"]) < 1e-6, "el stop vende solo la parte de trading; lo acumulado se queda")
+
+print("\n== 19. Con un corto abierto no se acumula (no se retira garantía de Aave)")
+SIG.update(ETH=-1, BTC=0, ARB=0); P.update(ETH=2500.0)
+fresh({oc.USDC: 60.0})
+oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,costes_usd,neto_usd,neto_pct,operacion_usd,total_usd\n"
+                       "2026-11-01T00:00:00+00:00,ETH,largo,señal +0,0.01,2000,2500,40.00,0.10,39.90,24.5,39.90,39.90\n")
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+check(FakeChain.state["debt_ETH"] > 0, "corto ETH abierto")
+check(not st["accum"]["qty"] and st["accum"]["pending_usd"] > 10, f"nada comprado; {st['accum']['pending_usd']:.2f}$ pendientes")
+SIG["ETH"] = 0
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+check(FakeChain.state["debt_ETH"] < 1e-9 and st["accum"]["qty"], f"corto cerrado y entonces sí compra ({st['accum']['qty']})")
+
+print("\n== 20. Acumular no altera los límites de riesgo (% desde máximo y % del día)")
+SIG.update(ETH=0, BTC=0)
+fresh({oc.USDC: 100.0})
+s = oc.load_state(); s.update(peak_equity=110.0, day_start_equity=104.0, last_signal_day=None); oc.save_state(s)
+oc.PNL_FILE.write_text(oc.PNL_FILE.read_text().splitlines()[0] + "\n2026-11-05T00:00:00+00:00,BTC,largo,señal +0,0.001,1,2,50.00,0.00,50.00,1,50.00,50.00\n")
+dd0, day0 = 100 / 110 - 1, 100 / 104 - 1
+st = run(daily=True)
+eq_tr, _ = oc.portfolio(FakeChain(), P)
+dd1, day1 = eq_tr / st["peak_equity"] - 1, eq_tr / st["day_start_equity"] - 1
+check(abs(dd1 - dd0) < 0.002 and abs(day1 - day0) < 0.002, f"caída {dd0:+.3%} -> {dd1:+.3%}; día {day0:+.3%} -> {day1:+.3%}")
+check(not st["halted"], "no se para")
 
 eq, _ = oc.portfolio(FakeChain(), P)
 print(f"\nEquity final simulada: {eq:.2f} $")

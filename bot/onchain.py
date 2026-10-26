@@ -61,21 +61,30 @@ CHAIN_ID = 42161
 USDC = "0xaf88d065e77c8cC2239327C5EDb3A432268e5831"   # USDC nativo (Circle)
 WETH = "0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"
 WBTC = "0x2f2a2543B76A4166549F7aaB2e75Bef0aefC5B0f"
+ARB = "0x912CE59144191C1204E64559FE8253a0e49E6548"
 SWAP_ROUTER02 = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
 QUOTER_V2 = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e"
 AAVE_ADDRESSES_PROVIDER = "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb"  # Aave V3 Arbitrum (estable)
-DECIMALS = {USDC: 6, WETH: 18, WBTC: 8}
-ASSETS = {"ETH": WETH, "BTC": WBTC}
+DECIMALS = {USDC: 6, WETH: 18, WBTC: 8, ARB: 18}
+ASSETS = {"ETH": WETH, "BTC": WBTC, "ARB": ARB}
+TOKENS = (USDC, WETH, WBTC, ARB)
 MAX_UINT = 2 ** 256 - 1
 PATHS = {  # rutas Uniswap (fee 0.05 %)
     "ETH": {"buy": [(USDC, 500, WETH)], "sell": [(WETH, 500, USDC)]},
     "BTC": {"buy": [(USDC, 500, WETH), (WETH, 500, WBTC)], "sell": [(WBTC, 500, WETH), (WETH, 500, USDC)]},
+    "ARB": {"buy": [(USDC, 500, WETH), (WETH, 500, ARB)], "sell": [(ARB, 500, WETH), (WETH, 500, USDC)]},
 }
 
 # ------------------------------------------------------------------ parámetros
 STRATEGY_PARAMS = dict(fast=20, slow=60, adx_n=14, adx_min=20, allow_short=True)
-SYMBOLS = ("BTC", "ETH")
+SYMBOLS = ("BTC", "ETH")   # ARB descartada el 2026-10-26: Aave no la presta (sin cortos) y solo en largo no mejora
 POSITION_FRACTION = 0.75
+# v4: acumulación. La base de trading se queda con el 70 % de cada ganancia realizada nueva (por encima del
+# máximo anterior); el 30 % compra ACCUM_COINS a partes iguales y se aparta (nunca se vende, no cuenta para
+# stops ni límites). Las compras se agrupan hasta alcanzar MIN_TRADE_USD por moneda. Oier, 2026-10-25.
+ACCUM_SHARE = 0.30
+ACCUM_COINS = ("BTC", "ETH")
+CAPITAL_REF = 115.75
 STOP_ATR = 2.0
 ATR_N = 14
 MIN_TRADE_USD = 5.0
@@ -166,7 +175,7 @@ class Chain:
         self.pool = self.w3.eth.contract(address=self.pool_addr, abi=POOL_ABI)
         dp = self.w3.eth.contract(address=prov.functions.getPoolDataProvider().call(), abi=DATA_PROVIDER_ABI)
         self.atoken, self.debt_token = {}, {}
-        for t in (USDC, WETH, WBTC):
+        for t in TOKENS:
             a, _, v = dp.functions.getReserveTokensAddresses(t).call()
             self.atoken[t], self.debt_token[t] = a, v
         log.info("Arbitrum One | cuenta %s | Aave pool %s | dry_run=%s", self.address, self.pool_addr[:10], dry_run)
@@ -179,11 +188,11 @@ class Chain:
 
     def balances(self) -> dict:
         b = {"ETH_native": self.w3.eth.get_balance(self.address) / 1e18}
-        for t in (USDC, WETH, WBTC):
+        for t in TOKENS:
             b[t] = self.bal(t)
         b["aUSDC"] = self.erc20(self.atoken[USDC]).functions.balanceOf(self.address).call() / 1e6
-        b["debt_WETH"] = self.erc20(self.debt_token[WETH]).functions.balanceOf(self.address).call() / 1e18
-        b["debt_WBTC"] = self.erc20(self.debt_token[WBTC]).functions.balanceOf(self.address).call() / 1e8
+        for c, t in ASSETS.items():
+            b[f"debt_{c}"] = self.erc20(self.debt_token[t]).functions.balanceOf(self.address).call() / 10 ** DECIMALS[t]
         return b
 
     def health_factor(self) -> float:
@@ -283,10 +292,12 @@ def record_equity(equity: float, pf: dict, prices: dict):
     b, v = pf["raw"], pf["val"]
     with EQUITY_FILE.open("a") as f:
         if new:
-            f.write("time,equity_usd,usdc,eth_usd,btc_usd,eth_qty,btc_qty,eth_price,btc_price,gas_eth,ausdc,debt_eth_usd,debt_btc_usd,hf\n")
+            f.write("time,equity_usd,usdc,eth_usd,btc_usd,eth_qty,btc_qty,eth_price,btc_price,gas_eth,ausdc,debt_eth_usd,debt_btc_usd,hf,arb_usd,arb_qty,arb_price,debt_arb_usd,accum_usd,equity_total\n")
         f.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')},{equity:.2f},{b[USDC]:.2f},{v['ETH']:.2f},{v['BTC']:.2f},"
                 f"{b[WETH] + max(b['ETH_native'] - GAS_RESERVE_ETH, 0):.6f},{b[WBTC]:.6f},{prices['ETH']:.2f},{prices['BTC']:.2f},"
-                f"{min(b['ETH_native'], GAS_RESERVE_ETH):.5f},{b['aUSDC']:.2f},{b['debt_WETH'] * prices['ETH']:.2f},{b['debt_WBTC'] * prices['BTC']:.2f},{pf['hf']:.2f}\n")
+                f"{min(b['ETH_native'], GAS_RESERVE_ETH):.5f},{b['aUSDC']:.2f},{b['debt_ETH'] * prices['ETH']:.2f},{b['debt_BTC'] * prices['BTC']:.2f},{pf['hf']:.2f},"
+                f"{pf['val'].get('ARB', 0.0):.2f},{b.get(ARB, 0.0):.6f},{prices.get('ARB', 0.0):.4f},{b.get('debt_ARB', 0.0) * prices.get('ARB', 0.0):.2f},"
+                f"{pf.get('accum_usd', 0.0):.2f},{pf.get('equity_total', equity):.2f}\n")
 
 
 def record(coin, side, usd, price, reason, dry_run=False):
@@ -355,18 +366,28 @@ def _realize(st: dict, coin: str, side: int, qty: float, exit_px: float, event: 
 
 
 # ------------------------------------------------------------------- cartera
+def accum_qty(coin: str) -> float:
+    """Monedas apartadas (acumulación): no se operan."""
+    return float(load_state().get("accum", {}).get("qty", {}).get(coin, 0.0))
+
+
 def portfolio(ch: Chain, prices: dict) -> tuple[float, dict]:
-    """Equity = USDC (wallet + Aave) + largos − deuda de cortos. val[c] = exposición neta en USD (+largo/−corto)."""
+    """Equity DE TRADING = USDC (wallet + Aave) + largos − deuda de cortos − monedas acumuladas.
+    val[c] = exposición neta operable en USD (+largo/−corto), sin las monedas apartadas."""
     b = ch.balances()
     eth_tradable = max(b["ETH_native"] - GAS_RESERVE_ETH, 0.0)
-    val = {"ETH": (b[WETH] + eth_tradable - b["debt_WETH"]) * prices["ETH"],
-           "BTC": (b[WBTC] - b["debt_WBTC"]) * prices["BTC"]}
+    held = {c: b[t] + (eth_tradable if c == "ETH" else 0.0) for c, t in ASSETS.items()}
+    acc = {c: min(accum_qty(c), held[c]) for c in ASSETS}
+    val = {c: (held[c] - acc[c] - b[f"debt_{c}"]) * prices[c] for c in ASSETS if c in prices}
+    accum_usd = sum(acc[c] * prices[c] for c in ASSETS if c in prices)
     cash = b[USDC] + b["aUSDC"]
-    equity = cash + val["ETH"] + val["BTC"]
+    equity = cash + sum(val.values())
     hf = ch.health_factor()
-    log.info("USDC %.2f (wallet %.2f + Aave %.2f) | ETH neto %.2f$ | BTC neto %.2f$ | deuda ETH %.5f BTC %.6f | HF %s -> equity %.2f USD",
-             cash, b[USDC], b["aUSDC"], val["ETH"], val["BTC"], b["debt_WETH"], b["debt_WBTC"], "∞" if hf > 1e6 else f"{hf:.2f}", equity)
-    return equity, {"raw": b, "val": val, "cash": cash, "hf": hf}
+    log.info("USDC %.2f (wallet %.2f + Aave %.2f) | %s | deuda %s | HF %s | acumulado %.2f$ -> equity trading %.2f USD (total %.2f)",
+             cash, b[USDC], b["aUSDC"], " ".join(f"{c} {v:+.2f}$" for c, v in val.items()),
+             " ".join(f"{c} {b[f'debt_{c}']:.6f}" for c in ASSETS), "∞" if hf > 1e6 else f"{hf:.2f}", accum_usd, equity, equity + accum_usd)
+    return equity, {"raw": b, "val": val, "cash": cash, "hf": hf, "accum_usd": accum_usd, "accum_qty": acc,
+                    "equity_total": equity + accum_usd}
 
 
 def usdc_in_wallet(ch: Chain, usd: float, pf: dict):
@@ -382,7 +403,11 @@ def usdc_in_wallet(ch: Chain, usd: float, pf: dict):
 def sell_long(ch: Chain, coin: str, usd: float, prices: dict, reason: str):
     token = ASSETS[coin]
     raw = ch.balances()
-    amt_tokens = usd / prices[coin]
+    free = raw[token] + (max(raw["ETH_native"] - GAS_RESERVE_ETH, 0) if coin == "ETH" else 0.0) - accum_qty(coin)
+    amt_tokens = max(min(usd / prices[coin], free), 0.0)
+    if amt_tokens * prices[coin] < MIN_TRADE_USD:
+        return
+    usd = amt_tokens * prices[coin]
     if coin == "ETH":
         use_weth = min(raw[WETH], amt_tokens)
         rest = amt_tokens - use_weth
@@ -396,7 +421,7 @@ def sell_long(ch: Chain, coin: str, usd: float, prices: dict, reason: str):
             if not ch.dry_run:
                 ch._send(ch.router.functions.exactInput((encode_path(PATHS["ETH"]["sell"]), ch.address, amount, int(q * (1 - MAX_SLIPPAGE)))), value=amount)
     else:
-        ch.swap_exact_in(PATHS["BTC"]["sell"], int(min(amt_tokens, raw[WBTC]) * 10 ** DECIMALS[token]))
+        ch.swap_exact_in(PATHS[coin]["sell"], int(min(amt_tokens, raw[token]) * 10 ** DECIMALS[token]))
     record(coin, "SELL", usd, prices[coin], reason, ch.dry_run)
 
 
@@ -414,7 +439,7 @@ def open_short(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason:
     """Deposita todo el USDC libre en Aave, pide prestado `usd` del token y lo vende por USDC (que también deposita)."""
     b = pf["raw"]
     # tamaño máximo que deja HF >= HF_TARGET_MIN con la garantía disponible (USDC libre + USDC ya en Aave − deuda actual)
-    debt_now = b["debt_WETH"] * prices["ETH"] + b["debt_WBTC"] * prices["BTC"]
+    debt_now = sum(b[f"debt_{c}"] * prices[c] for c in ASSETS if c in prices)
     collateral = b[USDC] + b["aUSDC"]
     max_usd = max((collateral * LIQ_THRESHOLD - debt_now * HF_TARGET_MIN) / (HF_TARGET_MIN - LIQ_THRESHOLD), 0.0)
     if max_usd < usd:
@@ -444,7 +469,7 @@ HF_WITHDRAW_MIN = 1.01        # al retirar garantía para recomprar, el HF no ba
 
 def _max_withdraw(b: dict, prices: dict) -> float:
     """USDC que se puede sacar de Aave dejando HF >= HF_WITHDRAW_MIN (con umbral conservador)."""
-    debt_usd = b["debt_WETH"] * prices["ETH"] + b["debt_WBTC"] * prices["BTC"]
+    debt_usd = sum(b[f"debt_{c}"] * prices[c] for c in ASSETS if c in prices)
     return max(b["aUSDC"] - debt_usd * HF_WITHDRAW_MIN / LIQ_THRESHOLD, 0.0)
 
 
@@ -453,7 +478,7 @@ def _cover(ch: Chain, coin: str, qty: float | None, prices: dict) -> float:
     USDC de una vez (Aave no deja bajar el HF de 1), lo hace por tramos: cada repago libera garantía.
     Devuelve los USD cubiertos."""
     token = ASSETS[coin]
-    key = f"debt_{'WETH' if coin == 'ETH' else 'WBTC'}"
+    key = f"debt_{coin}"
     px = prices[coin]
     covered = 0.0
     for _ in range(8):
@@ -494,7 +519,7 @@ def _cover(ch: Chain, coin: str, qty: float | None, prices: dict) -> float:
 def close_short(ch: Chain, coin: str, prices: dict, pf: dict, reason: str) -> bool:
     """Recompra toda la deuda del token y la repaga (por tramos si la garantía lo exige).
     Devuelve True si la deuda queda saldada."""
-    key = f"debt_{'WETH' if coin == 'ETH' else 'WBTC'}"
+    key = f"debt_{coin}"
     if pf["raw"][key] <= 0:
         return True
     usd = _cover(ch, coin, None, prices)
@@ -511,7 +536,7 @@ def close_short(ch: Chain, coin: str, prices: dict, pf: dict, reason: str) -> bo
 
 def cover_short_part(ch: Chain, coin: str, qty: float, prices: dict, pf: dict, reason: str):
     """Recompra y devuelve `qty` tokens de la deuda de un corto (cierre parcial)."""
-    debt = pf["raw"][f"debt_{'WETH' if coin == 'ETH' else 'WBTC'}"]
+    debt = pf["raw"][f"debt_{coin}"]
     qty = min(qty, debt)
     if qty * prices[coin] < MIN_TRADE_USD:
         return
@@ -678,7 +703,7 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
 def tidy_aave(ch: Chain):
     """Sin deuda -> retirar todo el USDC de Aave para tenerlo disponible."""
     b = ch.balances()
-    if b["debt_WETH"] <= 0 and b["debt_WBTC"] <= 0 and b["aUSDC"] > 0.5:
+    if all(b[f"debt_{c}"] <= 0 for c in ASSETS) and b["aUSDC"] > 0.5:
         ch.aave_withdraw_usdc(None)
 
 
@@ -841,10 +866,79 @@ def run_cycle(dry_run: bool, signals: bool = True):
         elif abs(v) < MIN_TRADE_USD:
             st["stops"].pop(c, None)
             pos_all.pop(c, None)
+    # 4) acumulación: el 30 % de la ganancia realizada nueva compra BTC/ETH y se aparta
+    try:
+        accumulate(ch, st, prices, pf)
+    except Exception as e:  # noqa: BLE001 - la acumulación nunca debe bloquear el ciclo
+        log.exception("ERROR en acumulación (%s); se reintenta mañana", e)
     st["last_signal_day"] = today
     save_state(st)
-    log.info("Resultado realizado acumulado: %+.2f$ | equity %.2f$ (%+.2f$ desde 115.75$)", pnl_total(), equity, equity - 115.75)
+    equity, pf = portfolio(ch, prices)
+    acc = st.get("accum", {})
+    log.info("Resultado realizado acumulado: %+.2f$ | equity trading %.2f$ (%+.2f$ desde %.2f$) | acumulado %s = %.2f$ (coste %.2f$)",
+             pnl_total(), equity, equity - CAPITAL_REF, CAPITAL_REF,
+             {c: round(q, 6) for c, q in acc.get("qty", {}).items()}, pf["accum_usd"], acc.get("cost_usd", 0.0))
     log.info("Ciclo diario completado. Stops: %s | posiciones: %s", st["stops"], {c: dict(entrada=round(p["entry"], 2), parciales=p["pt_done"], ref=round(p["ref"], 2)) for c, p in st.get("pos", {}).items()})
+
+
+# ------------------------------------------------------------- v4: acumulación
+ACCUM_FILE = LOG_DIR / "accum.csv"
+
+
+def accumulate(ch: Chain, st: dict, prices: dict, pf: dict):
+    """Cada ganancia realizada NUEVA (por encima del máximo realizado anterior, hwm) se reparte:
+    70 % se queda en la base de trading; 30 % se apunta como pendiente y, cuando hay al menos MIN_TRADE_USD
+    por moneda, compra ACCUM_COINS a partes iguales y las aparta. Las pérdidas no restan lo acumulado:
+    hay que recuperar el máximo anterior antes de volver a acumular."""
+    acc = st.setdefault("accum", {"hwm": 0.0, "pending_usd": 0.0, "qty": {}, "cost_usd": 0.0})
+    realized = pnl_total()
+    if realized > acc["hwm"] + 0.005:
+        gain = realized - acc["hwm"]
+        acc["pending_usd"] += gain * ACCUM_SHARE
+        acc["hwm"] = realized
+        log.info("ACUMULACIÓN: ganancia nueva %+.2f$ -> %.2f$ pendientes de comprar (%.0f %%)", gain, acc["pending_usd"], ACCUM_SHARE * 100)
+    per_coin = acc["pending_usd"] / len(ACCUM_COINS)
+    if per_coin < MIN_TRADE_USD:
+        return
+    if any(pf["raw"][f"debt_{c}"] > 0 for c in ASSETS):
+        log.info("ACUMULACIÓN: %.2f$ pendientes; se espera a no tener cortos abiertos (no retirar garantía de Aave)", acc["pending_usd"])
+        return
+    for c in ACCUM_COINS:
+        if c not in prices:
+            continue
+        _, pf = portfolio(ch, prices)
+        before = ch.balances()
+        tok = ASSETS[c]
+        usdc_in_wallet(ch, per_coin, pf)
+        usd = min(per_coin, ch.balances()[USDC]) if not ch.dry_run else per_coin
+        if usd < MIN_TRADE_USD:
+            log.warning("ACUMULACIÓN %s: sin USDC libre (%.2f$); se intenta en el próximo ciclo", c, usd)
+            continue
+        ch.swap_exact_in(PATHS[c]["buy"], int(usd * 1e6))
+        got = (ch.balances()[tok] - before[tok]) if not ch.dry_run else usd / prices[c]
+        if got <= 0:
+            # el swap se confirmó (si no, _send habría lanzado): el saldo leído va con retraso; se estima
+            got = usd / prices[c] * (1 - 0.002)
+            log.error("ACUMULACIÓN %s: el saldo no refleja aún la compra; se apunta una estimación de %.8f", c, got)
+        acc["qty"][c] = acc["qty"].get(c, 0.0) + got
+        acc["cost_usd"] += usd
+        acc["pending_usd"] = max(acc["pending_usd"] - usd, 0.0)
+        # el dinero apartado sale de la equity de trading: los límites de riesgo (% desde máximo y % del día)
+        # se reescalan en proporción para que la operación no cuente ni como pérdida ni como ganancia
+        eq_before = pf["cash"] + sum(pf["val"].values())
+        if eq_before > usd:
+            for k in ("peak_equity", "day_start_equity"):
+                if st.get(k):
+                    st[k] = st[k] * (eq_before - usd) / eq_before
+        record(c, "ACUMULAR", usd, prices[c], "acumulación 30 %", ch.dry_run)
+        if not ch.dry_run:
+            new = not ACCUM_FILE.exists()
+            with ACCUM_FILE.open("a") as f:
+                if new:
+                    f.write("time,coin,usd,price,qty,qty_total,cost_total_usd\n")
+                f.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')},{c},{usd:.2f},{prices[c]:.2f},{got:.8f},{acc['qty'][c]:.8f},{acc['cost_usd']:.2f}\n")
+        log.warning("ACUMULACIÓN: comprados %.8f %s por %.2f$ (apartados; total %s)", got, c, usd, {k: round(v, 6) for k, v in acc["qty"].items()})
+        save_state(st)
 
 
 # ---------------------------------------------------------- prueba de cortos
