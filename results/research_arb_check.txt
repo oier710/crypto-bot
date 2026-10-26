@@ -1,0 +1,29 @@
+bloque 518299809
+ARB token: ARB decimales 18
+
+## Aave V3 Arbitrum
+ARB: activo=True congelado=False pausado=False prestable=False LTV=0% umbral_liq=63%
+   suministrado=19,818,821 deuda=1,668,709 disponible=18,150,112 tope_prestamo=1 tope_suministro=52,000,000 interes_variable=1.31%/año
+   tokens (aToken, stableDebt, varDebt): ['0x6533afac2E7BCCB20dca161449A13A32D391fb00', '0x0000000000000000000000000000000000000000', '0x44705f578135cC5d703b4c9c122528C73Eb87145']
+WETH: activo=True congelado=False pausado=False prestable=True LTV=80% umbral_liq=84%
+   suministrado=97,985 deuda=55,435 disponible=42,549 tope_prestamo=75,000 tope_suministro=150,000 interes_variable=1.95%/año
+   tokens (aToken, stableDebt, varDebt): ['0xe50fA9b3c56FfB159cB0FCA61F5c9D750e8128c8', '0x0000000000000000000000000000000000000000', '0x0c84331e39d6658Cd6e6b9ba04736cC4c4734351']
+WBTC: activo=True congelado=False pausado=False prestable=True LTV=73% umbral_liq=78%
+   suministrado=3,090 deuda=148 disponible=2,942 tope_prestamo=416 tope_suministro=3,500 interes_variable=0.74%/año
+   tokens (aToken, stableDebt, varDebt): ['0x078f358208685046a11C85e8ad32895DED33A249', '0x0000000000000000000000000000000000000000', '0x92b42c66840C7AD907b4BF74879FF3eF7c529473']
+
+## Uniswap V3 pools
+ARB/WETH fee 0.05%: 0xC6F780497A95e246EB9449f5e4770916DCd6396A  ARB=5,808,238  WETH=288.32
+ARB/WETH fee 0.30%: 0x92c63d0e701CAAe670C9415d91C474F686298f00  ARB=644,858  WETH=27.02
+ARB/WETH fee 1.00%: 0x92fd143A8FA0C84e016C2765648B9733b0aa519e  ARB=328,035  WETH=27.80
+ARB/USDC fee 0.05%: 0xb0f6cA40411360c03d41C5fFc5F179b8403CdcF8  ARB=583,281  USDC=7,432.79
+ARB/USDC fee 0.30%: 0xaEBDcA1Bc8d89177EbE2308d62af5e74885DcCc3  ARB=909,547  USDC=46,601.89
+ARB/USDC fee 1.00%: 0xAC9a19E85A49BACc28Bd2DeeCab3cdfADBFc3e00  ARB=38,059  USDC=3,375.80
+
+## Cotización ida y vuelta de 40 $ (quoter real)
+USDC->WETH(0.05)->ARB(0.05): 40 USDC -> 237.2176 ARB -> 39.9196 USDC  (coste ida+vuelta 0.201%)
+USDC->WETH(0.05)->ARB(0.30): 40 USDC -> 236.2500 ARB -> 39.7105 USDC  (coste ida+vuelta 0.724%)
+USDC->ARB(0.05): 40 USDC -> 236.9483 ARB -> 39.8498 USDC  (coste ida+vuelta 0.375%)
+USDC->ARB(0.30): 40 USDC -> 237.1872 ARB -> 39.7534 USDC  (coste ida+vuelta 0.616%)
+
+MEJOR RUTA: USDC->WETH(0.05)->ARB(0.05) (coste ida+vuelta 0.201% ≈ 0.101%/lado)
