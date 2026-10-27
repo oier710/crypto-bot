@@ -7734,3 +7734,6 @@
 2026-10-27 00:06:45,290 INFO USDC 149.21 (wallet 1.00 + Aave 148.21) | ETH -40.69$ BTC +0.00$ | deuda ETH 0.017537 BTC 0.000000 ARB 0.000000 | HF 2.84 | acumulado 0.00$ -> equity trading 108.51 USD (total 108.51)
 2026-10-27 00:06:45,290 INFO Resultado realizado acumulado: -7.23$ | equity trading 108.51$ (-7.24$ desde 115.75$) | acumulado {} = 0.00$ (coste 0.00$)
 2026-10-27 00:06:45,291 INFO Ciclo diario completado. Stops: {'ETH': 2501.2058698829974} | posiciones: {'ETH': {'entrada': 2320.45, 'parciales': 0, 'ref': 2320.45}}
+2026-10-27 00:16:24,774 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
+2026-10-27 00:16:26,979 INFO USDC 149.21 (wallet 1.00 + Aave 148.21) | ETH -40.77$ BTC +0.00$ | deuda ETH 0.017537 BTC 0.000000 ARB 0.000000 | HF 2.84 | acumulado 0.00$ -> equity trading 108.44 USD (total 108.44)
+2026-10-27 00:16:28,760 INFO Chequeo de stops completado.
