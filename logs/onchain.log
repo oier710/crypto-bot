@@ -7710,3 +7710,27 @@
 2026-10-26 23:51:01,108 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
 2026-10-26 23:51:02,800 INFO USDC 69.64 (wallet 69.64 + Aave 0.00) | ETH +38.84$ BTC +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ | acumulado 0.00$ -> equity trading 108.48 USD (total 108.48)
 2026-10-26 23:51:04,015 INFO Chequeo de stops completado.
+2026-10-27 00:06:03,731 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
+2026-10-27 00:06:06,056 INFO USDC 69.64 (wallet 69.64 + Aave 0.00) | ETH +38.88$ BTC +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ | acumulado 0.00$ -> equity trading 108.52 USD (total 108.52)
+2026-10-27 00:06:08,180 INFO USDC 69.64 (wallet 69.64 + Aave 0.00) | ETH +38.88$ BTC +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ | acumulado 0.00$ -> equity trading 108.52 USD (total 108.52)
+2026-10-27 00:06:14,930 INFO BTC cierre=80008.79 señal=+0 ATR=2045.40 tengo=+0.00$ objetivo=+0.00$
+2026-10-27 00:06:21,569 INFO ETH cierre=2320.34 señal=-1 ATR=90.38 tengo=+38.88$ objetivo=-40.69$
+2026-10-27 00:06:23,794 INFO SWAP 0x82aF49 -> 0xaf88d0 | in=16754177522880272 out~38876143
+2026-10-27 00:06:25,670 INFO tx ok dc73d98dffcf365c51c42be2274d9abe90018a554b98e811673361ef32d67b1b gas=126772
+2026-10-27 00:06:25,671 WARNING RESULTADO ETH largo (señal -1): bruto -2.63$ costes 0.14$ -> neto -2.77$ | operación completa -2.77$ | realizado acumulado -7.23$
+2026-10-27 00:06:27,933 INFO USDC 108.52 (wallet 108.52 + Aave 0.00) | ETH +0.00$ BTC +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ | acumulado 0.00$ -> equity trading 108.52 USD (total 108.52)
+2026-10-27 00:06:27,934 INFO AAVE supply 108.02 USDC
+2026-10-27 00:06:30,188 INFO tx ok 3b45a454946bf56e7f5229eb571825ab6094e048b152c6551d4733a0744fe95f gas=202658
+2026-10-27 00:06:30,188 INFO AAVE borrow 17537032078847996 0x82aF49
+2026-10-27 00:06:32,201 INFO tx ok 0a552bfba58ef35b3f022daa148deac6454f0d23b6f8af40d81ce7281c47ac24 gas=276626
+2026-10-27 00:06:32,426 INFO SWAP 0x82aF49 -> 0xaf88d0 | in=17537032078847996 out~40692650
+2026-10-27 00:06:34,662 INFO tx ok 9d0a5a79f961ec038bec0ffa515290a7e9af80b92e57c10b9247f3291a73972c gas=126768
+2026-10-27 00:06:34,663 INFO AAVE supply 40.19 USDC
+2026-10-27 00:06:36,766 INFO tx ok 2727fd0b208c6bcb863959f8ba57977425aadeb7462142003ac4af7fecdf42e4 gas=178147
+2026-10-27 00:06:37,000 INFO CORTO ETH abierto: 40.69$ | HF 2.84
+2026-10-27 00:06:39,162 INFO USDC 149.21 (wallet 1.00 + Aave 148.21) | ETH -40.69$ BTC +0.00$ | deuda ETH 0.017537 BTC 0.000000 ARB 0.000000 | HF 2.84 | acumulado 0.00$ -> equity trading 108.51 USD (total 108.51)
+2026-10-27 00:06:43,140 INFO USDC 149.21 (wallet 1.00 + Aave 148.21) | ETH -40.69$ BTC +0.00$ | deuda ETH 0.017537 BTC 0.000000 ARB 0.000000 | HF 2.84 | acumulado 0.00$ -> equity trading 108.51 USD (total 108.51)
+2026-10-27 00:06:43,141 INFO ETH nueva operación corta: entrada 2320.45 stop 2501.21 parciales a 2184.88 y 2049.32
+2026-10-27 00:06:45,290 INFO USDC 149.21 (wallet 1.00 + Aave 148.21) | ETH -40.69$ BTC +0.00$ | deuda ETH 0.017537 BTC 0.000000 ARB 0.000000 | HF 2.84 | acumulado 0.00$ -> equity trading 108.51 USD (total 108.51)
+2026-10-27 00:06:45,290 INFO Resultado realizado acumulado: -7.23$ | equity trading 108.51$ (-7.24$ desde 115.75$) | acumulado {} = 0.00$ (coste 0.00$)
+2026-10-27 00:06:45,291 INFO Ciclo diario completado. Stops: {'ETH': 2501.2058698829974} | posiciones: {'ETH': {'entrada': 2320.45, 'parciales': 0, 'ref': 2320.45}}
