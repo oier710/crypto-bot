@@ -1,0 +1,106 @@
+# Optimism — bloque 158751328
+## Aave V3 Optimism: 14 monedas
+moneda     prestable       disp.$        tope$  interés  silo congelada
+DAI        no                   0            1    4.85%    no        sí
+LINK       no                   0           11    0.48%    no        no
+USDC       no                   0            1    3.00%    no        sí
+WBTC       sí           1,708,934    2,552,600    0.79%    no        no
+WETH       sí           6,004,906   36,991,200    1.72%    no        no
+USDT       sí             307,486    9,045,824    6.41%    no        no
+AAVE       no             128,607            0    0.00%    no        no
+sUSD       no                   0            0    0.00%    no        sí
+OP         no                   0            0    1.11%    no        no
+wstETH     no             455,064      547,880    0.29%    no        no
+LUSD       no                   0            1   23.86%    no        sí
+MAI        no                   0            1   23.79%    no        sí
+rETH       no               1,272        2,715    0.05%    no        sí
+USDC       sí             980,170   25,191,853    4.78%    no        no
+
+## Candidatas para cortos (prestables, no estables, > 5.000 $ disponibles): liquidez y coste en Uniswap V3
+Coste = ida y vuelta de 40 $ por la mejor ruta encontrada (USDC->WETH->X o USDC->X), fees 0.05 % / 0.30 % / 1 %.
+- WBTC (precio 79,768.7399 $, interés préstamo 0.79%/año): mejor ruta via USDC 0.05%, coste ida+vuelta 0.11%
+    pool WBTC/WETH 0.05% (53,101$ + 23 WETH)
+    pool WBTC/WETH 0.30% (183,556$ + 243 WETH)
+    pool WBTC/WETH 1.00% (1,943$ + 2 WETH)
+    pool WBTC/USDC 0.05% (58,671$ + 47,254 USDC)
+    pool WBTC/USDC 0.30% (229,714$ + 67,578 USDC)
+    pool WBTC/USDC 1.00% (1,959$ + 3,479 USDC)
+# Optimism: ERROR HTTPError: 429 Client Error: Too Many Requests for url: https://mainnet.optimism.io/
+
+# Base — bloque 53156071
+## Aave V3 Base: 15 monedas
+moneda     prestable       disp.$        tope$  interés  silo congelada
+WETH       sí          44,038,515  231,223,156    2.00%    no        no
+cbETH      no           2,147,259    2,667,963    0.06%    no        no
+USDbC      no                   0            1    8.10%    no        sí
+wstETH     no           2,470,718    3,460,716    0.02%    no        no
+USDC       sí          17,721,339  206,932,775    5.61%    no        no
+weETH      no                   0        2,559    1.00%    no        no
+cbBTC      sí          23,186,475   30,311,247    0.65%    no        no
+ezETH      no               2,517        2,517    0.00%    no        sí
+GHO        sí             112,055   45,000,000   12.88%    no        no
+wrsETH     no               2,504        2,504    1.00%    no        sí
+LBTC       no              80,185       80,185    0.00%    no        no
+EURC       sí           3,155,369   13,376,329    5.16%    no        no
+AAVE       no                 131          131    0.00%    no        no
+tBTC       no              40,606       79,766    1.61%    no        sí
+syrupUSDC  no                   1            1    0.00%    no        no
+
+## Candidatas para cortos (prestables, no estables, > 5.000 $ disponibles): liquidez y coste en Uniswap V3
+Coste = ida y vuelta de 40 $ por la mejor ruta encontrada (USDC->WETH->X o USDC->X), fees 0.05 % / 0.30 % / 1 %.
+- WETH (precio 2,312.2316 $, interés préstamo 2.00%/año): mejor ruta via USDC 0.05%, coste ida+vuelta 0.10%
+    pool WETH/USDC 0.05% (6,309,452$ + 2,003,464 USDC)
+    pool WETH/USDC 0.30% (105,978,614$ + 49,961,273 USDC)
+    pool WETH/USDC 1.00% (405,026$ + 533,006 USDC)
+- cbBTC (precio 79,766.4399 $, interés préstamo 0.65%/año): mejor ruta via USDC 0.05%, coste ida+vuelta 0.10%
+    pool cbBTC/WETH 0.05% (2,693,990$ + 5,800 WETH)
+    pool cbBTC/WETH 0.30% (2,904,338$ + 3,099 WETH)
+    pool cbBTC/WETH 1.00% (49,561$ + 35 WETH)
+    pool cbBTC/USDC 0.05% (4,861,553$ + 4,633,005 USDC)
+    pool cbBTC/USDC 0.30% (904,581$ + 756,319 USDC)
+    pool cbBTC/USDC 1.00% (1,470$ + 2,152 USDC)
+- EURC (precio 1.1147 $, interés préstamo 5.16%/año): mejor ruta via USDC 0.05%, coste ida+vuelta 0.10%
+    pool EURC/WETH 0.05% (0$ + 0 WETH)
+    pool EURC/WETH 0.30% (80$ + 0 WETH)
+    pool EURC/WETH 1.00% (0$ + 0 WETH)
+    pool EURC/USDC 0.05% (70,017$ + 21,865 USDC)
+    pool EURC/USDC 0.30% (3,260$ + 2,558 USDC)
+    pool EURC/USDC 1.00% (15$ + 15 USDC)
+
+# Arbitrum — bloque 518730518
+## Aave V3 Arbitrum: 20 monedas
+moneda     prestable       disp.$        tope$  interés  silo congelada
+DAI        no                   0            1    3.87%    no        sí
+LINK       no                   0           11    0.33%    no        no
+USDC       no                   0            1   32.64%    no        sí
+WBTC       sí          21,331,125   33,181,073    0.74%    no        no
+WETH       sí          45,269,013  173,341,593    1.92%    no        no
+USD₮0      sí           8,877,296  112,231,053    4.07%    no        no
+AAVE       no           1,366,759            0    0.00%    no        no
+EURS       no                   0            1    3.38%    no        sí
+wstETH     no           3,490,914    3,747,471    0.00%    no        no
+MAI        no                   0            1   20.02%    no        sí
+rETH       no                   0        2,715    0.24%    no        sí
+LUSD       no                   0            1  103.45%    no        sí
+USDC       sí          49,942,102  224,935,448    3.52%    no        no
+FRAX       no                   0            1   88.66%    no        sí
+ARB        no                   0            0    1.31%    no        no
+weETH      no                   0        2,558    1.00%    no        no
+GHO        sí              61,573    8,470,000    4.50%    no        no
+ezETH      no               2,516        2,516    0.00%    no        sí
+rsETH      no               2,503        2,503    0.00%    no        sí
+tBTC       no              79,762       79,762    0.00%    no        sí
+
+## Candidatas para cortos (prestables, no estables, > 5.000 $ disponibles): liquidez y coste en Uniswap V3
+Coste = ida y vuelta de 40 $ por la mejor ruta encontrada (USDC->WETH->X o USDC->X), fees 0.05 % / 0.30 % / 1 %.
+- WBTC (precio 79,762.1953 $, interés préstamo 0.74%/año): mejor ruta via USDC 0.05%, coste ida+vuelta 0.10%
+    pool WBTC/WETH 0.05% (10,923,672$ + 9,270 WETH)
+    pool WBTC/WETH 0.30% (113,691$ + 261 WETH)
+    pool WBTC/WETH 1.00% (9,579$ + 9 WETH)
+    pool WBTC/USDC 0.05% (6,088,472$ + 2,554,696 USDC)
+    pool WBTC/USDC 0.30% (89,429$ + 73,477 USDC)
+    pool WBTC/USDC 1.00% (4,325$ + 1,103 USDC)
+- WETH (precio 2,311.2212 $, interés préstamo 1.92%/año): mejor ruta via USDC 0.05%, coste ida+vuelta 0.10%
+    pool WETH/USDC 0.05% (25,820,351$ + 11,996,943 USDC)
+    pool WETH/USDC 0.30% (2,879,090$ + 2,345,754 USDC)
+    pool WETH/USDC 1.00% (92,180$ + 49,231 USDC)
