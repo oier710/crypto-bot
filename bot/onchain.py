@@ -71,7 +71,9 @@ TOKENS = (USDC, WETH, WBTC, ARB)
 MAX_UINT = 2 ** 256 - 1
 PATHS = {  # rutas Uniswap (fee 0.05 %)
     "ETH": {"buy": [(USDC, 500, WETH)], "sell": [(WETH, 500, USDC)]},
-    "BTC": {"buy": [(USDC, 500, WETH), (WETH, 500, WBTC)], "sell": [(WBTC, 500, WETH), (WETH, 500, USDC)]},
+    # BTC directo contra USDC (pool WBTC/USDC 0.05 %, ~6 M$): un solo salto, mitad de comisión que vía WETH
+    # (escaneo on-chain 2026-10-26: ida+vuelta 0.10 % frente a 0.20 %).
+    "BTC": {"buy": [(USDC, 500, WBTC)], "sell": [(WBTC, 500, USDC)]},
     "ARB": {"buy": [(USDC, 500, WETH), (WETH, 500, ARB)], "sell": [(ARB, 500, WETH), (WETH, 500, USDC)]},
 }
 
