@@ -8037,3 +8037,13 @@
 2026-10-27 23:52:24,419 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
 2026-10-27 23:52:25,586 INFO USDC 149.22 (wallet 1.00 + Aave 148.22) | ETH -41.19$ BTC +0.00$ | deuda ETH 0.017538 BTC 0.000000 ARB 0.000000 | HF 2.80 | acumulado 0.00$ -> equity trading 108.03 USD (total 108.03)
 2026-10-27 23:52:26,501 INFO Chequeo de stops completado.
+2026-10-28 00:06:12,351 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
+2026-10-28 00:06:13,536 INFO USDC 149.22 (wallet 1.00 + Aave 148.22) | ETH -41.12$ BTC +0.00$ | deuda ETH 0.017538 BTC 0.000000 ARB 0.000000 | HF 2.81 | acumulado 0.00$ -> equity trading 108.10 USD (total 108.10)
+2026-10-28 00:06:14,527 INFO USDC 149.22 (wallet 1.00 + Aave 148.22) | ETH -41.12$ BTC +0.00$ | deuda ETH 0.017538 BTC 0.000000 ARB 0.000000 | HF 2.81 | acumulado 0.00$ -> equity trading 108.10 USD (total 108.10)
+2026-10-28 00:06:21,459 INFO BTC cierre=80799.51 señal=+0 ATR=2029.02 tengo=+0.00$ objetivo=+0.00$
+2026-10-28 00:06:28,134 INFO ETH cierre=2347.01 señal=-1 ATR=88.73 tengo=-41.12$ objetivo=-41.12$
+2026-10-28 00:06:29,167 INFO USDC 149.22 (wallet 1.00 + Aave 148.22) | ETH -41.12$ BTC +0.00$ | deuda ETH 0.017538 BTC 0.000000 ARB 0.000000 | HF 2.81 | acumulado 0.00$ -> equity trading 108.10 USD (total 108.10)
+2026-10-28 00:06:31,161 INFO USDC 149.22 (wallet 1.00 + Aave 148.22) | ETH -41.12$ BTC +0.00$ | deuda ETH 0.017538 BTC 0.000000 ARB 0.000000 | HF 2.81 | acumulado 0.00$ -> equity trading 108.10 USD (total 108.10)
+2026-10-28 00:06:32,396 INFO USDC 149.22 (wallet 1.00 + Aave 148.22) | ETH -41.12$ BTC +0.00$ | deuda ETH 0.017538 BTC 0.000000 ARB 0.000000 | HF 2.81 | acumulado 0.00$ -> equity trading 108.10 USD (total 108.10)
+2026-10-28 00:06:32,397 INFO Resultado realizado acumulado: -7.23$ | equity trading 108.10$ (-7.65$ desde 115.75$) | acumulado {} = 0.00$ (coste 0.00$)
+2026-10-28 00:06:32,398 INFO Ciclo diario completado. Stops: {'ETH': 2501.2058698829974} | posiciones: {'ETH': {'entrada': 2320.45, 'parciales': 0, 'ref': 2320.45}}
