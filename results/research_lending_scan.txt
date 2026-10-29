@@ -1,0 +1,98 @@
+# Escaneo de protocolos de préstamo — ¿dónde se puede poner en corto algo que no sea BTC/ETH?
+Fuente: DefiLlama (yields.llama.fi/pools + /lendBorrow), redes Arbitrum, Optimism, Base. Mercados con datos de préstamo: 281.
+disp.$ = suministrado - prestado (y dentro del techo de deuda). interés = %/año neto de recompensas.
+
+## Protocolos de préstamo encontrados (mercados por red)
+chain     project            
+Arbitrum  aave-v3                10
+          compound-v3            24
+          curve-llamalend         7
+          dolomite               29
+          euler-v2                8
+          fluid-lending          26
+          morpho-blue            16
+          tender-finance          4
+Base      aave-v3                11
+          arcadia-v2              3
+          compound-v3            18
+          euler-v2               22
+          extra-finance-xlend     8
+          fluid-lending          18
+          moonwell-lending       14
+          morpho-blue            63
+
+## CANDIDATAS PARA CORTO: no estables, no BTC/ETH, prestables, disponible >= 20,000 $
+red       protocolo              moneda      suministrado$    prestado$       disp.$  interés   LTV Coinbase  nota
+Arbitrum  aave-v3                USD₮0          47,407,040   38,787,040    8,620,000    4.09%  0.75       no  
+Arbitrum  dolomite               UNI             3,455,129       60,676    3,394,453    0.16%  0.75       sí  
+Base      compound-v3            WSUPEROETH      1,772,935          nan    1,772,935    0.00%  0.88       no  WETH-pool
+Base      moonwell-lending       CBXRP           1,945,979    1,000,937      945,042    1.00%  0.74       no  
+Arbitrum  dolomite               LINK              870,978      125,050      745,928    1.45%  0.80       sí  
+Base      moonwell-lending       AERO            1,383,163      719,916      663,247   12.71%  0.58       sí  
+Arbitrum  dolomite               PENDLE            853,279      235,153      618,126    5.30%  0.75       sí  
+Arbitrum  compound-v3            ARB               317,131          nan      317,131    0.00%  0.70       sí  USDC-pool
+Arbitrum  dolomite               ARB               480,999      204,537      276,462    6.84%  0.87       sí  
+Arbitrum  euler-v2               TETH              221,989        2,824      219,165    0.03%  0.00       no  EVK Vault etETH-1
+Base      euler-v2               AERO              248,244       32,135      216,109    0.95%  0.00       sí  EVK Vault eAERO-1
+Base      moonwell-lending       WELL              234,546       35,460      199,086    3.38%  0.35       sí  
+Base      euler-v2               AERO              198,034       36,071      161,963    1.34%  0.00       sí  EVK Vault eAERO-6
+Base      extra-finance-xlend    AERO              133,999            2      133,997    0.00%  0.60       sí  
+Arbitrum  curve-llamalend        CRV               143,747       38,577      105,170    9.91%  0.75       sí  crvUSD borrow
+Base      moonwell-lending       VVV               100,876        1,210       99,666    0.19%  0.50       no  
+Base      euler-v2               AERO              105,566       16,790       88,776    2.66%  0.00       sí  EVK Vault eAERO-4
+Arbitrum  compound-v3            ARB                74,534          nan       74,534    0.00%  0.70       sí  USDT-pool
+Base      moonwell-lending       VIRTUAL           806,926      753,732       53,194    1.00%  0.50       sí  
+Arbitrum  dolomite               USD₮0             172,027      128,098       43,929    8.62%  0.87       no  
+Base      euler-v2               VVV                23,750            0       23,750    0.00%  0.00       no  EVK Vault eVVV-3
+Arbitrum  fluid-lending          ARB                33,115       10,081       23,034    5.94%  0.70       sí  
+
+## Resumen por moneda (suma de todos los protocolos, solo candidatas)
+                                                  protocolos     redes   disp_usd  interes_min  coinbase
+sym                                                                                                     
+USD₮0                                      aave-v3, dolomite  Arbitrum  8663929.0         4.09     False
+UNI                                                 dolomite  Arbitrum  3394453.0         0.16      True
+WSUPEROETHB                                      compound-v3      Base  1772935.0         0.00     False
+AERO         euler-v2, extra-finance-xlend, moonwell-lending      Base  1264092.0         0.00      True
+CBXRP                                       moonwell-lending      Base   945042.0         1.00     False
+LINK                                                dolomite  Arbitrum   745928.0         1.45      True
+ARB                     compound-v3, dolomite, fluid-lending  Arbitrum   691161.0         0.00      True
+PENDLE                                              dolomite  Arbitrum   618126.0         5.30      True
+TETH                                                euler-v2  Arbitrum   219165.0         0.03     False
+WELL                                        moonwell-lending      Base   199086.0         3.38      True
+VVV                               euler-v2, moonwell-lending      Base   123416.0         0.00     False
+CRV                                          curve-llamalend  Arbitrum   105170.0         9.91      True
+VIRTUAL                                     moonwell-lending      Base    53194.0         1.00      True
+
+## Detalle DOLOMITE (todos los mercados con datos)
+Arbitrum  dolomite           SAVETH       prestable=no  sumin.=   3,943,348 prest.=          0 disp.=  3,943,348 interés=  0.00% 
+Arbitrum  dolomite           UNI          prestable=sí  sumin.=   3,455,129 prest.=     60,676 disp.=  3,394,453 interés=  0.16% 
+Arbitrum  dolomite           WBTC         prestable=sí  sumin.=   4,487,291 prest.=  2,061,637 disp.=  2,425,654 interés=  2.59% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=   1,594,643 prest.=          0 disp.=  1,594,643 interés=  0.00% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=   1,582,620 prest.=          0 disp.=  1,582,620 interés=  0.00% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=   1,535,103 prest.=          0 disp.=  1,535,103 interés=  0.00% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=   1,387,475 prest.=          0 disp.=  1,387,475 interés=  0.00% 
+Arbitrum  dolomite           GLV[WBTC-USD prestable=no  sumin.=   1,202,158 prest.=          0 disp.=  1,202,158 interés=  0.00% 
+Arbitrum  dolomite           USDC         prestable=sí  sumin.=   3,858,576 prest.=  2,820,154 disp.=  1,038,422 interés=  8.36% 
+Arbitrum  dolomite           LINK         prestable=sí  sumin.=     870,978 prest.=    125,050 disp.=    745,928 interés=  1.45% 
+Arbitrum  dolomite           GLV[WETH-USD prestable=no  sumin.=     706,678 prest.=          0 disp.=    706,678 interés=  0.00% 
+Arbitrum  dolomite           WETH         prestable=sí  sumin.=   5,752,415 prest.=  5,111,491 disp.=    640,924 interés=  3.82% 
+Arbitrum  dolomite           PENDLE       prestable=sí  sumin.=     853,279 prest.=    235,153 disp.=    618,126 interés=  5.30% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=     355,088 prest.=          0 disp.=    355,088 interés=  0.00% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=     340,733 prest.=          0 disp.=    340,733 interés=  0.00% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=     288,130 prest.=          0 disp.=    288,130 interés=  0.00% 
+Arbitrum  dolomite           ARB          prestable=sí  sumin.=     480,999 prest.=    204,537 disp.=    276,462 interés=  6.84% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=     232,106 prest.=          0 disp.=    232,106 interés=  0.00% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=     130,424 prest.=          0 disp.=    130,424 interés=  0.00% 
+Arbitrum  dolomite           WEETH        prestable=sí  sumin.=     121,207 prest.=      1,224 disp.=    119,983 interés=  0.20% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=      61,657 prest.=          0 disp.=     61,657 interés=  0.00% 
+Arbitrum  dolomite           GM           prestable=no  sumin.=      50,394 prest.=          0 disp.=     50,394 interés=  0.00% 
+Arbitrum  dolomite           GMX          prestable=no  sumin.=      46,800 prest.=          0 disp.=     46,800 interés=  0.00% 
+Arbitrum  dolomite           USD₮0        prestable=sí  sumin.=     172,027 prest.=    128,098 disp.=     43,929 interés=  8.62% 
+Arbitrum  dolomite           RETH         prestable=sí  sumin.=      40,916 prest.=      5,869 disp.=     35,047 interés=  1.28% 
+Arbitrum  dolomite           EZETH        prestable=no  sumin.=      34,933 prest.=          1 disp.=     34,932 interés=  0.00% 
+Arbitrum  dolomite           USDC         prestable=sí  sumin.=      80,142 prest.=     59,796 disp.=     20,346 interés=  8.64% 
+Arbitrum  dolomite           WSTETH       prestable=sí  sumin.=      15,605 prest.=        248 disp.=     15,357 interés=  0.14% 
+Arbitrum  dolomite           DAI          prestable=sí  sumin.=      21,428 prest.=     18,488 disp.=      2,940 interés= 12.19% 
+
+## Detalle SILO (todos los mercados con datos)
+(DefiLlama no da datos de préstamo de este protocolo)

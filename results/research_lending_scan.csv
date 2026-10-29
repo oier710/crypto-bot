@@ -1,0 +1,282 @@
+chain,project,sym,borrowable,totalSupplyUsd,totalBorrowUsd,avail_usd,debtCeilingUsd,borrow_apy,ltv,poolMeta,stable,major,coinbase,pool
+Arbitrum,aave-v3,AAVE,False,1356478,0.0,1356478.0,,0.0,0.0,,False,False,True,dcc24c76-7101-4e54-9574-323b8f85d14b
+Arbitrum,aave-v3,ARB,False,3261325,273889.0,2987436.0,,1.30654,0.0,,False,False,True,ea8d9aa8-46ae-4447-a192-74515706a575
+Arbitrum,aave-v3,GHO,True,593000,528417.0,64583.0,,4.45544,0.0,,True,False,False,b64ea04a-3fba-4168-8b1c-e7427794415d
+Arbitrum,aave-v3,LINK,False,3597653,75633.0,3522020.0,,0.32702,0.0,,False,False,True,43644487-e26c-450c-8bcb-fb10c1e512e0
+Arbitrum,aave-v3,USDC,True,218626451,168164090.0,50462361.0,,3.50407,0.75,,True,False,False,d9fa8e14-0447-4207-9ae8-7810199dfa1f
+Arbitrum,aave-v3,USD₮0,True,47407040,38787040.0,8620000.0,,4.09312,0.75,,False,False,False,3a6cc030-738d-4e19-8a40-e63e9c4d5a6f
+Arbitrum,aave-v3,WBTC,True,244286839,11603727.0,232683112.0,,0.7375,0.78,,False,True,False,7c5e69a4-2430-4fa2-b7cb-857f79d7d1bf
+Arbitrum,aave-v3,WEETH,False,93081291,4717.0,93076574.0,,1.00118,0.75,,False,True,False,3df9ffeb-8c72-438c-a9ae-026488d8f2b2
+Arbitrum,aave-v3,WETH,True,227762307,128121789.0,99640518.0,,1.93122,0.81,,False,True,False,e302de4d-952e-4e18-9749-0a9dc86e98bc
+Arbitrum,aave-v3,WSTETH,False,58740386,256592.0,58483794.0,,0.00278,0.75,,False,True,False,e62bcb01-ed4c-4ec9-8cfa-e86e7ccf7688
+Arbitrum,compound-v3,ARB,True,317131,,317131.0,,0.0,0.7,USDC-pool,False,False,True,3966145f-dc53-4ad8-b6e2-3eb5ad367e37
+Arbitrum,compound-v3,ARB,True,74534,,74534.0,,0.0,0.7,USDT-pool,False,False,True,be90db0a-18b8-4138-a53f-c69870a8699a
+Arbitrum,compound-v3,EZETH,True,361638,,361638.0,,0.0,0.9,WETH-pool,False,True,False,420ad40c-2aab-4996-bb65-643d1ead3bfc
+Arbitrum,compound-v3,EZETH,True,101571,,101571.0,,0.0,0.8,USDC-pool,False,True,False,8fe49c7b-64b7-49cb-9924-411f618588ef
+Arbitrum,compound-v3,GMX,True,10865,,10865.0,,0.0,0.6,USDT-pool,False,False,True,2cafff1f-c641-4ed4-a791-2a24ea5dc097
+Arbitrum,compound-v3,RETH,True,19140,,19140.0,,0.0,0.9,WETH-pool,False,True,False,45762d4a-f5fb-4a61-8087-473fc8f98991
+Arbitrum,compound-v3,RSETH,True,95010,,95010.0,,0.0,0.0,WETH-pool,False,True,False,bd323fdf-81f2-40bd-96a0-189a48ea48e5
+Arbitrum,compound-v3,TBTC,True,246781,,246781.0,,0.0,0.8,USDT-pool,False,True,False,d3f4305d-ac0a-4e5a-b814-67c3d7c3b6f0
+Arbitrum,compound-v3,TBTC,True,103272,,103272.0,,0.0,0.8,USDC-pool,False,True,False,fa77a10d-7adc-4615-a179-d9d9e5c8dc54
+Arbitrum,compound-v3,USDC,True,14481163,12690591.0,1790572.0,,3.93433,0.0,,True,False,False,d9c395b9-00d0-4426-a6b3-572a6dd68e54
+Arbitrum,compound-v3,USDC,True,469417,207373.0,262044.0,,2.97108,0.0,,True,False,False,643e883f-6922-4c89-82c3-bf3ac260fe1f
+Arbitrum,compound-v3,USDC,True,15742,,15742.0,,0.0,0.8,WETH-pool,True,False,False,8db29638-56de-488a-8b4a-991759ba1544
+Arbitrum,compound-v3,USDT,True,14742566,9713857.0,5028709.0,,3.33028,0.0,,True,False,False,85247b13-8180-44e7-b38c-4d324cc68a92
+Arbitrum,compound-v3,WBTC,True,17044245,,17044245.0,,0.0,0.75,USDC-pool,False,True,False,0ba9d450-b306-4889-85ed-83dfca983e60
+Arbitrum,compound-v3,WBTC,True,11289356,,11289356.0,,0.0,0.7,USDT-pool,False,True,False,a334a33e-4e77-433d-8221-1fa6316eaac1
+Arbitrum,compound-v3,WBTC,True,363682,,363682.0,,0.0,0.7,USDC-pool,False,True,False,a29ce33e-5994-486e-b76e-4a52692d2571
+Arbitrum,compound-v3,WEETH,True,1236921,,1236921.0,,0.0,0.9,WETH-pool,False,True,False,6e642655-9c87-4d5b-8237-f45cfd42a920
+Arbitrum,compound-v3,WETH,True,5696031,,5696031.0,,0.0,0.83,USDC-pool,False,True,False,0e289cf3-fee2-43fc-b387-ae7a20cfaf07
+Arbitrum,compound-v3,WETH,True,3218251,,3218251.0,,0.0,0.83,USDT-pool,False,True,False,4e7fd7a4-4f10-421a-8ba0-0531b105bddb
+Arbitrum,compound-v3,WETH,True,1895249,1476487.0,418762.0,,1.4328,0.0,,False,True,False,be3d7cb9-f008-4050-8802-13ea505bcbdf
+Arbitrum,compound-v3,WETH,True,52808,,52808.0,,0.0,0.78,USDC-pool,False,True,False,5fe31d6b-1629-439c-a9ed-620abae1a329
+Arbitrum,compound-v3,WSTETH,True,7711414,,7711414.0,,0.0,0.8,USDT-pool,False,True,False,03f97f6b-3e17-4ccd-8687-0b3f736441b3
+Arbitrum,compound-v3,WSTETH,True,5655094,,5655094.0,,0.0,0.8,USDC-pool,False,True,False,05b39877-c068-450b-bd0c-cc6e47886aa7
+Arbitrum,compound-v3,WSTETH,True,75314,,75314.0,,0.0,0.88,WETH-pool,False,True,False,829ac1b4-2129-4699-a412-59a5d7dbab64
+Arbitrum,curve-llamalend,ARB,True,28430,48106.0,0.0,,0.0,0.4672222222222222,crvUSD borrow,False,False,True,c5d34f3b-e106-4a17-b561-d430f11caa8b
+Arbitrum,curve-llamalend,ASDCRV,True,0,0.0,0.0,,5.1268,0.4535147392290249,crvUSD borrow,False,False,False,2530fd31-5d1b-4793-b36f-96e4fbaed235
+Arbitrum,curve-llamalend,CRV,True,143747,38577.0,105170.0,,9.9115,0.7475555555555556,crvUSD borrow,False,False,True,13c5dd86-9ba1-403f-a3be-cd2e81787daf
+Arbitrum,curve-llamalend,WBTC,True,104456,48043.0,56413.0,,4.1182,0.9102328888888891,crvUSD borrow,False,True,False,77e99d6c-4c71-4d55-8320-5f5559e8666e
+Arbitrum,curve-llamalend,WBTC,True,15691,7537.0,8154.0,,2.1581,0.9102328888888891,crvUSD borrow,False,True,False,91e6889f-e002-4635-922e-4c16bdfb67c4
+Arbitrum,curve-llamalend,WETH,True,316748,134909.0,181839.0,,6.6568,0.9036183673469388,crvUSD borrow,False,True,False,317f2585-37ee-444a-862f-446a6173096a
+Arbitrum,curve-llamalend,WETH,True,56426,31562.0,24864.0,,2.7362,0.9036183673469388,crvUSD borrow,False,True,False,bbaf3f89-7c1a-48fd-845b-b04f85c133d5
+Arbitrum,dolomite,ARB,True,480999,204537.0,276462.0,,6.83746,0.8695652173913044,,False,False,True,e85b8be0-4437-4983-af13-4b44386c588e
+Arbitrum,dolomite,DAI,True,21428,18488.0,2940.0,,12.18935,0.8695652173913044,,True,False,False,7370ed71-cb60-4f6b-b628-e6da1aa890a8
+Arbitrum,dolomite,EZETH,False,34933,1.0,34932.0,,0.00063,0.8333333333333334,,False,True,False,224bb5da-e231-46cf-8b05-df0c9a57292d
+Arbitrum,dolomite,GLV[WBTC-USDC],False,1202158,0.0,1202158.0,,0.0,0.8333333333333334,,False,False,False,7f1f0f18-9105-4f1d-89e9-fba520bde73d
+Arbitrum,dolomite,GLV[WETH-USDC],False,706678,0.0,706678.0,,0.0,0.8333333333333334,,False,False,False,bfb0d48d-916e-4990-a56f-624879893c72
+Arbitrum,dolomite,GM,False,1594643,0.0,1594643.0,,0.0,0.8333333333333334,,False,False,False,8fef41bb-261f-44b5-864a-a756a5d01421
+Arbitrum,dolomite,GM,False,1582620,0.0,1582620.0,,0.0,0.8333333333333334,,False,False,False,519b0477-d3be-4c8a-9697-e16ee7321b68
+Arbitrum,dolomite,GM,False,1535103,0.0,1535103.0,,0.0,0.8333333333333334,,False,False,False,88f03137-9910-4a79-a8bb-29c93d631bd5
+Arbitrum,dolomite,GM,False,1387475,0.0,1387475.0,,0.0,0.8333333333333334,,False,False,False,997497bc-ba09-4e7a-8515-0f12b9793caa
+Arbitrum,dolomite,GM,False,355088,0.0,355088.0,,0.0,0.8,,False,False,False,7e7d93cc-2a3c-4662-8e47-fc489e5d2aee
+Arbitrum,dolomite,GM,False,340733,0.0,340733.0,,0.0,0.8,,False,False,False,2f0dff56-ccec-4aa4-b66a-dff94a74c47d
+Arbitrum,dolomite,GM,False,288130,0.0,288130.0,,0.0,0.8333333333333334,,False,False,False,802bcae5-c68c-48dc-ae07-8674a998e28f
+Arbitrum,dolomite,GM,False,232106,0.0,232106.0,,0.0,0.8,,False,False,False,42b4fae8-d5ef-4561-80f8-f628c9e9f29b
+Arbitrum,dolomite,GM,False,130424,0.0,130424.0,,0.0,0.8,,False,False,False,700a5201-4251-4b0a-b711-b547bcd40d7a
+Arbitrum,dolomite,GM,False,61657,0.0,61657.0,,0.0,0.8,,False,False,False,4f023c6e-4b7a-4dfc-a8ae-fb619775f03a
+Arbitrum,dolomite,GM,False,50394,0.0,50394.0,,0.0,0.8333333333333334,,False,False,False,a832b029-c675-45b6-9ab4-a34293538011
+Arbitrum,dolomite,GMX,False,46800,0.0,46800.0,,0.0,0.8,,False,False,True,aa349c3b-28b2-494b-86f5-d54e0f0d07dd
+Arbitrum,dolomite,LINK,True,870978,125050.0,745928.0,,1.44605,0.8,,False,False,True,e8a99e81-48b4-42f9-b677-583a69a7ae5f
+Arbitrum,dolomite,PENDLE,True,853279,235153.0,618126.0,,5.3027,0.750000001875,,False,False,True,9cb7fc60-9b7d-459e-8bf1-8f5189631cac
+Arbitrum,dolomite,RETH,True,40916,5869.0,35047.0,,1.28317,0.8695652173913044,,False,True,False,b49d2247-044a-47c1-87c5-89e41ac51ea8
+Arbitrum,dolomite,SAVETH,False,3943348,0.0,3943348.0,,0.0,0.8,,False,False,False,4b0e8ee2-b031-5db0-bee0-dfa6b7650fe9
+Arbitrum,dolomite,UNI,True,3455129,60676.0,3394453.0,,0.15622,0.7518796992481204,,False,False,True,1f6280d9-fdca-4c6b-b657-88f85316f982
+Arbitrum,dolomite,USDC,True,3858576,2820154.0,1038422.0,,8.36201,0.8695652173913044,,True,False,False,d0e11625-79b9-40e3-b01f-a473af961995
+Arbitrum,dolomite,USDC,True,80142,59796.0,20346.0,,8.64239,0.8695652173913044,,True,False,False,6f007481-cd58-4b32-bac3-1ce9f19a3a07
+Arbitrum,dolomite,USD₮0,True,172027,128098.0,43929.0,,8.62455,0.8695652173913044,,False,False,False,d8f76f0a-1649-4212-a96f-c09dd1fd9bb4
+Arbitrum,dolomite,WBTC,True,4487291,2061637.0,2425654.0,,2.58518,0.8695652173913044,,False,True,False,0464e11e-9c6d-46ab-b16e-a7dbdc71ec9d
+Arbitrum,dolomite,WEETH,True,121207,1224.0,119983.0,,0.20225,0.8333333333333334,,False,True,False,70ee6e0d-6d81-4756-924d-0783bcb7f23d
+Arbitrum,dolomite,WETH,True,5752415,5111491.0,640924.0,,3.82284,0.8695652173913044,,False,True,False,655ca962-e0ac-424c-84f9-2fe4fbb0fef4
+Arbitrum,dolomite,WSTETH,True,15605,248.0,15357.0,,0.14147,0.8695652173913044,,False,True,False,edcd0773-dec3-4ed6-8fbb-c4c7d7b79f07
+Arbitrum,euler-v2,TETH,True,221989,2824.0,219165.0,,0.02532,0.0,EVK Vault etETH-1,False,False,False,383ae6a9-03e8-4698-909a-ad75eef9a67d
+Arbitrum,euler-v2,THBILL,True,20591,1325.0,19266.0,,0.41734,0.0,EVK Vault ethBILL-2,False,False,False,a4096510-2caa-4629-a577-9f3ebd29ce1e
+Arbitrum,euler-v2,USDC,True,226878,203118.0,23760.0,,9.44772,0.0,EVK Vault eUSDC-2,True,False,False,85f878ab-9ae3-4524-afa5-f1356dfb361f
+Arbitrum,euler-v2,USDC,True,15752,8944.0,6808.0,,4.97359,0.0,EVK Vault eUSDC-6,True,False,False,91a13ad5-0687-4d6f-a789-da86b149d817
+Arbitrum,euler-v2,USDC,True,33745,29061.0,4684.0,,3.82431,0.0,EVK Vault eUSDC-1,True,False,False,d710ca08-6f7d-4617-8909-7d00486a226c
+Arbitrum,euler-v2,USD₮0,True,14430,12503.0,1927.0,,3.84821,0.0,EVK Vault eUSD₮0-1,False,False,False,6c682632-a083-4af4-9d88-ab8f36b8864b
+Arbitrum,euler-v2,WBTC,True,38765,9915.0,28850.0,,0.28318,0.0,EVK Vault eWBTC-1,False,True,False,6bf18fcf-e0ff-41e0-873f-5dec5290cb38
+Arbitrum,euler-v2,WETH,True,224030,204671.0,19359.0,,7.11134,0.0,EVK Vault eWETH-1,False,True,False,589aa5cd-aeab-433e-aefc-9d0992796430
+Arbitrum,fluid-lending,ARB,True,33115,10081.0,23034.0,,5.94,0.7,,False,False,True,1b871264-da91-4fc6-8a4b-7ec48343a956
+Arbitrum,fluid-lending,ARB,True,12748,2642.0,10106.0,,5.68,0.7,,False,False,True,29ae75ad-aa15-48cc-91ac-1eec5fdd2088
+Arbitrum,fluid-lending,ETH,True,5499023,2364440.0,3134583.0,,5.68,0.87,,False,True,False,a980d165-d64a-45d8-b9c9-de2d628f5f23
+Arbitrum,fluid-lending,ETH,True,1567640,674959.0,892681.0,,5.94,0.87,,False,True,False,83514d43-0677-43ca-96be-7b33160f4a19
+Arbitrum,fluid-lending,ETH,True,360575,151058.0,209517.0,,7.41,0.87,,False,True,False,c531430b-4ad9-45a0-8f76-976d3964a77e
+Arbitrum,fluid-lending,ETH,True,307609,161811.0,145798.0,,4.08,0.85,,False,True,False,800e0039-11a1-4b9e-b999-eb7475fdea7e
+Arbitrum,fluid-lending,ETH,True,43946,33886.0,10060.0,,1.05,0.9,,False,True,False,b73e74d5-c383-402c-939b-accafbf1c36c
+Arbitrum,fluid-lending,REUSD,True,1412087,1214573.0,197514.0,,5.94,0.87,,True,False,False,0ff3d98a-6fa7-5f80-9b25-e090b7fcc172
+Arbitrum,fluid-lending,REUSD,True,447194,382617.0,64577.0,,5.68,0.87,,True,False,False,c60c25a4-05b6-5493-b589-978159ec748d
+Arbitrum,fluid-lending,SUSDAI,True,36800918,28220174.0,8580744.0,,5.68,0.88,,True,False,False,915366de-ac1f-47e9-bf8e-ec15fa1df6ec
+Arbitrum,fluid-lending,SUSDAI,True,33696152,27151412.0,6544740.0,,5.94,0.88,,True,False,False,fcc621d6-24df-44a7-98b1-780f800638a6
+Arbitrum,fluid-lending,SUSDE,True,54012,44892.0,9120.0,,5.68,0.92,,True,False,False,244cd5d7-952f-4178-9c67-80002e69ff94
+Arbitrum,fluid-lending,SYRUPUSDC,True,23160,19611.0,3549.0,,5.94,0.9,,True,False,False,f506d5a5-62ca-4bba-85f4-669f01eaf0c8
+Arbitrum,fluid-lending,WBTC,True,2972012,1355690.0,1616322.0,,5.68,0.85,,False,True,False,304dfb5a-0e54-4ea5-ab1c-1a7dd923d87d
+Arbitrum,fluid-lending,WBTC,True,1989132,1037222.0,951910.0,,7.41,0.84,,False,True,False,8064dd23-125c-42eb-a09a-d23a234ad3a4
+Arbitrum,fluid-lending,WBTC,True,1665544,754086.0,911458.0,,5.94,0.85,,False,True,False,73e03744-6abb-4739-b4be-63c93709130b
+Arbitrum,fluid-lending,WBTC,True,79124,54204.0,24920.0,,1.85,0.9,,False,True,False,2ce7b42b-4f88-4671-83a0-d3e411d3a47e
+Arbitrum,fluid-lending,WEETH,True,236464,107641.0,128823.0,,5.94,0.75,,False,True,False,99b5eb89-f35d-497a-8a58-702212b6d559
+Arbitrum,fluid-lending,WEETH,True,205186,175168.0,30018.0,,0.06,0.94,,False,True,False,45f56d3f-bc31-4c6f-a0bc-3a4898d6e03d
+Arbitrum,fluid-lending,WEETH,True,178985,63369.0,115616.0,,5.68,0.75,,False,True,False,36165df5-9bee-45e1-8051-e60982f412dd
+Arbitrum,fluid-lending,WEETH,True,15612,7674.0,7938.0,,7.41,0.75,,False,True,False,810f3cd0-9985-49ca-884d-1e2045db6e03
+Arbitrum,fluid-lending,WSTETH,True,10076618,5144276.0,4932342.0,,1.85,0.95,,False,True,False,eec88a7a-789c-4953-b33c-56d5fb3db8cf
+Arbitrum,fluid-lending,WSTETH,True,1257975,418936.0,839039.0,,5.68,0.82,,False,True,False,f7f5606d-523f-4b37-951c-798840bff64f
+Arbitrum,fluid-lending,WSTETH,True,1049020,456408.0,592612.0,,7.41,0.82,,False,True,False,ee3be731-1b33-42b3-bf0b-6b7d1ee1ca0b
+Arbitrum,fluid-lending,WSTETH,True,1039962,429564.0,610398.0,,5.94,0.82,,False,True,False,a76d04d8-402a-4fcd-b692-9208e91219c8
+Arbitrum,fluid-lending,WSTETH,True,134570,108722.0,25848.0,,1.05,0.88,,False,True,False,774d8f11-71ad-451b-8072-1708bb0cd253
+Arbitrum,morpho-blue,SUSDAI,True,43139,35671.0,0.0,2998.0,12.00013,0.915,,True,False,False,82e1f694-1a4e-4390-93ef-ca416bcbe69d
+Arbitrum,morpho-blue,SUSDS,True,361550,324612.0,0.0,35732.0,3.02563,0.945,,True,False,False,0fd780bc-de70-42bc-b2db-6afa5f9ad56c
+Arbitrum,morpho-blue,SUSDS,True,169848,139677.0,0.0,15498.0,3.03401,0.945,,True,False,False,79f3a3df-1ee9-46e4-9ee1-2d4609bf3349
+Arbitrum,morpho-blue,SYRUPUSDC,True,45562,35489.0,0.0,14995.0,1.84013,0.915,,True,False,False,ec49cd0b-42a0-4933-9668-f9778305d34b
+Arbitrum,morpho-blue,SYRUPUSDG,True,142315234,126817607.0,0.0,14601293.0,2.99819,0.915,,True,False,False,06581b25-c51c-5797-b60d-fbf6df11ef50
+Arbitrum,morpho-blue,WBTC,True,3879763,1791021.0,0.0,206325.0,3.03768,0.86,,False,True,False,73ebf747-86eb-40be-a60a-3796e52361ed
+Arbitrum,morpho-blue,WBTC,True,1816935,927674.0,0.0,103079.0,3.00823,0.86,,False,True,False,f3a3ae81-97ec-43d8-bafd-bd24d34f938c
+Arbitrum,morpho-blue,WBTC,True,129770,68020.0,0.0,62392.0,1.48416,0.86,,False,True,False,ad1ef817-19a7-55b5-8a38-18b90ca25300
+Arbitrum,morpho-blue,WEETH,True,31350,14694.0,0.0,1632.0,3.03252,0.86,,False,True,False,f98849af-1166-420a-9aba-4e952269fb7d
+Arbitrum,morpho-blue,WETH,True,292546,129106.0,0.0,14310.0,3.02754,0.86,,False,True,False,7e903803-b675-404a-aa2c-6b6025158e4c
+Arbitrum,morpho-blue,WETH,True,127458,57658.0,0.0,6248.0,3.26079,0.86,,False,True,False,f91555bf-2cb4-412f-96e5-f2806751f95e
+Arbitrum,morpho-blue,WSTETH,True,2308114,1087949.0,0.0,126554.0,3.03954,0.86,,False,True,False,e8f3da05-4607-4911-8df1-e91f95b52637
+Arbitrum,morpho-blue,WSTETH,True,136071,66467.0,0.0,14175.0,2.91051,0.86,,False,True,False,415853f1-f2f2-427a-91ef-ed799930fed5
+Arbitrum,morpho-blue,WSTETH,True,57383,32572.0,0.0,21886.0,1.83161,0.86,,False,True,False,1ab4983b-c772-5692-94bd-32695c60f840
+Arbitrum,morpho-blue,XAUT0,True,178839,95571.0,0.0,10543.0,3.11964,0.77,,False,False,False,b4afb051-8b57-4afd-a9f1-0e102cc958ca
+Arbitrum,morpho-blue,XAUT0,True,39659,17782.0,0.0,1981.0,3.02967,0.77,,False,False,False,677842c3-906b-4985-a48e-c316e756919d
+Arbitrum,tender-finance,ETH,False,353247,353247.0,0.0,,0.0,0.8,,False,True,False,f9929231-b06a-4d7a-b29a-41194b3f5a17
+Arbitrum,tender-finance,USDC,False,54738,54738.0,0.0,,0.0,0.8,,True,False,False,f152ff88-dd31-4efb-a0a9-ad26b5536cc7
+Arbitrum,tender-finance,USD₮0,False,159688,159688.0,0.0,,0.0,0.75,,False,False,False,c336005f-974f-48ed-b957-2620aedf94f5
+Arbitrum,tender-finance,WBTC,False,33898,33898.0,0.0,,0.0,0.7,,False,True,False,a307f0af-8808-4602-94bf-88eed4b25965
+Base,aave-v3,AAVE,False,944778,0.0,944778.0,,0.0,0.0,,False,False,True,5cddae3c-7c4a-4473-8931-82a7f985185a
+Base,aave-v3,CBBTC,True,244038227,7212444.0,236825783.0,,0.64777,0.81,,False,True,False,89bc7c4c-d71c-435c-ab28-56c803d51320
+Base,aave-v3,CBETH,False,148643727,520327.0,148123400.0,,0.05445,0.75,,False,True,False,54470a44-22f4-4508-bbbb-2d8e2770ab77
+Base,aave-v3,EURC,True,8873238,5135855.0,3737383.0,,4.82328,0.0,,True,False,False,6652ed18-d327-46cd-9bac-08e0e14ea715
+Base,aave-v3,GHO,True,1322661,1182430.0,140231.0,,4.4697,0.0,,True,False,False,35dbaee7-dc76-465c-b468-a09634833f7f
+Base,aave-v3,LBTC,False,1632519,0.0,1632519.0,,0.0,0.0,,False,True,False,247badef-51c2-4f50-b484-9d39226b4a4c
+Base,aave-v3,SYRUPUSDC,False,67626,0.0,67626.0,,0.0,0.0,,True,False,False,974b8732-2dce-4a46-8204-7f9e6b7efb71
+Base,aave-v3,USDC,True,192221136,174021481.0,18199655.0,,5.27946,0.75,,True,False,False,7e0661bf-8cf3-45e6-9424-31916d4c7b84
+Base,aave-v3,WEETH,False,29139216,6693.0,29132523.0,,1.00536,0.75,,False,True,False,f0131970-afac-4835-b22c-520f192e01d5
+Base,aave-v3,WETH,True,222396734,180427246.0,41969488.0,,2.02819,0.81,,False,True,False,23405eee-97e7-4b8e-8625-19c3a36047e8
+Base,aave-v3,WSTETH,False,25102016,989818.0,24112198.0,,0.0241,0.75,,False,True,False,361f0a3c-6adb-4b1c-bf35-f9cd79f2341c
+Base,arcadia-v2,CBBTC,True,204452,5422.0,199030.0,,3.0,0.9225,Arcadia V2 cbBTC Pool,False,True,False,d08bc07b-61f9-4781-855e-c0307df05494
+Base,arcadia-v2,USDC,True,3030488,2498070.0,532418.0,,12.86,0.9325,Arcadia V2 USDC Pool,True,False,False,85934f95-196b-48d8-bba5-1761b4627505
+Base,arcadia-v2,WETH,True,209421,153413.0,56008.0,,6.0,0.9325,Arcadia V2 WETH Pool,False,True,False,2e8d67b9-d543-4ee3-b257-4c303ed7c277
+Base,compound-v3,CBBTC,True,6859826,,6859826.0,,0.0,0.8,USDC-pool,False,True,False,9e60948f-e16f-4e07-9311-759f81bcc78e
+Base,compound-v3,CBBTC,True,322370,,322370.0,,0.0,0.8,WETH-pool,False,True,False,4be4f733-f9e1-46b7-aac5-6d72bb7ea37e
+Base,compound-v3,CBETH,True,1333211,,1333211.0,,0.0,0.8,USDC-pool,False,True,False,7bae3517-56f1-4c65-8480-904030d70343
+Base,compound-v3,CBETH,True,380746,,380746.0,,0.0,0.9,WETH-pool,False,True,False,c372279e-92ff-4acc-ad90-14a4d3a888e4
+Base,compound-v3,CBETH,True,70775,,70775.0,,0.0,0.45,USDbC-pool,False,True,False,8d89b481-a21c-4481-b2a8-b6cf8b59b09e
+Base,compound-v3,EZETH,True,187134,,187134.0,,0.0,0.9,WETH-pool,False,True,False,ccd0708c-5e07-477f-9dfa-59db70451b69
+Base,compound-v3,TBTC,True,1203208,,1203208.0,,0.0,0.8,USDC-pool,False,True,False,ca3710b5-67f2-4df8-8710-64335a6c0933
+Base,compound-v3,USDBC,True,64874,19427.0,45447.0,,6.05686,0.0,,True,False,False,df65c4f4-e33a-481c-bac8-0c2252867c93
+Base,compound-v3,USDC,True,9366964,8469665.0,897299.0,,5.51418,0.0,,True,False,False,0c8567f8-ba5b-41ad-80de-00a71895eb19
+Base,compound-v3,USDC,True,38982,,38982.0,,0.0,0.8,WETH-pool,True,False,False,ae703e6a-c47e-44bb-bb5d-ba65be18aa7e
+Base,compound-v3,WEETH,True,1026767,,1026767.0,,0.0,0.9,WETH-pool,False,True,False,e13cb9ca-d4dd-4c30-a367-8e9b3460e445
+Base,compound-v3,WETH,True,6130093,,6130093.0,,0.0,0.85,USDC-pool,False,True,False,d83facac-3757-4b19-a84c-f3c0850dfe2a
+Base,compound-v3,WETH,True,3897167,3625242.0,271925.0,,1.95337,0.0,,False,True,False,7993b97d-12c3-4a36-b6b6-5b37bac4f8ae
+Base,compound-v3,WETH,True,17557,,17557.0,,0.0,0.45,USDbC-pool,False,True,False,75108987-6374-4e2b-8de5-56181758e532
+Base,compound-v3,WRSETH,True,16228,,16228.0,,0.0,0.0,WETH-pool,False,True,False,4b1bd000-0fdd-4a75-bb30-45b513f7e5f7
+Base,compound-v3,WSTETH,True,829959,,829959.0,,0.0,0.8,USDC-pool,False,True,False,7803ce5b-53b3-4192-b855-8cb383e19050
+Base,compound-v3,WSTETH,True,638962,,638962.0,,0.0,0.9,WETH-pool,False,True,False,71391dac-7bbc-478d-9d11-d4813bebd90d
+Base,compound-v3,WSUPEROETHB,True,1772935,,1772935.0,,0.0,0.88,WETH-pool,False,False,False,44037889-7a8c-45f9-802b-ebd87ea2d8ca
+Base,euler-v2,AERO,True,248244,32135.0,216109.0,,0.94729,0.0,EVK Vault eAERO-1,False,False,True,05c0fed1-684b-4b82-b089-b1c630e23efe
+Base,euler-v2,AERO,True,198034,36071.0,161963.0,,1.33552,0.0,EVK Vault eAERO-6,False,False,True,41733f5a-6942-5811-8c23-ce4b548ba99b
+Base,euler-v2,AERO,True,105566,16790.0,88776.0,,2.65753,0.0,EVK Vault eAERO-4,False,False,True,ed39b965-8c33-5572-8e76-f47bb50f9015
+Base,euler-v2,CBBTC,True,118690,6232.0,112458.0,,0.01851,0.0,EVK Vault ecbBTC-1,False,True,False,eb4a17a6-b27b-4a30-86eb-927901a8b60d
+Base,euler-v2,CBBTC,True,90709,410.0,90299.0,,0.25409,0.0,EVK Vault ecbBTC-7,False,True,False,61c4cfbb-c4ab-4fd3-8e1d-a4f49b09aee3
+Base,euler-v2,CBETH,True,89511,26531.0,62980.0,,3.38859,0.0,EVK Vault ecbETH-1,False,True,False,eae10cdb-28be-4f9b-aacd-52161ac4eae7
+Base,euler-v2,LBTC,True,97151,227.0,96924.0,,0.02309,0.0,EVK Vault eLBTC-1,False,True,False,1b1d642a-325a-484a-87f8-681f6729179d
+Base,euler-v2,USDC,True,84299,20765.0,63534.0,,2.77663,0.0,EVK Vault eUSDC-102,True,False,False,0a7b320f-2567-587b-b4bc-ba654e942da9
+Base,euler-v2,USDC,True,313719,263283.0,50436.0,,9.78018,0.0,EVK Vault eUSDC-1,True,False,False,2d02765d-1444-46a0-8046-cd7af0c06ac1
+Base,euler-v2,USDC,True,15380,4840.0,10540.0,,2.5941,0.0,EVK Vault eUSDC-29,True,False,False,76f65ec2-ea3d-42a2-9f9f-1542b48838e9
+Base,euler-v2,USDC,True,462995,454539.0,8456.0,,14.82834,0.0,EVK Vault eUSDC-49,True,False,False,8395e9c7-a26d-4e9c-a6e9-7cc002244979
+Base,euler-v2,USDC,True,27871,26387.0,1484.0,,7.97814,0.0,EVK Vault eUSDC-125,True,False,False,48531df5-75f7-5a33-af07-18489688db94
+Base,euler-v2,USDC,True,66668,66668.0,0.0,,10.52443,0.0,EVK Vault eUSDC-81,True,False,False,5c2b53a9-5a0f-43e7-96f9-46b6b414e1b9
+Base,euler-v2,USDC,False,65458,65458.0,0.0,,4.08384,0.0,EVK Vault eUSDC-46,True,False,False,7ba506b8-9265-450d-9111-281fa6b57657
+Base,euler-v2,USDC,True,24552,24552.0,0.0,,16.195,0.0,EVK Vault eUSDC-77,True,False,False,50de40b0-904e-589a-9fa8-2222ecf9789d
+Base,euler-v2,VIRTUAL,True,19141,0.0,19141.0,,1e-05,0.0,EVK Vault eVIRTUAL-3,False,False,True,d975d1d3-9543-5800-a6e7-4ff5a1e69bc6
+Base,euler-v2,VVV,True,23750,0.0,23750.0,,0.0,0.0,EVK Vault eVVV-3,False,False,False,e5658c3d-d1d0-5f13-b73a-36d2be4b9eaa
+Base,euler-v2,WEETH,True,266479,123.0,266356.0,,0.00828,0.0,EVK Vault eweETH-1,False,True,False,7bade541-1b21-4b13-8981-bbe4db2d1ff1
+Base,euler-v2,WETH,True,8102649,7419535.0,683114.0,,1.79435,0.0,EVK Vault eWETH-36,False,True,False,37ae63ba-576e-4ce4-a18d-fdab908c1456
+Base,euler-v2,WETH,True,77450,10769.0,66681.0,,0.7566,0.0,EVK Vault eWETH-38,False,True,False,b132f4e0-d9ea-5be3-b43a-288802a4280b
+Base,euler-v2,WETH,True,316735,291784.0,24951.0,,15.42326,0.0,EVK Vault eWETH-1,False,True,False,6220a31d-7c3f-4bf6-91ee-f026c9d35e92
+Base,euler-v2,WSTETH,True,36561,1323.0,35238.0,,0.02123,0.0,EVK Vault ewstETH-1,False,True,False,a9d1e031-6b3e-4a3d-a1db-85238605e2b5
+Base,extra-finance-xlend,AERO,True,133999,2.0,133997.0,,0.00033,0.605,,False,False,True,9fd9f558-4706-4625-9859-8de7e765d5d5
+Base,extra-finance-xlend,CBBTC,True,618686,443.0,618243.0,,0.00755,0.75,,False,True,False,56c12050-fff0-43aa-9ca2-debb01bfdcc5
+Base,extra-finance-xlend,SUSDS,True,52428,25.0,52403.0,,0.00234,0.75,,True,False,False,d0434555-1394-46ea-b59c-076c0113b71f
+Base,extra-finance-xlend,USDC,True,631076,443420.0,187656.0,,4.28816,0.8,,True,False,False,bc6b7193-da3c-43e3-8c7b-4c9508eec893
+Base,extra-finance-xlend,USDS,True,68825,57004.0,11821.0,,28.78866,0.75,,True,False,False,9da5f0fd-e0f6-4eb2-b4c3-e151ef6bd2ce
+Base,extra-finance-xlend,WEETH,True,13914,58.0,13856.0,,0.11108,0.725,,False,True,False,75143523-37d0-4822-a483-9eb9494df4d8
+Base,extra-finance-xlend,WETH,True,123477,16581.0,106896.0,,0.40272,0.8,,False,True,False,201dab71-ef7f-47c7-ba7a-b62868df9d37
+Base,extra-finance-xlend,WSTETH,True,22637,20.0,22617.0,,0.00948,0.75,,False,True,False,f521f551-e524-45d6-962e-58d4aadd52f1
+Base,fluid-lending,CBBTC,True,3267371,1435286.0,1832085.0,,5.33,0.8,,False,True,False,041c93f2-6d73-4413-8a99-0c2aeb443dec
+Base,fluid-lending,CBBTC,True,1140308,512005.0,628303.0,,4.19,0.8,,False,True,False,de8e070f-964f-4539-a2c5-894bf8d4b54e
+Base,fluid-lending,CBBTC,True,397528,184039.0,213489.0,,5.45,0.8,,False,True,False,1ac77fde-d014-4ce4-9a7f-a655f12683e5
+Base,fluid-lending,CBETH,True,55183,18201.0,36982.0,,4.19,0.7,,False,True,False,32536559-5434-44e4-bfba-6d0323ffa6e9
+Base,fluid-lending,CBETH,True,30783,8768.0,22015.0,,5.33,0.7,,False,True,False,3704cbda-df1d-4b13-902a-86ace75829b4
+Base,fluid-lending,ETH,True,3302981,1294922.0,2008059.0,,5.33,0.85,,False,True,False,c0b49fb8-d73c-42ec-8538-c2b3feb69242
+Base,fluid-lending,ETH,True,213451,85851.0,127600.0,,5.45,0.85,,False,True,False,03fcfbc2-fe99-43fd-98b1-9dd3cbb5ae60
+Base,fluid-lending,ETH,True,173438,73465.0,99973.0,,4.19,0.83,,False,True,False,737aaec1-9079-40d3-9e8a-71510df68386
+Base,fluid-lending,ETH,True,49963,34306.0,15657.0,,0.05,0.86,,False,True,False,a090722b-2710-4967-90c3-0333c9c31ed1
+Base,fluid-lending,LBTC,True,14191,7519.0,6672.0,,5.33,0.73,,False,True,False,609643f7-710a-41c4-b942-adda7f43f878
+Base,fluid-lending,SUSDAI,True,1568633,1315082.0,253551.0,,5.33,0.88,,True,False,False,7536ed73-da02-409c-bfb9-9ee69de7a426
+Base,fluid-lending,WEETH,True,514968,139269.0,375699.0,,4.19,0.75,,False,True,False,593e0545-1aca-4802-af33-9b5392aca8c1
+Base,fluid-lending,WEETH,True,59118,12262.0,46856.0,,5.33,0.75,,False,True,False,69ef31b8-4e8a-43b4-8fdf-760bd3fc994b
+Base,fluid-lending,WEETH,True,12176,4107.0,8069.0,,0.26,0.93,,False,True,False,6d494872-efe6-495c-8822-5442da3f51f6
+Base,fluid-lending,WSTETH,True,3845706,1266395.0,2579311.0,,5.33,0.8,,False,True,False,36b175f1-bb53-4b27-b381-009a57657445
+Base,fluid-lending,WSTETH,True,3455017,2946110.0,508907.0,,1.51,0.93,,False,True,False,0b025dd3-dd86-4389-8967-17d4cc1485f9
+Base,fluid-lending,WSTETH,True,84678,28631.0,56047.0,,4.19,0.75,,False,True,False,8887a5d8-f0ac-496b-b249-c2f29d2b9585
+Base,fluid-lending,WSTETH,True,53056,20361.0,32695.0,,5.45,0.82,,False,True,False,5e2cc96f-2cbf-42a1-9915-67e87f492861
+Base,moonwell-lending,AERO,True,1383163,719916.0,663247.0,,12.71496,0.58,,False,False,True,52fdf254-e837-4f8f-955f-993c3fb31f91
+Base,moonwell-lending,CBBTC,True,4733086,4714052.0,19034.0,,1.005,0.85,,False,True,False,b37c61f5-cd40-43ca-87ee-fa2ebf206ccb
+Base,moonwell-lending,CBXRP,True,1945979,1000937.0,945042.0,,1.005,0.74,,False,False,False,52aa442e-188a-4da4-9d44-b9d4a2e38192
+Base,moonwell-lending,DAI,True,19463,12961.0,6502.0,,33.32865,0.5,,True,False,False,9a416adf-4d03-47a4-83c1-bd62360677b5
+Base,moonwell-lending,ETH,True,3918546,3272801.0,645745.0,,1.17614,0.84,,False,True,False,914284ae-dbef-421f-bbb7-7c42f527fd5f
+Base,moonwell-lending,LBTC,True,3483430,17191.0,3466239.0,,0.03036,0.8,,False,True,False,49b5abd6-5c0b-4491-b7b2-d544257e237e
+Base,moonwell-lending,RETH,True,1322746,25564.0,1297182.0,,0.11796,0.78,,False,True,False,896e6538-944f-46ec-99a4-1bb1211028b2
+Base,moonwell-lending,TBTC,True,17646,1755.0,15891.0,,0.61363,0.64,,False,True,False,8c2a9ade-ec36-405d-b0a7-91ca3a4a3024
+Base,moonwell-lending,VIRTUAL,True,806926,753732.0,53194.0,,1.005,0.5,,False,False,True,5bf828b8-5da4-4b61-af7c-00f282b4b2fe
+Base,moonwell-lending,VVV,True,100876,1210.0,99666.0,,0.19215,0.5,,False,False,False,24a93dec-13fc-434f-afb7-0987cb304257
+Base,moonwell-lending,WEETH,True,113806,278.0,113528.0,,0.03667,0.78,,False,True,False,e1cb1e97-f932-41ae-841d-964a4d594153
+Base,moonwell-lending,WELL,True,234546,35460.0,199086.0,,3.38187,0.35,,False,False,True,09531322-a5eb-49fb-b610-93e545f664be
+Base,moonwell-lending,WRSETH,False,46598,10.0,46588.0,,0.00319,0.35,,False,True,False,e025bdfe-1703-446a-adcd-10095cfde914
+Base,moonwell-lending,WSTETH,True,1860868,1344972.0,515896.0,,4.50723,0.81,,False,True,False,0d27f0a5-572a-41cd-98a6-ad5804f95044
+Base,morpho-blue,AAPLC,True,13383,4820.0,0.0,475.0,7.74877,0.625,,False,False,False,41d7b195-ec03-5e3a-b235-497995d6bdca
+Base,morpho-blue,AERO,True,439684,122625.0,0.0,9725.0,15.98741,0.625,,False,False,True,e5ee7e24-45eb-4107-87f6-235ec6e237df
+Base,morpho-blue,CBADA,True,6412607,2312359.0,0.0,251004.0,7.00411,0.625,,False,False,False,50255337-20b3-4894-84f7-247c534e2bda
+Base,morpho-blue,CBADA,True,2622714,842669.0,0.0,90157.0,3.23619,0.77,,False,False,False,35643b7f-934d-4343-9f42-ce3d261bd6ba
+Base,morpho-blue,CBBTC,True,3203331763,1620559702.0,0.0,173290161.0,5.71174,0.86,,False,True,False,7d33d57d-36dc-414b-9538-22a223250468
+Base,morpho-blue,CBBTC,True,9026619,5085698.0,0.0,1710911.0,2.80043,0.86,,False,True,False,9c7b08ec-6d39-468a-980b-fe80e0842760
+Base,morpho-blue,CBBTC,True,461311,213476.0,0.0,23719.0,0.7522,0.86,,False,True,False,b938c17d-7652-4d28-893c-0a6886d7e0c7
+Base,morpho-blue,CBBTC,True,442998,229974.0,0.0,25383.0,1.70455,0.915,,False,True,False,b59d4db4-17a3-4b7a-8955-4a024e7595ec
+Base,morpho-blue,CBBTC,True,32281,19315.0,0.0,2823.0,0.62863,0.77,,False,True,False,f0751533-429c-4671-89fb-204a233d34c3
+Base,morpho-blue,CBDOGE,True,6547995,2532075.0,0.0,281341.0,6.72886,0.625,,False,False,False,c9dc03b1-a41d-4983-b98a-b921c35368bf
+Base,morpho-blue,CBETH,True,36533962,15967479.0,0.0,1713416.0,5.7226,0.77,,False,True,False,317747cc-b7b2-4acd-9047-73569916befe
+Base,morpho-blue,CBETH,True,8227920,7158546.0,0.0,797219.0,1.65638,0.945,,False,True,False,e040bdef-6e6e-4627-bc88-75a0b26605b0
+Base,morpho-blue,CBETH,True,3376887,1688867.0,0.0,179592.0,5.71741,0.86,,False,True,False,b8f4482a-30e5-4e3b-95c7-ccaa86aeeaef
+Base,morpho-blue,CBETH,True,1334784,666699.0,0.0,71330.0,3.45233,0.86,,False,True,False,61faa6f7-db51-4205-b090-7d8bfacbad72
+Base,morpho-blue,CBETH,True,453342,165987.0,0.0,54929.0,2.78757,0.86,,False,True,False,073b204c-f9a8-41a8-b878-058a30d020df
+Base,morpho-blue,CBETH,True,354564,178873.0,0.0,32497.0,0.9769,0.77,,False,True,False,b8dcf4a9-78ad-405a-affa-5a1d8e0bf11a
+Base,morpho-blue,CBETH,True,41536,32446.0,0.0,3615.0,1.71337,0.965,,False,True,False,edc28e42-30c5-476e-91f2-007805861d59
+Base,morpho-blue,CBETH,True,12613,6392.0,0.0,710.0,0.75785,0.86,,False,True,False,0d4ebbd1-e8b1-44a3-b8b2-0b95ee7e767e
+Base,morpho-blue,CBHYPE,True,1852008,679953.0,0.0,68508.0,6.9705,0.625,,False,False,False,34f56a7e-47d2-5e23-9857-067a0202436b
+Base,morpho-blue,CBLTC,True,2404399,878930.0,0.0,96963.0,6.90648,0.625,,False,False,False,0e6a550c-83da-4ffc-94f3-6cb941e45611
+Base,morpho-blue,CBXRP,True,152845806,60351097.0,0.0,6541873.0,7.00081,0.625,,False,False,False,7ad0dc44-ab47-4690-bd31-e9df6c9f6e50
+Base,morpho-blue,CBXRP,True,3612619,1504859.0,0.0,161004.0,0.96977,0.77,,False,False,False,e9123dfe-224d-464c-a266-54ced10e9a39
+Base,morpho-blue,CBXRP,True,90977,52780.0,0.0,3315.0,1.4302,0.86,,False,False,False,d2920513-8d5d-5d5b-8d86-4063eb9e499e
+Base,morpho-blue,CBZEC,True,8978543,2733937.0,0.0,284382.0,6.89328,0.625,,False,False,False,59c4a2f1-d85e-56fc-888c-138993e9bc2d
+Base,morpho-blue,CBZEC,True,31631,20679.0,0.0,2298.0,7.15051,0.77,,False,False,False,c2d87623-14ec-5165-9194-932fffc34e0c
+Base,morpho-blue,DESPXA,True,48924,22138.0,0.0,2393.0,5.78863,0.77,,False,False,False,3de037d4-5076-4a5a-bce3-77a69f69c2c3
+Base,morpho-blue,GOOGLC,True,10784,5224.0,0.0,389.0,11.85003,0.77,,False,False,False,dfcf7386-fcb9-58bd-9bdd-9436744dc160
+Base,morpho-blue,GRO,True,187815,84038.0,0.0,8523.0,8.58004,0.625,,False,False,False,4d4971f5-f1ff-553d-a582-d325cd753a0f
+Base,morpho-blue,JITOSOL,True,10682026,4049168.0,0.0,430324.0,6.41814,0.625,,False,False,False,36b2a6c9-1b11-4f94-97a6-bd7c74699322
+Base,morpho-blue,JITOSOL,True,299791,260910.0,0.0,183467.0,1.23474,0.915,,False,False,False,506c4ef6-5d85-5dee-a865-0af422fe04ee
+Base,morpho-blue,LBTC,True,690464,568853.0,0.0,272132.0,0.0814,0.915,,False,True,False,0de666cb-4b19-4c25-84bd-898893003d14
+Base,morpho-blue,LBTC,True,301484,255445.0,0.0,159131.0,0.1368,0.945,,False,True,False,3ab6402f-87bf-4239-b504-feec72f36edc
+Base,morpho-blue,LBTC,True,116674,44803.0,0.0,4850.0,5.72955,0.86,,False,True,False,b7a27b05-5fa2-435b-93b4-0582a1b17775
+Base,morpho-blue,MBASIS,True,25650,17879.0,0.0,1810.0,8.39511,0.86,,False,False,False,fd1785a5-475d-4a2a-8dbb-cf98b2fb7a9f
+Base,morpho-blue,MGLO,True,88379209,75617774.0,0.0,7619248.0,5.68911,0.915,,False,False,False,b8b77ffa-5104-5747-829e-a44ba696b58b
+Base,morpho-blue,MGLO,True,19699762,16074576.0,0.0,1778872.0,5.75632,0.915,,False,False,False,382482dc-d5fb-51ab-af70-436e544c48e9
+Base,morpho-blue,MORPHO,True,76819,25003.0,0.0,2218.0,0.056459999999999955,0.77,,False,False,True,1519d7ff-cdf0-5b31-ba76-23f97eeb9807
+Base,morpho-blue,RETH,True,213005,87815.0,0.0,8561.0,5.09945,0.86,,False,True,False,e78f8f2f-5dbd-4cd3-98ef-7864c237144f
+Base,morpho-blue,RETH,True,100134,75581.0,0.0,18225.0,1.37349,0.945,,False,True,False,dc431f54-96c3-4ad1-b194-280be5dd7c75
+Base,morpho-blue,SAVUSD,True,4951420,3660078.0,0.0,397141.0,6.96112,0.915,,True,False,False,fad7bc2b-3ac7-5554-bfd1-52cb1b2d4bcb
+Base,morpho-blue,SOL,True,18949637,7364834.0,0.0,747174.0,6.85225,0.625,,False,False,True,9ca5ee67-cfd6-479d-b780-eb4e5eaa6665
+Base,morpho-blue,SPCXC,True,14154,5708.0,0.0,553.0,6.07352,0.625,,False,False,False,66545b8a-a125-5cc9-aa75-5162f43bfb0b
+Base,morpho-blue,SUPEROETHB,True,1024748,521809.0,0.0,54580.0,1.4082600000000003,0.77,,False,True,False,4ed4736f-e378-44e0-82b5-9128ea8e3bc8
+Base,morpho-blue,SUSN,True,5422829,3722233.0,0.0,405987.0,5.33329,0.915,,True,False,False,c351a834-8b09-5b5a-b898-833a6c4bf7bc
+Base,morpho-blue,UNIBTC,True,1267175,334424.0,0.0,28843.0,13.15747,0.77,,False,False,False,fa2000a4-31fc-4bc4-a046-e9fd906292ae
+Base,morpho-blue,USDC,True,315965,225518.0,0.0,25615.0,6.01807,0.915,,True,False,False,de3ec726-7018-4aad-8de1-8e7c6bca1059
+Base,morpho-blue,USDC,True,29701,18538.0,683.0,19221.0,0.06594,0.86,,True,False,False,7e930fdf-5a52-4982-9ce3-0323fede4918
+Base,morpho-blue,USDE,True,351864028,314850722.0,0.0,33403912.0,5.03665,0.915,,True,False,False,2d3b68a8-33d3-47e0-a4c0-0bafef4b01d5
+Base,morpho-blue,VVV,True,200500,91250.0,0.0,8922.0,0.03345999999999982,0.625,,False,False,False,8ea39ca1-b78b-5208-bb21-78928950d6b2
+Base,morpho-blue,WEETH,True,1400138,1150664.0,0.0,220577.0,1.33692,0.945,,False,True,False,76b7445f-8416-49d9-a2a0-4899026e8272
+Base,morpho-blue,WEETH,True,489562,436943.0,0.0,58734.0,2.06879,0.915,,False,True,False,66ac59bc-b685-4870-aa3d-bbb2183844a9
+Base,morpho-blue,WEETH,True,30926,14780.0,0.0,1585.0,5.72199,0.77,,False,True,False,b95d592b-c94e-4d6d-8560-50a53551446f
+Base,morpho-blue,WETH,True,191691349,97275322.0,0.0,10408149.0,5.72013,0.86,,False,True,False,660e240a-ab18-43af-9d24-0245828f903f
+Base,morpho-blue,WETH,True,982892,369323.0,0.0,90449.0,2.22476,0.86,,False,True,False,b1bbfcb3-6af7-4511-8ec6-e1b3eacf4a74
+Base,morpho-blue,WSTETH,True,6140682,5488312.0,0.0,610399.0,1.68752,0.945,,False,True,False,afce8a53-cee4-4e62-b2b4-f80dcaaf87b5
+Base,morpho-blue,WSTETH,True,5024730,2158551.0,0.0,289949.0,5.08052,0.86,,False,True,False,525c6864-6e24-4d23-aa44-62344acdf527
+Base,morpho-blue,WSTETH,True,2842506,1051693.0,0.0,363079.0,2.81751,0.86,,False,True,False,f28eb055-b5a9-4832-8fa3-caf3acefceec
+Base,morpho-blue,WSTETH,True,368540,338990.0,0.0,39487.0,1.69363,0.965,,False,True,False,046c6e4e-4c0c-4b42-9c9c-43364e470c03
+Base,morpho-blue,WSUPEROETHB,True,257288,225946.0,0.0,27864.0,2.03487,0.915,,False,False,False,064870f3-3b5e-4fc7-83ec-231d7048c40a
+Base,morpho-blue,WSUPEROETHB,True,18055,10798.0,0.0,1214.0,6.66964,0.945,,False,False,False,5d481e48-c69d-446a-979e-7f840f42705d
+Base,morpho-blue,YFI,True,36747,21636.0,0.0,3341.0,7.20899,0.77,,False,False,True,8dc7fbfe-212a-4f27-98ca-64fbc3742a4a
+Base,morpho-blue,YOETH,True,262953,198181.0,0.0,21827.0,2.35776,0.915,,False,False,False,2ea68f07-a6c3-4b50-9499-1d6eb99347da
+Base,morpho-blue,YOUSD,True,597966,273649.0,0.0,26235.0,10.57852,0.915,,True,False,False,735fb238-6c21-44b0-9f02-31fb880836e6
