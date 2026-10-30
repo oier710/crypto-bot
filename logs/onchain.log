@@ -8822,3 +8822,6 @@ requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected(
 2026-10-30 00:21:49,685 INFO USDC 149.24 (wallet 1.00 + Aave 148.24) | ETH -38.88$ BTC +0.00$ | deuda ETH 0.017540 BTC 0.000000 ARB 0.000000 | HF 2.97 | acumulado 0.00$ -> equity trading 110.36 USD (total 110.36)
 2026-10-30 00:21:49,686 INFO Resultado realizado acumulado: -7.23$ | equity trading 110.36$ (-5.39$ desde 115.75$) | acumulado {} = 0.00$ (coste 0.00$)
 2026-10-30 00:21:49,687 INFO Ciclo diario completado. Stops: {'ETH': 2501.2058698829974} | posiciones: {'ETH': {'entrada': 2320.45, 'parciales': 0, 'ref': 2320.45}}
+2026-10-30 00:30:01,375 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
+2026-10-30 00:30:02,496 INFO USDC 149.24 (wallet 1.00 + Aave 148.24) | ETH -38.68$ BTC +0.00$ | deuda ETH 0.017540 BTC 0.000000 ARB 0.000000 | HF 2.99 | acumulado 0.00$ -> equity trading 110.56 USD (total 110.56)
+2026-10-30 00:30:03,337 INFO Chequeo de stops completado.
