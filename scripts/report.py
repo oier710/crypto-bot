@@ -21,7 +21,8 @@ FECHA_INICIO = "2026-09-26"
 def main():
     EQ_COLS = ["time", "equity_usd", "usdc", "eth_usd", "btc_usd", "eth_qty", "btc_qty", "eth_price", "btc_price", "gas_eth",
                "ausdc", "debt_eth_usd", "debt_btc_usd", "hf",
-               "arb_usd", "arb_qty", "arb_price", "debt_arb_usd", "accum_usd", "equity_total"]   # v4: 20 columnas
+               "arb_usd", "arb_qty", "arb_price", "debt_arb_usd", "accum_usd", "equity_total",
+               "dusdc", "hf_dolo"]   # v4: 20 columnas; v5 (Dolomite): 22
     eq = (pd.read_csv(LOGS / "equity.csv", header=None, skiprows=1, names=EQ_COLS, parse_dates=["time"])
           if (LOGS / "equity.csv").exists() else pd.DataFrame())
     if len(eq):

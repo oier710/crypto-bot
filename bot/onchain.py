@@ -65,6 +65,17 @@ ARB = "0x912CE59144191C1204E64559FE8253a0e49E6548"
 SWAP_ROUTER02 = "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"
 QUOTER_V2 = "0x61fFE014bA17989E743c5F6cB21bF9697530B21e"
 AAVE_ADDRESSES_PROVIDER = "0xa97684ead0e402dC232d5A977953DF7ECBaB3CDb"  # Aave V3 Arbitrum (estable)
+# Dolomite (Arbitrum One) — docs.dolomite.io/smart-contract-addresses; comprobación on-chain (mercados, operador,
+# márgenes) en scripts/research_dolomite_check.py -> results/research_dolomite_check.txt. Solo se usa para el corto
+# de ARB, con su garantía en la cuenta aislada nº 1 (no aparece en la web de Dolomite: recuperación manual =
+# depositWei/withdrawWei sobre la cuenta 1 del DepositWithdrawalProxy; ver journal/2026-10-29-arb-dolomite.md).
+DOLOMITE_MARGIN = "0x6Bd780E7fDf01D77e4d475c821f1e7AE05409072"
+DOLOMITE_DEPOSIT_WITHDRAWAL_PROXY = "0xAdB9D68c613df4AA363B42161E1282117C7B9594"
+DOLO_ACCOUNT = 1              # número de cuenta aislada en Dolomite para el corto (la 0 es la "por defecto")
+DOLO_FLAG_FROM, DOLO_FLAG_NONE = 1, 3   # AccountBalanceLib.BalanceCheckFlag: Both=0, From=1, To=2, None=3
+DOLO_MARGIN_RATIO_DEFAULT = 0.15        # margen mínimo global si no se puede leer (liquidación si garantía < 1.15 x deuda)
+DOLO_BORROW_BUFFER = 1.30               # al pedir prestado (antes de depositar lo vendido) la garantía cubre deuda x k x 1.30 (> HF_MIN)
+DOLO_DUST_USD = 0.05                    # deuda por debajo de esto se considera saldada (intereses de polvo)
 DECIMALS = {USDC: 6, WETH: 18, WBTC: 8, ARB: 18}
 ASSETS = {"ETH": WETH, "BTC": WBTC, "ARB": ARB}
 TOKENS = (USDC, WETH, WBTC, ARB)
@@ -79,7 +90,12 @@ PATHS = {  # rutas Uniswap (fee 0.05 %)
 
 # ------------------------------------------------------------------ parámetros
 STRATEGY_PARAMS = dict(fast=20, slow=60, adx_n=14, adx_min=20, allow_short=True)
-SYMBOLS = ("BTC", "ETH")   # ARB descartada el 2026-10-26: Aave no la presta (sin cortos) y solo en largo no mejora
+SYMBOLS = ("BTC", "ETH", "ARB")   # ARB desde 2026-10-29: largo en Uniswap, corto vía Dolomite (research_2026_10g)
+# Reparto del capital de trading por moneda (research_2026_10g: ARB al 15 % sube la rentabilidad de +61 % a +79 %
+# a 3 años con la misma caída máxima; a partir del 20 % la caída se pasa de −20 %). Sin entrada -> partes iguales.
+WEIGHTS = {"BTC": 0.425, "ETH": 0.425, "ARB": 0.15}
+# Dónde se pide prestada cada moneda para los cortos: Aave presta WBTC y WETH; ARB solo Dolomite.
+SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}
 POSITION_FRACTION = 0.75
 # v4: acumulación. La base de trading se queda con el 70 % de cada ganancia realizada nueva (por encima del
 # máximo anterior); el 30 % compra ACCUM_COINS a partes iguales y se aparta (nunca se vende, no cuenta para
@@ -89,7 +105,7 @@ ACCUM_COINS = ("BTC", "ETH")
 CAPITAL_REF = 115.75
 STOP_ATR = 2.0
 ATR_N = 14
-MIN_TRADE_USD = 5.0
+MIN_TRADE_USD = 3.0           # bajado de 5 a 3 (2026-10-29): la parcial (1/3) de una posición de ARB de ~12$ son ~4$
 MAX_SLIPPAGE = 0.005
 GAS_RESERVE_ETH = 0.0015
 HF_MIN = 1.25                 # factor de salud mínimo en Aave; por debajo se cierran los cortos
@@ -118,6 +134,18 @@ POOL_ABI = json.loads('[{"name":"supply","type":"function","stateMutability":"no
                       '{"name":"borrow","type":"function","stateMutability":"nonpayable","inputs":[{"name":"asset","type":"address"},{"name":"amount","type":"uint256"},{"name":"interestRateMode","type":"uint256"},{"name":"referralCode","type":"uint16"},{"name":"onBehalfOf","type":"address"}],"outputs":[]},'
                       '{"name":"repay","type":"function","stateMutability":"nonpayable","inputs":[{"name":"asset","type":"address"},{"name":"amount","type":"uint256"},{"name":"interestRateMode","type":"uint256"},{"name":"onBehalfOf","type":"address"}],"outputs":[{"type":"uint256"}]},'
                       '{"name":"getUserAccountData","type":"function","stateMutability":"view","inputs":[{"name":"user","type":"address"}],"outputs":[{"name":"totalCollateralBase","type":"uint256"},{"name":"totalDebtBase","type":"uint256"},{"name":"availableBorrowsBase","type":"uint256"},{"name":"currentLiquidationThreshold","type":"uint256"},{"name":"ltv","type":"uint256"},{"name":"healthFactor","type":"uint256"}]}]')
+_ACC = '{"components":[{"name":"owner","type":"address"},{"name":"number","type":"uint256"}],"name":"account","type":"tuple"}'
+_VAL = '{"components":[{"name":"value","type":"uint256"}],"type":"tuple"}'
+DOLO_MARGIN_ABI = json.loads('[{"name":"getMarketIdByTokenAddress","type":"function","stateMutability":"view","inputs":[{"name":"token","type":"address"}],"outputs":[{"type":"uint256"}]},'
+                             '{"name":"getMarketIsClosing","type":"function","stateMutability":"view","inputs":[{"name":"m","type":"uint256"}],"outputs":[{"type":"bool"}]},'
+                             '{"name":"getMarginRatio","type":"function","stateMutability":"view","inputs":[],"outputs":[' + _VAL + ']},'
+                             '{"name":"getMarketMarginPremium","type":"function","stateMutability":"view","inputs":[{"name":"m","type":"uint256"}],"outputs":[' + _VAL + ']},'
+                             '{"name":"getMinBorrowedValue","type":"function","stateMutability":"view","inputs":[],"outputs":[' + _VAL + ']},'
+                             '{"name":"getIsGlobalOperator","type":"function","stateMutability":"view","inputs":[{"name":"o","type":"address"}],"outputs":[{"type":"bool"}]},'
+                             '{"name":"getAccountWei","type":"function","stateMutability":"view","inputs":[' + _ACC + ',{"name":"m","type":"uint256"}],"outputs":[{"components":[{"name":"sign","type":"bool"},{"name":"value","type":"uint256"}],"type":"tuple"}]},'
+                             '{"name":"getAdjustedAccountValues","type":"function","stateMutability":"view","inputs":[' + _ACC + '],"outputs":[' + _VAL + ',' + _VAL + ']}]')
+DOLO_PROXY_ABI = json.loads('[{"name":"depositWei","type":"function","stateMutability":"nonpayable","inputs":[{"name":"toAccountNumber","type":"uint256"},{"name":"marketId","type":"uint256"},{"name":"amountWei","type":"uint256"}],"outputs":[]},'
+                            '{"name":"withdrawWei","type":"function","stateMutability":"nonpayable","inputs":[{"name":"fromAccountNumber","type":"uint256"},{"name":"marketId","type":"uint256"},{"name":"amountWei","type":"uint256"},{"name":"balanceCheckFlag","type":"uint8"}],"outputs":[]}]')
 
 
 def encode_path(hops) -> bytes:
@@ -180,7 +208,109 @@ class Chain:
         for t in TOKENS:
             a, _, v = dp.functions.getReserveTokensAddresses(t).call()
             self.atoken[t], self.debt_token[t] = a, v
-        log.info("Arbitrum One | cuenta %s | Aave pool %s | dry_run=%s", self.address, self.pool_addr[:10], dry_run)
+        self._init_dolomite()
+        log.info("Arbitrum One | cuenta %s | Aave pool %s | Dolomite %s | dry_run=%s", self.address, self.pool_addr[:10],
+                 "ok" if self.dolo_ok else "NO disponible", dry_run)
+
+    def _init_dolomite(self):
+        """Dolomite solo se usa para los cortos de ARB. Si algo falla al leerlo, el bot sigue (sin cortos de ARB)."""
+        self.dolo_ok, self.dolo_market = False, {}
+        self.dolo_margin_ratio, self.dolo_min_borrow_usd = DOLO_MARGIN_RATIO_DEFAULT, 0.0
+        try:
+            self.dolo = self.w3.eth.contract(address=DOLOMITE_MARGIN, abi=DOLO_MARGIN_ABI)
+            self.dolo_proxy = self.w3.eth.contract(address=DOLOMITE_DEPOSIT_WITHDRAWAL_PROXY, abi=DOLO_PROXY_ABI)
+            for t in (USDC,) + tuple(ASSETS[c] for c, v in SHORT_VENUE.items() if v == "dolomite"):
+                self.dolo_market[t] = self.dolo.functions.getMarketIdByTokenAddress(t).call()
+                if t != USDC and self.dolo.functions.getMarketIsClosing(self.dolo_market[t]).call():
+                    raise RuntimeError(f"mercado {t[:8]} cerrándose en Dolomite")
+            if not self.dolo.functions.getIsGlobalOperator(DOLOMITE_DEPOSIT_WITHDRAWAL_PROXY).call():
+                raise RuntimeError("el DepositWithdrawalProxy no es operador global de DolomiteMargin")
+            # requisito efectivo de garantía: margen global x primas de los mercados implicados (USDC y la moneda)
+            k = 1 + self.dolo.functions.getMarginRatio().call()[0] / 1e18
+            for t, mid in self.dolo_market.items():
+                k *= 1 + self.dolo.functions.getMarketMarginPremium(mid).call()[0] / 1e18
+            self.dolo_margin_ratio = k - 1
+            self.dolo_min_borrow_usd = self.dolo.functions.getMinBorrowedValue().call()[0] / 1e36
+            self.dolo_ok = True
+        except Exception as e:  # noqa: BLE001
+            st = load_state()
+            open_pos = [c for c in SHORT_VENUE if SHORT_VENUE[c] == "dolomite"
+                        and (c in st.get("pos", {}) or c in st.get("stops", {}))]
+            if open_pos:
+                # con una posición de ARB abierta no se puede fingir que no existe: mejor fallar esta ejecución
+                raise RuntimeError(f"Dolomite no responde ({e}) y hay posición abierta de {open_pos}") from e
+            log.error("Dolomite no disponible (%s): sin cortos de ARB hasta que vuelva", e)
+
+    # ---- Dolomite (lectura) ----------------------------------------------
+    def _dolo_wei(self, token, account: int = DOLO_ACCOUNT) -> float:
+        """Saldo del token en la cuenta Dolomite: positivo = depositado, negativo = prestado."""
+        sign, value = self.dolo.functions.getAccountWei((self.address, account), self.dolo_market[token]).call()
+        return (value if sign else -value) / 10 ** DECIMALS[token]
+
+    def dolo_balances(self) -> dict:
+        """USDC depositado en Dolomite (cuentas 0 y 1) y deuda por moneda (solo las de Dolomite)."""
+        out = {"dUSDC": 0.0}
+        for c, v in SHORT_VENUE.items():
+            if v == "dolomite":
+                out[f"debt_{c}"] = 0.0
+        if not self.dolo_ok:
+            return out
+        # si la lectura falla se deja propagar: una ejecución fallida es inofensiva (la siguiente es en 15 min);
+        # fingir que no hay deuda borraría el estado de la posición de ARB
+        out["dUSDC"] = max(self._dolo_wei(USDC, DOLO_ACCOUNT), 0.0)   # solo la cuenta 1: la 0 no respalda la 1
+        for c, v in SHORT_VENUE.items():
+            if v == "dolomite":
+                out[f"debt_{c}"] = max(-self._dolo_wei(ASSETS[c], DOLO_ACCOUNT), 0.0)
+        return out
+
+    def dolo_health(self) -> float:
+        """Equivalente al HF de Aave para la cuenta aislada: garantía / (deuda x (1 + margen mínimo)).
+        1.0 = liquidable. Infinito sin deuda."""
+        if not self.dolo_ok:
+            return 1e9
+        sup, bor = self.dolo.functions.getAdjustedAccountValues((self.address, DOLO_ACCOUNT)).call()
+        if bor[0] <= 0:
+            return 1e9
+        return sup[0] / (bor[0] * (1 + self.dolo_margin_ratio))
+
+    # ---- Dolomite (transacciones) ----------------------------------------
+    def dolo_deposit_usdc(self, usd: float):
+        amt = int(usd * 1e6)
+        log.info("DOLOMITE deposit %.2f USDC (cuenta %d)", usd, DOLO_ACCOUNT)
+        if not self.dry_run and amt > 0:
+            self.ensure_allowance(USDC, DOLOMITE_MARGIN, amt)
+            self._send(self.dolo_proxy.functions.depositWei(DOLO_ACCOUNT, self.dolo_market[USDC], amt))
+
+    def dolo_withdraw_usdc(self, usd: float | None):
+        amt = MAX_UINT if usd is None else int(usd * 1e6)
+        log.info("DOLOMITE withdraw %s USDC (cuenta %d)", "todo" if usd is None else f"{usd:.2f}", DOLO_ACCOUNT)
+        if not self.dry_run:
+            self._send(self.dolo_proxy.functions.withdrawWei(DOLO_ACCOUNT, self.dolo_market[USDC], amt, DOLO_FLAG_FROM))
+
+    def dolo_borrow(self, token, amount: int):
+        """Retirar un token que la cuenta no tiene = pedirlo prestado contra la garantía de esa cuenta."""
+        log.info("DOLOMITE borrow %s %s", amount, token[:8])
+        if not self.dry_run:
+            self._send(self.dolo_proxy.functions.withdrawWei(DOLO_ACCOUNT, self.dolo_market[token], amount, DOLO_FLAG_NONE))
+
+    def dolo_repay(self, token, amount: int):
+        """Depositar el token en la cuenta con deuda = devolverlo."""
+        log.info("DOLOMITE repay %s %s", amount, token[:8])
+        if not self.dry_run:
+            self.ensure_allowance(token, DOLOMITE_MARGIN, amount)
+            self._send(self.dolo_proxy.functions.depositWei(DOLO_ACCOUNT, self.dolo_market[token], amount))
+
+    def dolo_repay_all(self, token):
+        """Devuelve toda la deuda: deposita lo justo (la deuda actual) y, si sobra algo depositado, lo retira."""
+        debt = max(-self._dolo_wei(token, DOLO_ACCOUNT), 0.0)
+        have = self.bal(token)
+        amt = int(min(debt * 1.0005, have) * 10 ** DECIMALS[token])
+        log.info("DOLOMITE repay todo %s (deuda %.8f, tengo %.8f)", token[:8], debt, have)
+        if not self.dry_run and amt > 0:
+            self.ensure_allowance(token, DOLOMITE_MARGIN, amt)
+            self._send(self.dolo_proxy.functions.depositWei(DOLO_ACCOUNT, self.dolo_market[token], amt))
+            if self._dolo_wei(token, DOLO_ACCOUNT) > 0:
+                self._send(self.dolo_proxy.functions.withdrawWei(DOLO_ACCOUNT, self.dolo_market[token], MAX_UINT, DOLO_FLAG_FROM))
 
     def erc20(self, token):
         return self.w3.eth.contract(address=token, abi=ERC20_ABI)
@@ -194,7 +324,9 @@ class Chain:
             b[t] = self.bal(t)
         b["aUSDC"] = self.erc20(self.atoken[USDC]).functions.balanceOf(self.address).call() / 1e6
         for c, t in ASSETS.items():
-            b[f"debt_{c}"] = self.erc20(self.debt_token[t]).functions.balanceOf(self.address).call() / 10 ** DECIMALS[t]
+            if SHORT_VENUE.get(c, "aave") == "aave":
+                b[f"debt_{c}"] = self.erc20(self.debt_token[t]).functions.balanceOf(self.address).call() / 10 ** DECIMALS[t]
+        b.update(self.dolo_balances())
         return b
 
     def health_factor(self) -> float:
@@ -294,12 +426,12 @@ def record_equity(equity: float, pf: dict, prices: dict):
     b, v = pf["raw"], pf["val"]
     with EQUITY_FILE.open("a") as f:
         if new:
-            f.write("time,equity_usd,usdc,eth_usd,btc_usd,eth_qty,btc_qty,eth_price,btc_price,gas_eth,ausdc,debt_eth_usd,debt_btc_usd,hf,arb_usd,arb_qty,arb_price,debt_arb_usd,accum_usd,equity_total\n")
+            f.write("time,equity_usd,usdc,eth_usd,btc_usd,eth_qty,btc_qty,eth_price,btc_price,gas_eth,ausdc,debt_eth_usd,debt_btc_usd,hf,arb_usd,arb_qty,arb_price,debt_arb_usd,accum_usd,equity_total,dusdc,hf_dolo\n")
         f.write(f"{datetime.now(timezone.utc).isoformat(timespec='seconds')},{equity:.2f},{b[USDC]:.2f},{v['ETH']:.2f},{v['BTC']:.2f},"
                 f"{b[WETH] + max(b['ETH_native'] - GAS_RESERVE_ETH, 0):.6f},{b[WBTC]:.6f},{prices['ETH']:.2f},{prices['BTC']:.2f},"
                 f"{min(b['ETH_native'], GAS_RESERVE_ETH):.5f},{b['aUSDC']:.2f},{b['debt_ETH'] * prices['ETH']:.2f},{b['debt_BTC'] * prices['BTC']:.2f},{pf['hf']:.2f},"
                 f"{pf['val'].get('ARB', 0.0):.2f},{b.get(ARB, 0.0):.6f},{prices.get('ARB', 0.0):.4f},{b.get('debt_ARB', 0.0) * prices.get('ARB', 0.0):.2f},"
-                f"{pf.get('accum_usd', 0.0):.2f},{pf.get('equity_total', equity):.2f}\n")
+                f"{pf.get('accum_usd', 0.0):.2f},{pf.get('equity_total', equity):.2f},{b.get('dUSDC', 0.0):.2f},{pf.get('hf_dolo', 1e9):.2f}\n")
 
 
 def record(coin, side, usd, price, reason, dry_run=False):
@@ -382,23 +514,34 @@ def portfolio(ch: Chain, prices: dict) -> tuple[float, dict]:
     acc = {c: min(accum_qty(c), held[c]) for c in ASSETS}
     val = {c: (held[c] - acc[c] - b[f"debt_{c}"]) * prices[c] for c in ASSETS if c in prices}
     accum_usd = sum(acc[c] * prices[c] for c in ASSETS if c in prices)
-    cash = b[USDC] + b["aUSDC"]
+    cash = b[USDC] + b["aUSDC"] + b.get("dUSDC", 0.0)
     equity = cash + sum(val.values())
     hf = ch.health_factor()
-    log.info("USDC %.2f (wallet %.2f + Aave %.2f) | %s | deuda %s | HF %s | acumulado %.2f$ -> equity trading %.2f USD (total %.2f)",
-             cash, b[USDC], b["aUSDC"], " ".join(f"{c} {v:+.2f}$" for c, v in val.items()),
-             " ".join(f"{c} {b[f'debt_{c}']:.6f}" for c in ASSETS), "∞" if hf > 1e6 else f"{hf:.2f}", accum_usd, equity, equity + accum_usd)
-    return equity, {"raw": b, "val": val, "cash": cash, "hf": hf, "accum_usd": accum_usd, "accum_qty": acc,
-                    "equity_total": equity + accum_usd}
+    hf_d = ch.dolo_health()
+    log.info("USDC %.2f (wallet %.2f + Aave %.2f + Dolomite %.2f) | %s | deuda %s | HF %s / Dolomite %s | acumulado %.2f$ -> equity trading %.2f USD (total %.2f)",
+             cash, b[USDC], b["aUSDC"], b.get("dUSDC", 0.0), " ".join(f"{c} {v:+.2f}$" for c, v in val.items()),
+             " ".join(f"{c} {b[f'debt_{c}']:.6f}" for c in ASSETS), "∞" if hf > 1e6 else f"{hf:.2f}",
+             "∞" if hf_d > 1e6 else f"{hf_d:.2f}", accum_usd, equity, equity + accum_usd)
+    return equity, {"raw": b, "val": val, "cash": cash, "hf": hf, "hf_dolo": hf_d, "accum_usd": accum_usd, "accum_qty": acc,
+                    "equity_total": equity + accum_usd, "prices": prices}
 
 
 def usdc_in_wallet(ch: Chain, usd: float, pf: dict):
-    """Garantiza `usd` USDC en la wallet, retirando de Aave si hace falta."""
+    """Garantiza `usd` USDC en la wallet, retirando de Aave (sin bajar su HF) y, si no basta, de Dolomite."""
     b = pf["raw"]
-    if b[USDC] >= usd or b["aUSDC"] <= 0.01:
+    if b[USDC] >= usd:
         return
-    need = min(usd - b[USDC] + 0.5, b["aUSDC"])
-    ch.aave_withdraw_usdc(need)
+    need = usd - b[USDC] + 0.5
+    prices = pf["prices"]
+    if b["aUSDC"] > 0.01:
+        w = min(need, _max_withdraw(b, prices, HF_TARGET_MIN), b["aUSDC"])
+        if w > 0.01:
+            ch.aave_withdraw_usdc(w)
+            need -= w
+    if need > 0.01 and b.get("dUSDC", 0.0) > 0.01 and ch.dolo_ok:
+        w = min(need, _max_withdraw_dolo(ch, b, prices, HF_TARGET_MIN), b["dUSDC"])
+        if w > 0.01:
+            ch.dolo_withdraw_usdc(w)
 
 
 # ---------------------------------------------------------------------- largos
@@ -408,7 +551,7 @@ def sell_long(ch: Chain, coin: str, usd: float, prices: dict, reason: str):
     free = raw[token] + (max(raw["ETH_native"] - GAS_RESERVE_ETH, 0) if coin == "ETH" else 0.0) - accum_qty(coin)
     amt_tokens = max(min(usd / prices[coin], free), 0.0)
     if amt_tokens * prices[coin] < MIN_TRADE_USD:
-        return
+        return False
     usd = amt_tokens * prices[coin]
     if coin == "ETH":
         use_weth = min(raw[WETH], amt_tokens)
@@ -425,6 +568,7 @@ def sell_long(ch: Chain, coin: str, usd: float, prices: dict, reason: str):
     else:
         ch.swap_exact_in(PATHS[coin]["sell"], int(min(amt_tokens, raw[token]) * 10 ** DECIMALS[token]))
     record(coin, "SELL", usd, prices[coin], reason, ch.dry_run)
+    return True
 
 
 def buy_long(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason: str):
@@ -437,11 +581,27 @@ def buy_long(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason: s
 
 
 # ---------------------------------------------------------------------- cortos
+def venue(coin: str) -> str:
+    return SHORT_VENUE.get(coin, "aave")
+
+
+def aave_debt_usd(b: dict, prices: dict) -> float:
+    return sum(b[f"debt_{c}"] * prices[c] for c in ASSETS if c in prices and venue(c) == "aave")
+
+
+def dolo_debt_usd(b: dict, prices: dict) -> float:
+    return sum(b.get(f"debt_{c}", 0.0) * prices[c] for c in ASSETS if c in prices and venue(c) == "dolomite")
+
+
 def open_short(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason: str):
+    return (open_short_dolomite if venue(coin) == "dolomite" else open_short_aave)(ch, coin, usd, prices, pf, reason)
+
+
+def open_short_aave(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason: str):
     """Deposita todo el USDC libre en Aave, pide prestado `usd` del token y lo vende por USDC (que también deposita)."""
     b = pf["raw"]
     # tamaño máximo que deja HF >= HF_TARGET_MIN con la garantía disponible (USDC libre + USDC ya en Aave − deuda actual)
-    debt_now = sum(b[f"debt_{c}"] * prices[c] for c in ASSETS if c in prices)
+    debt_now = aave_debt_usd(b, prices)
     collateral = b[USDC] + b["aUSDC"]
     max_usd = max((collateral * LIQ_THRESHOLD - debt_now * HF_TARGET_MIN) / (HF_TARGET_MIN - LIQ_THRESHOLD), 0.0)
     if max_usd < usd:
@@ -466,23 +626,101 @@ def open_short(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason:
         close_short(ch, coin, prices, pf2, "HF insuficiente")
 
 
+def open_short_dolomite(ch: Chain, coin: str, usd: float, prices: dict, pf: dict, reason: str):
+    """Corto en Dolomite (cuenta aislada): deposita la garantía justa en USDC, retira el token (= préstamo),
+    lo vende por USDC y deposita también lo vendido. La garantía de Aave (cortos BTC/ETH) no se toca
+    más allá de lo que su HF permite."""
+    if not ch.dolo_ok:
+        log.warning("CORTO %s: Dolomite no disponible, no se abre", coin)
+        return
+    b = ch.balances() if not ch.dry_run else pf["raw"]   # saldos frescos: otras aperturas del ciclo han podido gastar USDC
+    pf = dict(pf, raw=b)
+    k = 1 + ch.dolo_margin_ratio
+    debt_now = dolo_debt_usd(b, prices)
+    # garantía necesaria para que la salud quede >= HF_TARGET_MIN contando lo vendido (que también se deposita):
+    # (coll + usd) / ((debt_now + usd) * k) >= HF_TARGET_MIN  ->  coll >= (debt_now + usd) * k * HF_TARGET_MIN - usd
+    # ... pero en el momento del préstamo lo vendido aún no está depositado: la cuenta tiene que aguantar
+    # sola con margen (garantía >= deuda x k x DOLO_BORROW_BUFFER) o Dolomite revierte.
+    def coll_needed(u):
+        return max((debt_now + u) * k * HF_TARGET_MIN - u, (debt_now + u) * k * DOLO_BORROW_BUFFER)
+
+    need_coll = coll_needed(usd)
+    have_coll = b.get("dUSDC", 0.0)
+    free = b[USDC] + (_max_withdraw(b, prices, HF_TARGET_MIN) if b["aUSDC"] > 0.01 else 0.0)
+    if have_coll + free < need_coll:
+        # reducir el tamaño a lo que permite la garantía alcanzable (la mayor de las dos condiciones)
+        avail = have_coll + free
+        max_usd = min((avail - debt_now * k * HF_TARGET_MIN) / (k * HF_TARGET_MIN - 1),
+                      avail / (k * DOLO_BORROW_BUFFER) - debt_now)
+        max_usd = max(max_usd, 0.0)
+        log.info("CORTO %s: tamaño limitado por garantía %.2f$ -> %.2f$", coin, usd, max_usd)
+        usd = max_usd
+        need_coll = coll_needed(usd)
+    usd = min(usd, SHORT_MAX_USD)
+    if usd < max(MIN_TRADE_USD, ch.dolo_min_borrow_usd):
+        log.info("CORTO %s: sin garantía suficiente o por debajo del mínimo de Dolomite (%.2f$), no se abre", coin, usd)
+        return
+    token = ASSETS[coin]
+    add_coll = max(need_coll - have_coll, 0.0) + 0.5
+    if add_coll > 0.5:
+        usdc_in_wallet(ch, add_coll, pf)
+        add_coll = min(add_coll, ch.balances()[USDC] - 0.2) if not ch.dry_run else add_coll
+        if add_coll > 0.01:
+            ch.dolo_deposit_usdc(add_coll)
+    amount = int(usd / prices[coin] * 10 ** DECIMALS[token])
+    ch.dolo_borrow(token, amount)
+    try:
+        usdc_before = ch.bal(USDC) if not ch.dry_run else 0.0
+        out = ch.swap_exact_in(PATHS[coin]["sell"], amount)
+        got = (ch.bal(USDC) - usdc_before - 0.05) if not ch.dry_run else out / 1e6
+        if got > 0.1:
+            ch.dolo_deposit_usdc(got)
+    except Exception as e:  # noqa: BLE001 - préstamo hecho pero venta/depósito fallidos: deshacer, no dejar una posición a medias
+        log.exception("CORTO %s: fallo tras pedir prestado (%s); devuelvo el préstamo y retiro la garantía", coin, e)
+        try:
+            ch.dolo_repay_all(token)
+            ch.dolo_withdraw_usdc(None)
+        except Exception:  # noqa: BLE001
+            log.exception("CORTO %s: no se pudo deshacer del todo; se reintenta en la próxima ejecución", coin)
+        raise
+    hf = ch.dolo_health() if not ch.dry_run else 9.9
+    log.info("CORTO %s abierto en Dolomite: %.2f$ | salud %.2f", coin, usd, hf)
+    record(coin, "SHORT", usd, prices[coin], reason, ch.dry_run)
+    if hf < HF_MIN:
+        log.warning("Salud Dolomite %.2f tras abrir < %.2f: cerrando el corto por seguridad", hf, HF_MIN)
+        _, pf2 = portfolio(ch, prices)
+        close_short(ch, coin, prices, pf2, "salud insuficiente")
+
+
 HF_WITHDRAW_MIN = 1.01        # al retirar garantía para recomprar, el HF no baja de aquí
 
 
-def _max_withdraw(b: dict, prices: dict) -> float:
-    """USDC que se puede sacar de Aave dejando HF >= HF_WITHDRAW_MIN (con umbral conservador)."""
-    debt_usd = sum(b[f"debt_{c}"] * prices[c] for c in ASSETS if c in prices)
-    return max(b["aUSDC"] - debt_usd * HF_WITHDRAW_MIN / LIQ_THRESHOLD, 0.0)
+def _max_withdraw(b: dict, prices: dict, min_hf: float = HF_WITHDRAW_MIN) -> float:
+    """USDC que se puede sacar de Aave dejando HF >= min_hf (umbral conservador). Al recomprar un corto vale
+    HF_WITHDRAW_MIN (cada repago restaura el HF); para financiar OTRA posición se usa HF_TARGET_MIN."""
+    return max(b["aUSDC"] - aave_debt_usd(b, prices) * min_hf / LIQ_THRESHOLD, 0.0)
+
+
+def _max_withdraw_dolo(ch: Chain, b: dict, prices: dict, min_hf: float = HF_WITHDRAW_MIN) -> float:
+    """USDC que se puede sacar de la cuenta Dolomite dejando salud >= min_hf."""
+    k = 1 + ch.dolo_margin_ratio
+    return max(b.get("dUSDC", 0.0) - dolo_debt_usd(b, prices) * k * min_hf, 0.0)
 
 
 def _cover(ch: Chain, coin: str, qty: float | None, prices: dict) -> float:
     """Recompra y devuelve `qty` tokens de deuda (None = toda). Si la garantía no permite sacar todo el
-    USDC de una vez (Aave no deja bajar el HF de 1), lo hace por tramos: cada repago libera garantía.
-    Devuelve los USD cubiertos."""
+    USDC de una vez (el protocolo no deja bajar la salud de 1), lo hace por tramos: cada repago libera
+    garantía. Devuelve los USD cubiertos. Funciona igual en Aave (BTC/ETH) y en Dolomite (ARB)."""
     token = ASSETS[coin]
     key = f"debt_{coin}"
     px = prices[coin]
     covered = 0.0
+    dolo = venue(coin) == "dolomite"
+    coll_key = "dUSDC" if dolo else "aUSDC"
+    withdraw = ch.dolo_withdraw_usdc if dolo else ch.aave_withdraw_usdc
+    repay = ch.dolo_repay if dolo else ch.aave_repay
+    repay_all = ch.dolo_repay_all if dolo else ch.aave_repay_all
+    max_withdraw = (lambda bb: _max_withdraw_dolo(ch, bb, prices)) if dolo else (lambda bb: _max_withdraw(bb, prices))
     for _ in range(8):
         b = ch.balances()
         debt = b[key]
@@ -492,10 +730,10 @@ def _cover(ch: Chain, coin: str, qty: float | None, prices: dict) -> float:
         full = left >= debt * 0.98
         buy_q = debt * 1.005 if full else left
         need = buy_q * px * 1.02 - b[USDC]
-        if need > 0 and b["aUSDC"] > 0.01:
-            w = min(need, _max_withdraw(b, prices), b["aUSDC"])
+        if need > 0 and b.get(coll_key, 0.0) > 0.01:
+            w = min(need, max_withdraw(b), b[coll_key])
             if w > 0.01:
-                ch.aave_withdraw_usdc(w)
+                withdraw(w)
                 b = ch.balances()
         afford = b[USDC] / (px * 1.02)
         if ch.dry_run:
@@ -508,10 +746,10 @@ def _cover(ch: Chain, coin: str, qty: float | None, prices: dict) -> float:
         amount = int(buy_q * 10 ** DECIMALS[token])
         ch.swap_exact_out(PATHS[coin]["buy"], amount)
         if full:
-            ch.aave_repay_all(token)
+            repay_all(token)
             covered += debt * px
         else:
-            ch.aave_repay(token, amount)
+            repay(token, amount)
             covered += buy_q * px
         if ch.dry_run:
             break
@@ -541,13 +779,13 @@ def cover_short_part(ch: Chain, coin: str, qty: float, prices: dict, pf: dict, r
     debt = pf["raw"][f"debt_{coin}"]
     qty = min(qty, debt)
     if qty * prices[coin] < MIN_TRADE_USD:
-        return
+        return False
     if qty >= debt * 0.98:
-        close_short(ch, coin, prices, pf, reason)
-        return
+        return close_short(ch, coin, prices, pf, reason)
     usd = _cover(ch, coin, qty, prices)
     log.info("CORTO %s recortado: %.2f$", coin, usd)
     record(coin, "COVER", usd, prices[coin], reason, ch.dry_run)
+    return usd > 0
 
 
 # --------------------------------------------- v3: gestión de la posición abierta
@@ -598,11 +836,11 @@ def realize_close(st: dict, c: str, v: float, px: float, event: str, dry_run: bo
     realize(st, c, side, q, px, event, dry_run, closes_op=True)
 
 
-def reduce_position(ch: Chain, c: str, side: int, qty: float, prices: dict, pf: dict, reason: str):
+def reduce_position(ch: Chain, c: str, side: int, qty: float, prices: dict, pf: dict, reason: str) -> bool:
+    """True si de verdad se vendió/recompró algo (por debajo de MIN_TRADE_USD no se opera)."""
     if side == 1:
-        sell_long(ch, c, qty * prices[c], prices, reason)
-    else:
-        cover_short_part(ch, c, qty, prices, pf, reason)
+        return bool(sell_long(ch, c, qty * prices[c], prices, reason))
+    return bool(cover_short_part(ch, c, qty, prices, pf, reason))
 
 
 def add_position(ch: Chain, c: str, side: int, qty: float, prices: dict, pf: dict, reason: str):
@@ -650,10 +888,12 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
             else:
                 log.warning("PARCIAL %d %s %s: %.2f (+%.1f ATR desde %.2f) -> cierro 1/3 (%.2f$)",
                             n, "largo" if side == 1 else "corto", c, px, fav, pos["ref"], q * px)
-                reduce_position(ch, c, side, q, prices, pf, f"parcial {n}")
-                realize(st, c, side, q, px, f"parcial {n}", ch.dry_run, closes_op=False)
-                pos["qty_now"] = qty_now - q
-                traded = True
+                if reduce_position(ch, c, side, q, prices, pf, f"parcial {n}"):
+                    realize(st, c, side, q, px, f"parcial {n}", ch.dry_run, closes_op=False)
+                    pos["qty_now"] = qty_now - q
+                    traded = True
+                else:
+                    log.warning("PARCIAL %d %s: %.2f$ está por debajo del mínimo operable; no se vende (solo se sube el stop)", n, c, q * px)
             pos["pt_done"], pos["pb"] = n, 0.0
             be = pos["entry"] * (1 + side * BE_COST)
             if sp is not None:
@@ -702,11 +942,28 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
     return pf
 
 
-def tidy_aave(ch: Chain):
-    """Sin deuda -> retirar todo el USDC de Aave para tenerlo disponible."""
+def tidy_aave(ch: Chain, prices: dict | None = None):
+    """Sin deuda en un protocolo -> retirar todo su USDC para tenerlo disponible (Aave y Dolomite por separado).
+    En Dolomite, una deuda de polvo (< DOLO_DUST_USD, intereses) se salda con lo que haya en la wallet y no bloquea."""
     b = ch.balances()
-    if all(b[f"debt_{c}"] <= 0 for c in ASSETS) and b["aUSDC"] > 0.5:
+    if all(b[f"debt_{c}"] <= 0 for c in ASSETS if venue(c) == "aave") and b["aUSDC"] > 0.5:
         ch.aave_withdraw_usdc(None)
+    if not ch.dolo_ok:
+        return
+    prices = prices or {}
+    clear = True
+    for c in ASSETS:
+        if venue(c) != "dolomite":
+            continue
+        d = b.get(f"debt_{c}", 0.0)
+        if d <= 0:
+            continue
+        if prices.get(c) and d * prices[c] <= DOLO_DUST_USD and b.get(ASSETS[c], 0.0) >= d:
+            ch.dolo_repay_all(ASSETS[c])
+        else:
+            clear = False
+    if clear and b.get("dUSDC", 0.0) > 0.5:
+        ch.dolo_withdraw_usdc(None)
 
 
 # ----------------------------------------------------------------------- ciclo
@@ -741,7 +998,10 @@ def run_cycle(dry_run: bool, signals: bool = True):
         return
     dd = equity / st["peak_equity"] - 1
     day = equity / st["day_start_equity"] - 1
-    if dd < -RISK.max_total_drawdown_pct or day < -RISK.max_daily_loss_pct:
+    if not ch.dolo_ok:
+        # sin lectura de Dolomite la equity puede ir sin su garantía: no se evalúan los límites con un dato incompleto
+        log.warning("Dolomite no disponible: no se evalúan los límites de riesgo en esta ejecución")
+    elif dd < -RISK.max_total_drawdown_pct or day < -RISK.max_daily_loss_pct:
         reason = f"drawdown {dd:+.1%} / día {day:+.1%} supera límites"
         log.warning("CERRANDO TODO: %s", reason)
         for c in SYMBOLS:
@@ -751,22 +1011,23 @@ def run_cycle(dry_run: bool, signals: bool = True):
             elif pf["val"][c] >= MIN_TRADE_USD:
                 sell_long(ch, c, pf["val"][c], prices, "límite de riesgo")
                 realize_close(st, c, pf["val"][c], prices[c], "límite de riesgo", ch.dry_run)
-        tidy_aave(ch)
+        tidy_aave(ch, prices)
         st["stops"], st["pos"] = {}, {}
         st.update(halted=True, halt_reason=reason)
         save_state(st)
         return
 
-    # --- salud de Aave (cada ejecución) ---
-    if pf["hf"] < HF_MIN:
-        log.warning("HF %.2f < %.2f: cerrando cortos por seguridad", pf["hf"], HF_MIN)
+    # --- salud de Aave y de Dolomite (cada ejecución): se cierran solo los cortos del protocolo afectado ---
+    low = [v for v, hf in (("aave", pf["hf"]), ("dolomite", pf.get("hf_dolo", 1e9))) if hf < HF_MIN]
+    if low:
+        log.warning("HF Aave %.2f / Dolomite %.2f: cerrando cortos de %s por seguridad", pf["hf"], pf.get("hf_dolo", 1e9), low)
         for c in SYMBOLS:
-            if pf["val"][c] <= -MIN_TRADE_USD:
+            if pf["raw"].get(f"debt_{c}", 0.0) * prices[c] > DOLO_DUST_USD and venue(c) in low:
                 if close_short(ch, c, prices, pf, "factor de salud bajo"):
                     realize_close(st, c, pf["val"][c], prices[c], "factor de salud bajo", ch.dry_run)
                     st["stops"].pop(c, None)
                     st.get("pos", {}).pop(c, None)
-        tidy_aave(ch)
+        tidy_aave(ch, prices)
         equity, pf = portfolio(ch, prices)
 
     # --- posición abierta: parciales, stops, reentrada (cada ejecución) ---
@@ -794,19 +1055,22 @@ def run_cycle(dry_run: bool, signals: bool = True):
             st.setdefault("stopped_today", {})[c] = today
         _, pf = portfolio(ch, prices)
     if not signals:
-        tidy_aave(ch)
+        tidy_aave(ch, prices)
         save_state(st)
         log.info("Chequeo de stops completado.")
         return
 
     # --- señales diarias ---
     equity, pf = portfolio(ch, prices)
-    per_asset = equity / len(SYMBOLS) * POSITION_FRACTION
     plan = {}
     for c in SYMBOLS:
+        per_asset = equity * WEIGHTS.get(c, 1 / len(SYMBOLS)) * POSITION_FRACTION
         df = coinbase_daily(c)
         sig = int(trend_ema.signals(df, **STRATEGY_PARAMS).iloc[-1])
         if sig == -1 and not SHORTS_ENABLED:
+            sig = 0
+        if sig == -1 and venue(c) == "dolomite" and not ch.dolo_ok:
+            log.warning("%s: señal de corto pero Dolomite no disponible; se queda fuera", c)
             sig = 0
         atr = float(indicators.atr(df, ATR_N).iloc[-1])
         have = pf["val"][c]
@@ -845,13 +1109,18 @@ def run_cycle(dry_run: bool, signals: bool = True):
     equity, pf = portfolio(ch, prices)
     for c, p in plan.items():
         have, target = pf["val"][c], p["target"]
-        if target > 0 and have > -MIN_TRADE_USD and target - max(have, 0) > MIN_TRADE_USD:
-            buy_long(ch, c, target - max(have, 0), prices, pf, f"señal {p['sig']:+d}")
-        elif target < 0 and have > -MIN_TRADE_USD:
-            open_short(ch, c, -target, prices, pf, f"señal {p['sig']:+d}")
+        try:
+            if target > 0 and have > -MIN_TRADE_USD and target - max(have, 0) > MIN_TRADE_USD:
+                buy_long(ch, c, target - max(have, 0), prices, pf, f"señal {p['sig']:+d}")
+                equity, pf = portfolio(ch, prices)
+            elif target < 0 and have > -MIN_TRADE_USD:
+                open_short(ch, c, -target, prices, pf, f"señal {p['sig']:+d}")
+                equity, pf = portfolio(ch, prices)
+        except Exception as e:  # noqa: BLE001 - que una apertura fallida (p. ej. Dolomite) no deje sin stops al resto
+            log.exception("ERROR abriendo %s (%s); el resto del ciclo sigue", c, e)
             equity, pf = portfolio(ch, prices)
     # 3) stops: toda posición tiene stop; nuevas entradas lo fijan hoy
-    tidy_aave(ch)
+    tidy_aave(ch, prices)
     equity, pf = portfolio(ch, prices)
     pos_all = st.setdefault("pos", {})
     for c, p in plan.items():
@@ -902,8 +1171,8 @@ def accumulate(ch: Chain, st: dict, prices: dict, pf: dict):
     per_coin = acc["pending_usd"] / len(ACCUM_COINS)
     if per_coin < MIN_TRADE_USD:
         return
-    if any(pf["raw"][f"debt_{c}"] > 0 for c in ASSETS):
-        log.info("ACUMULACIÓN: %.2f$ pendientes; se espera a no tener cortos abiertos (no retirar garantía de Aave)", acc["pending_usd"])
+    if any(pf["raw"].get(f"debt_{c}", 0.0) * prices.get(c, 1.0) > DOLO_DUST_USD for c in ASSETS):
+        log.info("ACUMULACIÓN: %.2f$ pendientes; se espera a no tener cortos abiertos (no retirar garantía de Aave/Dolomite)", acc["pending_usd"])
         return
     for c in ACCUM_COINS:
         if c not in prices:
@@ -954,7 +1223,7 @@ def test_short(coin: str = "ETH", usd: float = 10.0):
     time.sleep(5)
     equity1, pf = portfolio(ch, prices)
     close_short(ch, coin, prices, pf, "prueba")
-    tidy_aave(ch)
+    tidy_aave(ch, prices)
     time.sleep(5)
     equity2, pf = portfolio(ch, prices)
     log.info("=== PRUEBA TERMINADA: equity %.2f -> %.2f -> %.2f (coste %.2f$) ===", equity0, equity1, equity2, equity0 - equity2)
