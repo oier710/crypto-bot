@@ -8914,3 +8914,6 @@ requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected(
 2026-10-30 06:37:37,223 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
 2026-10-30 06:37:39,864 INFO USDC 136.47 (wallet 0.25 + Aave 136.22) | ETH -26.27$ BTC +0.00$ | deuda ETH 0.011694 BTC 0.000000 ARB 0.000000 | HF 4.05 | acumulado 0.00$ -> equity trading 110.20 USD (total 110.20)
 2026-10-30 06:37:42,042 INFO Chequeo de stops completado.
+2026-10-30 06:51:05,578 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
+2026-10-30 06:51:06,557 INFO USDC 136.47 (wallet 0.25 + Aave 136.22) | ETH -26.25$ BTC +0.00$ | deuda ETH 0.011694 BTC 0.000000 ARB 0.000000 | HF 4.05 | acumulado 0.00$ -> equity trading 110.22 USD (total 110.22)
+2026-10-30 06:51:07,285 INFO Chequeo de stops completado.
