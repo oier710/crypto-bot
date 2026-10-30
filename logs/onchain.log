@@ -8812,3 +8812,13 @@ Traceback (most recent call last):
   File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/requests/adapters.py", line 711, in send
     raise ConnectionError(err, request=request)
 requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))
+2026-10-30 00:21:16,556 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | dry_run=False
+2026-10-30 00:21:19,339 INFO USDC 149.24 (wallet 1.00 + Aave 148.24) | ETH -38.88$ BTC +0.00$ | deuda ETH 0.017540 BTC 0.000000 ARB 0.000000 | HF 2.98 | acumulado 0.00$ -> equity trading 110.36 USD (total 110.36)
+2026-10-30 00:21:21,902 INFO USDC 149.24 (wallet 1.00 + Aave 148.24) | ETH -38.88$ BTC +0.00$ | deuda ETH 0.017540 BTC 0.000000 ARB 0.000000 | HF 2.98 | acumulado 0.00$ -> equity trading 110.36 USD (total 110.36)
+2026-10-30 00:21:31,432 INFO BTC cierre=77780.33 señal=+0 ATR=2144.67 tengo=+0.00$ objetivo=+0.00$
+2026-10-30 00:21:39,641 INFO ETH cierre=2248.34 señal=-1 ATR=91.67 tengo=-38.88$ objetivo=-38.88$
+2026-10-30 00:21:42,213 INFO USDC 149.24 (wallet 1.00 + Aave 148.24) | ETH -38.88$ BTC +0.00$ | deuda ETH 0.017540 BTC 0.000000 ARB 0.000000 | HF 2.98 | acumulado 0.00$ -> equity trading 110.36 USD (total 110.36)
+2026-10-30 00:21:47,031 INFO USDC 149.24 (wallet 1.00 + Aave 148.24) | ETH -38.88$ BTC +0.00$ | deuda ETH 0.017540 BTC 0.000000 ARB 0.000000 | HF 2.97 | acumulado 0.00$ -> equity trading 110.36 USD (total 110.36)
+2026-10-30 00:21:49,685 INFO USDC 149.24 (wallet 1.00 + Aave 148.24) | ETH -38.88$ BTC +0.00$ | deuda ETH 0.017540 BTC 0.000000 ARB 0.000000 | HF 2.97 | acumulado 0.00$ -> equity trading 110.36 USD (total 110.36)
+2026-10-30 00:21:49,686 INFO Resultado realizado acumulado: -7.23$ | equity trading 110.36$ (-5.39$ desde 115.75$) | acumulado {} = 0.00$ (coste 0.00$)
+2026-10-30 00:21:49,687 INFO Ciclo diario completado. Stops: {'ETH': 2501.2058698829974} | posiciones: {'ETH': {'entrada': 2320.45, 'parciales': 0, 'ref': 2320.45}}
