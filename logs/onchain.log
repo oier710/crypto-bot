@@ -10139,3 +10139,6 @@ requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected(
 2026-11-03 03:06:25,667 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-03 03:06:29,035 INFO USDC 101.37 (wallet 0.50 + Aave 100.87 + Dolomite 0.00) | ETH -26.27$ BTC +34.73$ ARB +0.00$ | deuda ETH 0.011697 BTC 0.000000 ARB 0.000000 | HF 3.00 / Dolomite ∞ | acumulado 0.00$ -> equity trading 109.82 USD (total 109.82)
 2026-11-03 03:06:31,560 INFO Chequeo de stops completado.
+2026-11-03 03:21:23,337 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-03 03:21:27,039 INFO USDC 101.37 (wallet 0.50 + Aave 100.87 + Dolomite 0.00) | ETH -26.34$ BTC +34.83$ ARB +0.00$ | deuda ETH 0.011697 BTC 0.000000 ARB 0.000000 | HF 2.99 / Dolomite ∞ | acumulado 0.00$ -> equity trading 109.86 USD (total 109.86)
+2026-11-03 03:21:29,634 INFO Chequeo de stops completado.
