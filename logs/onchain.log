@@ -10596,3 +10596,12 @@ requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected(
 2026-11-04 15:07:21,325 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-04 15:07:22,651 INFO USDC 74.08 (wallet 74.08 + Aave 0.00 + Dolomite 0.00) | ETH +0.14$ BTC +36.34$ ARB +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.56 USD (total 110.56)
 2026-11-04 15:07:23,533 INFO Chequeo de stops completado.
+2026-11-04 15:36:51,592 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-04 15:36:55,396 INFO USDC 74.08 (wallet 74.08 + Aave 0.00 + Dolomite 0.00) | ETH +0.14$ BTC +36.58$ ARB +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.80 USD (total 110.80)
+2026-11-04 15:36:55,397 WARNING PARCIAL 1 largo BTC: 80689.36 (+1.6 ATR desde 77382.70) -> cierro 1/3 (12.19$)
+2026-11-04 15:36:58,463 INFO SWAP 0x2f2a25 -> 0xaf88d0 | in=15113 out~12174208
+2026-11-04 15:37:00,840 INFO tx ok a1ff911faa2240b53aff1023fbc5c5f3678dba75008c5305f46c888dd9e35b93 gas=134728
+2026-11-04 15:37:00,841 WARNING RESULTADO BTC largo (parcial 1): bruto +0.50$ costes 0.06$ -> neto +0.44$ | realizado acumulado -6.24$
+2026-11-04 15:37:00,841 INFO BTC stop a entrada: 77537.47
+2026-11-04 15:37:04,244 INFO USDC 86.25 (wallet 86.25 + Aave 0.00 + Dolomite 0.00) | ETH +0.14$ BTC +24.39$ ARB +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.78 USD (total 110.78)
+2026-11-04 15:37:07,119 INFO Chequeo de stops completado.
