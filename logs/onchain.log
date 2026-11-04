@@ -10507,3 +10507,17 @@ requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected(
 2026-11-04 08:07:19,078 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-04 08:07:20,244 INFO USDC 101.38 (wallet 0.50 + Aave 100.88 + Dolomite 0.00) | ETH -27.03$ BTC +35.50$ ARB +0.00$ | deuda ETH 0.011698 BTC 0.000000 ARB 0.000000 | HF 2.91 / Dolomite ∞ | acumulado 0.00$ -> equity trading 109.85 USD (total 109.85)
 2026-11-04 08:07:21,053 INFO Chequeo de stops completado.
+2026-11-04 08:17:26,347 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-04 08:17:28,035 INFO USDC 101.38 (wallet 0.50 + Aave 100.88 + Dolomite 0.00) | ETH -27.15$ BTC +35.51$ ARB +0.00$ | deuda ETH 0.011698 BTC 0.000000 ARB 0.000000 | HF 2.90 / Dolomite ∞ | acumulado 0.00$ -> equity trading 109.75 USD (total 109.75)
+2026-11-04 08:17:28,035 WARNING STOP corto ETH: 2320.67 >= 2315.81
+2026-11-04 08:17:29,179 INFO AAVE withdraw 27.33 USDC
+2026-11-04 08:17:30,614 INFO tx ok 7e40482e8329327b44d767341e2d62e8f668d707b640bc17094633c25166afa1 gas=266872
+2026-11-04 08:17:31,960 INFO SWAP exactOut 0xaf88d0 -> 0x82aF49 | out=11756110916919954 in~27301967
+2026-11-04 08:17:33,505 INFO tx ok f23aae918a61b3575f885e9f06a9e1d72a8a306ca36becf7663c776f728ea359 gas=150468
+2026-11-04 08:17:33,505 INFO AAVE repay 11756110916919954 0x82aF49
+2026-11-04 08:17:35,029 INFO tx ok 702ce3f53236e49d15504783224f02f4de5d081db77b98290f42011329350581 gas=165508
+2026-11-04 08:17:37,420 INFO CORTO ETH cerrado: 27.28$
+2026-11-04 08:17:37,420 WARNING RESULTADO ETH corto (stop): bruto -0.00$ costes 0.16$ -> neto -0.16$ | operación completa +0.55$ | realizado acumulado -6.68$
+2026-11-04 08:17:38,837 INFO AAVE withdraw todo USDC
+2026-11-04 08:17:40,168 INFO tx ok 160b3ccc98a1d7f29effe1c892c44a821c08cc54bafe14f0a87013084b3e0f9c gas=179388
+2026-11-04 08:17:40,168 INFO Chequeo de stops completado.
