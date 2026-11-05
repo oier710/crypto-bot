@@ -10710,3 +10710,71 @@ requests.exceptions.ConnectionError: ('Connection aborted.', RemoteDisconnected(
 2026-11-04 23:52:32,015 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-04 23:52:33,823 INFO USDC 86.25 (wallet 86.25 + Aave 0.00 + Dolomite 0.00) | ETH +0.14$ BTC +24.33$ ARB +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.73 USD (total 110.73)
 2026-11-04 23:52:34,979 INFO Chequeo de stops completado.
+2026-11-05 00:06:11,221 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-05 00:06:12,786 INFO USDC 86.25 (wallet 86.25 + Aave 0.00 + Dolomite 0.00) | ETH +0.14$ BTC +24.34$ ARB +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.73 USD (total 110.73)
+2026-11-05 00:06:14,238 INFO USDC 86.25 (wallet 86.25 + Aave 0.00 + Dolomite 0.00) | ETH +0.14$ BTC +24.34$ ARB +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.73 USD (total 110.73)
+2026-11-05 00:06:21,052 INFO BTC cierre=80428.31 señal=+1 ATR=2234.28 tengo=+24.34$ objetivo=+24.34$
+2026-11-05 00:06:27,342 INFO ETH cierre=2422.27 señal=-1 ATR=92.15 tengo=+0.14$ objetivo=-35.30$
+2026-11-05 00:06:34,034 INFO ARB cierre=0.16 señal=+0 ATR=0.01 tengo=+0.00$ objetivo=+0.00$
+2026-11-05 00:06:35,370 INFO USDC 86.25 (wallet 86.25 + Aave 0.00 + Dolomite 0.00) | ETH +0.14$ BTC +24.34$ ARB +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.73 USD (total 110.73)
+2026-11-05 00:06:35,371 INFO AAVE supply 85.75 USDC
+2026-11-05 00:06:36,705 INFO tx ok 8bab0edc56d76bbf2799bba22b794bbf06ff553fb0af4ec03c18ded83d96d87a gas=178519
+2026-11-05 00:06:36,706 INFO AAVE borrow 14579283877897286 0x82aF49
+2026-11-05 00:06:36,869 ERROR ERROR abriendo ETH (('0x5b263df7', '0x5b263df7')); el resto del ciclo sigue
+Traceback (most recent call last):
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 1117, in run_cycle
+    open_short(ch, c, -target, prices, pf, f"señal {p['sig']:+d}")
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 597, in open_short
+    return (open_short_dolomite if venue(coin) == "dolomite" else open_short_aave)(ch, coin, usd, prices, pf, reason)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 617, in open_short_aave
+    ch.aave_borrow(token, amount)
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 393, in aave_borrow
+    self._send(self.pool.functions.borrow(token, amount, 2, 0, self.address))
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 338, in _send
+    tx = fn.build_transaction({"from": self.address, "value": value, "nonce": self.w3.eth.get_transaction_count(self.address), "chainId": CHAIN_ID})
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/contract/contract.py", line 341, in build_transaction
+    return build_transaction_for_function(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/contract/utils.py", line 323, in build_transaction_for_function
+    prepared_transaction = fill_transaction_defaults(w3, prepared_transaction)
+                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "cytoolz/functoolz.pyx", line 295, in cytoolz.functoolz.curry.__call__
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/_utils/transactions.py", line 139, in fill_transaction_defaults
+    default_val = default_getter(w3, transaction, defaults)
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/_utils/transactions.py", line 77, in <lambda>
+    "gas": lambda w3, tx, _defaults: w3.eth.estimate_gas(tx),
+                                     ^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/eth/eth.py", line 307, in estimate_gas
+    return self._estimate_gas(transaction, block_identifier, state_override)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/module.py", line 106, in caller
+    result = w3.manager.request_blocking(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/manager.py", line 226, in request_blocking
+    return self.formatted_response(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/manager.py", line 192, in formatted_response
+    validate_rpc_response_and_raise_if_error(
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/_utils/validation.py", line 395, in validate_rpc_response_and_raise_if_error
+    response = apply_error_formatters(error_formatters, response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/_utils/formatters.py", line 139, in apply_error_formatters
+    formatted_resp = pipe(response, error_formatters)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "cytoolz/functoolz.pyx", line 805, in cytoolz.functoolz.pipe
+  File "cytoolz/functoolz.pyx", line 780, in cytoolz.functoolz.c_pipe
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/_utils/error_formatters_utils.py", line 161, in raise_contract_logic_error_on_revert
+    _raise_contract_error(data)
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/_utils/error_formatters_utils.py", line 133, in _raise_contract_error
+    raise ContractCustomError(response_error_data, data=response_error_data)
+web3.exceptions.ContractCustomError: ('0x5b263df7', '0x5b263df7')
+2026-11-05 00:06:38,345 INFO USDC 86.25 (wallet 0.50 + Aave 85.75 + Dolomite 0.00) | ETH +0.14$ BTC +24.34$ ARB +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.73 USD (total 110.73)
+2026-11-05 00:06:39,488 INFO AAVE withdraw todo USDC
+2026-11-05 00:06:40,788 INFO tx ok 5cdda0186fe5b07ace28905c496c07dfaa6afe3a1ee5b8e220e196d01df3d048 gas=179166
+2026-11-05 00:06:42,261 INFO USDC 86.25 (wallet 86.25 + Aave 0.00 + Dolomite 0.00) | ETH +0.14$ BTC +24.34$ ARB +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.73 USD (total 110.73)
+2026-11-05 00:06:43,726 INFO USDC 86.25 (wallet 86.25 + Aave 0.00 + Dolomite 0.00) | ETH +0.14$ BTC +24.34$ ARB +0.00$ | deuda ETH 0.000000 BTC 0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.73 USD (total 110.73)
+2026-11-05 00:06:43,727 INFO Resultado realizado acumulado: -6.24$ | equity trading 110.73$ (-5.02$ desde 115.75$) | acumulado {} = 0.00$ (coste 0.00$)
+2026-11-05 00:06:43,728 INFO Ciclo diario completado. Stops: {'BTC': 77537.4654} | posiciones: {'BTC': {'entrada': 77382.7, 'parciales': 1, 'ref': 77382.7}}
