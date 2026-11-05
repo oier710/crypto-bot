@@ -50,13 +50,16 @@ class FakeChain:
     def bal(self, token, who=None):
         return self.b[token]
 
+    def _debt(self, venue):
+        return sum(self.b[f"debt_{c}"] * P[c] for c in ("ETH", "BTC", "ARB") if oc.SHORT_VENUE.get(c, "aave") == venue)
+
     def health_factor(self):
-        debt = self.b["debt_ETH"] * P["ETH"] + self.b["debt_BTC"] * P["BTC"]
+        debt = self._debt("aave")
         return 1e9 if debt <= 0 else self.b["aUSDC"] * oc.LIQ_THRESHOLD / debt
 
-    # ---- Dolomite simulado (cuenta aislada: dUSDC garantía, debt_ARB deuda) ----
+    # ---- Dolomite simulado (cuenta aislada: dUSDC garantía; deudas de las monedas con venue dolomite) ----
     def dolo_health(self):
-        debt = self.b["debt_ARB"] * P["ARB"]
+        debt = self._debt("dolomite")
         return 1e9 if debt <= 0 else self.b["dUSDC"] / (debt * (1 + self.dolo_margin_ratio))
 
     def dolo_deposit_usdc(self, usd):
@@ -68,28 +71,32 @@ class FakeChain:
     def dolo_withdraw_usdc(self, usd):
         assert self.dolo_ok, "Dolomite caído"
         usd = self.b["dUSDC"] if usd is None else min(usd, self.b["dUSDC"])
-        debt = self.b["debt_ARB"] * P["ARB"]
+        debt = self._debt("dolomite")
         if debt > 0 and (self.b["dUSDC"] - usd) < debt * (1 + self.dolo_margin_ratio):
             raise RuntimeError(f"Dolomite revierte: retiro {usd:.2f} dejaría la cuenta liquidable")
         self.b["dUSDC"] -= usd
         self.b[oc.USDC] += usd
 
     def dolo_borrow(self, token, amount):
-        assert self.dolo_ok and token == oc.ARB
+        assert self.dolo_ok
+        k = DEBTKEY[token]
+        assert oc.SHORT_VENUE.get(k[5:], "aave") == "dolomite", f"{k} no va por Dolomite"
         q = amount / 10 ** oc.DECIMALS[token]
-        if self.b["dUSDC"] < (self.b["debt_ARB"] + q) * P["ARB"] * (1 + self.dolo_margin_ratio):
+        if self.b["dUSDC"] < (self._debt("dolomite") + q * PRICE[token]()) * (1 + self.dolo_margin_ratio):
             raise RuntimeError("Dolomite revierte: garantía insuficiente para el préstamo")
-        self.b["debt_ARB"] += q
+        self.b[k] += q
         self.b[token] += q
 
     def dolo_repay(self, token, amount):
-        q = min(amount / 10 ** oc.DECIMALS[token], self.b["debt_ARB"], self.b[token])
-        self.b["debt_ARB"] -= q
+        k = DEBTKEY[token]
+        q = min(amount / 10 ** oc.DECIMALS[token], self.b[k], self.b[token])
+        self.b[k] -= q
         self.b[token] -= q
 
     def dolo_repay_all(self, token):
-        q = min(self.b["debt_ARB"], self.b[token])
-        self.b["debt_ARB"] -= q
+        k = DEBTKEY[token]
+        q = min(self.b[k], self.b[token])
+        self.b[k] -= q
         self.b[token] -= q
 
     def _move(self, tin, tout, amt_in_tokens):
@@ -119,7 +126,7 @@ class FakeChain:
 
     def aave_withdraw_usdc(self, usd):
         usd = self.b["aUSDC"] if usd is None else min(usd, self.b["aUSDC"])
-        debt = self.b["debt_ETH"] * P["ETH"] + self.b["debt_BTC"] * P["BTC"]
+        debt = self._debt("aave")
         if debt > 0 and (self.b["aUSDC"] - usd) * oc.LIQ_THRESHOLD / debt < 1.0:
             raise RuntimeError(f"Aave revierte: retiro {usd:.2f} dejaría HF < 1")
         self.b["aUSDC"] -= usd
@@ -127,6 +134,7 @@ class FakeChain:
 
     def aave_borrow(self, token, amount):
         k = DEBTKEY[token]
+        assert oc.SHORT_VENUE.get(k[5:], "aave") == "aave", f"{k} no va por Aave"
         q = amount / 10 ** oc.DECIMALS[token]
         self.b[k] += q
         self.b[token] += q
@@ -151,6 +159,8 @@ def fake_daily(c):
 oc.Chain = FakeChain
 oc.SYMBOLS = ("BTC", "ETH")       # los bloques 1-16 son de la v3 con dos monedas; ARB se prueba en 17 y 21-23
 oc.WEIGHTS = {}                   # partes iguales (como antes); los pesos reales se prueban en el bloque 21
+REAL_VENUE = dict(oc.SHORT_VENUE)
+oc.SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}   # bloques 1-24: camino Aave (respaldo) + ARB en Dolomite
 oc.spot = lambda s: P[s]
 oc.coinbase_daily = fake_daily
 oc.trend_ema = types.SimpleNamespace(signals=lambda df, **k: pd.Series([SIG[c] for c in SIG if P[c] == df.close.iloc[-1]][:1] * len(df)))
@@ -520,7 +530,62 @@ check(b["debt_ARB"] < 1e-9 and b["dUSDC"] < 0.01 and b[oc.ARB] < 1e-9, f"sin deu
 check(b[oc.WETH] * P["ETH"] > 25 and "ETH" in st["stops"], "el largo de ETH se abrió y tiene stop pese al fallo de ARB")
 _, pf24 = oc.portfolio(FakeChain(), P)
 check(abs(pf24["equity_total"] - 100) < 1.0, f"capital intacto (total {pf24['equity_total']:.2f}$)")
-oc.SYMBOLS = ("BTC", "ETH"); oc.WEIGHTS = {}
+
+print("\n== 25. v6: TODOS los cortos en Dolomite (Aave puso el LTV del USDC a 0): ETH, BTC y ARB a la vez")
+oc.SHORT_VENUE = dict(REAL_VENUE)
+check(all(v == "dolomite" for v in oc.SHORT_VENUE.values()), f"configuración real: todos los cortos en Dolomite ({oc.SHORT_VENUE})")
+oc.SYMBOLS = ("BTC", "ETH", "ARB"); oc.WEIGHTS = {"BTC": 0.425, "ETH": 0.425, "ARB": 0.15}
+P.update(ETH=2500.0, BTC=80000.0, ARB=0.30); SIG.update(ETH=-1, BTC=-1, ARB=-1)
+fresh({oc.USDC: 110.0})
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+b = FakeChain.state
+d_eth, d_btc, d_arb = b["debt_ETH"] * P["ETH"], b["debt_BTC"] * P["BTC"], b["debt_ARB"] * P["ARB"]
+print(f"  cortos: ETH {d_eth:.2f}$ BTC {d_btc:.2f}$ ARB {d_arb:.2f}$ | garantía Dolomite {b['dUSDC']:.2f}$ | Aave {b['aUSDC']:.2f}$")
+check(d_eth > 20 and d_btc > 20 and d_arb > 5, "los tres cortos abiertos en Dolomite")
+check(b["aUSDC"] < 0.01, "nada en Aave")
+check(FakeChain().dolo_health() >= oc.HF_TARGET_MIN * 0.95, f"salud Dolomite {FakeChain().dolo_health():.2f} >= {oc.HF_TARGET_MIN}")
+check(all(c in st["stops"] and c in st["pos"] for c in ("ETH", "BTC", "ARB")), "stops y posiciones v3 de las tres")
+eq0 = oc.portfolio(FakeChain(), P)[1]["equity_total"]
+check(abs(eq0 - 110) < 1.5, f"equity ≈ 110 tras abrir (costes) ({eq0:.2f})")
+P["ETH"] = 2500.0 - 1.5 * ATR["ETH"] - 1   # parcial 1 del corto de ETH
+st = run()
+check(abs(FakeChain.state["debt_ETH"] * P["ETH"] - d_eth * P["ETH"] / 2500 * 2 / 3) / (d_eth * 2 / 3) < 0.05, "parcial 1 de ETH: queda 2/3 de su deuda")
+check(FakeChain.state["debt_BTC"] * P["BTC"] > 20, "BTC sin tocar")
+P["BTC"] = st["stops"]["BTC"] + 50         # stop del corto de BTC
+st = run()
+check(FakeChain.state["debt_BTC"] < 1e-12 and "BTC" not in st["pos"], "stop del corto de BTC: cerrado")
+check(FakeChain.state["debt_ETH"] > 0 and FakeChain.state["debt_ARB"] > 0, "ETH y ARB siguen abiertos")
+check(FakeChain().dolo_health() >= oc.HF_MIN, f"salud tras cerrar BTC {FakeChain().dolo_health():.2f}")
+SIG.update(ETH=0, BTC=0, ARB=0)
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+b = FakeChain.state
+check(b["debt_ETH"] < 1e-12 and b["debt_ARB"] < 1e-12 and b["dUSDC"] < 0.01, "señal 0: todo cerrado y garantía retirada de Dolomite")
+
+print("\n== 26. v6: corto grande de ETH con poca holgura se cierra por tramos en Dolomite")
+pos = oc.new_pos(-1, 2500.0, 90.0, 0.03, -1)
+P["ETH"] = 2601.0
+fresh({oc.USDC: 0.0, "dUSDC": 0.03 * 2601 * 1.15 * 1.30, "debt_ETH": 0.03}, {"ETH": pos}, {"ETH": 2600.0})
+st = run()
+check(FakeChain.state["debt_ETH"] < 1e-9 and "ETH" not in st["pos"], f"stop: cerrado del todo por tramos (deuda {FakeChain.state['debt_ETH']:.6f})")
+check(FakeChain.state["dUSDC"] < 0.01, "garantía retirada")
+
+print("\n== 27. Límite de riesgo con un corto que no se puede cerrar: NO se olvida la posición ni se para el bot")
+pos = oc.new_pos(-1, 2500.0, 90.0, 0.03, -1)
+P["ETH"] = 2500.0
+fresh({oc.USDC: 0.0, "dUSDC": 0.03 * 2500 * 1.15 * 1.2, "debt_ETH": 0.03}, {"ETH": pos}, {"ETH": 2700.0})
+s = oc.load_state(); s.update(peak_equity=200.0); oc.save_state(s)   # fuerza el límite de caída
+_mw = oc._max_withdraw_dolo
+oc._max_withdraw_dolo = lambda *a, **k: 0.0                        # simula que no se puede sacar garantía
+st = run()
+oc._max_withdraw_dolo = _mw
+check(FakeChain.state["debt_ETH"] > 0.029, "la deuda sigue (no se pudo recomprar)")
+check("ETH" in st["pos"] and "ETH" in st["stops"], "posición y stop de ETH se mantienen")
+check(not st["halted"], "el bot NO se para con un corto abierto")
+st = run()                                                          # siguiente ejecución: ya puede
+check(FakeChain.state["debt_ETH"] < 1e-9 and st["halted"], "en la siguiente ejecución cierra y entonces sí se para")
+oc.SYMBOLS = ("BTC", "ETH"); oc.WEIGHTS = {}; oc.SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}
 
 eq, _ = oc.portfolio(FakeChain(), P)
 print(f"\nEquity final simulada: {eq:.2f} $")

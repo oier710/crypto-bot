@@ -94,8 +94,10 @@ SYMBOLS = ("BTC", "ETH", "ARB")   # ARB desde 2026-10-29: largo en Uniswap, cort
 # Reparto del capital de trading por moneda (research_2026_10g: ARB al 15 % sube la rentabilidad de +61 % a +79 %
 # a 3 años con la misma caída máxima; a partir del 20 % la caída se pasa de −20 %). Sin entrada -> partes iguales.
 WEIGHTS = {"BTC": 0.425, "ETH": 0.425, "ARB": 0.15}
-# Dónde se pide prestada cada moneda para los cortos: Aave presta WBTC y WETH; ARB solo Dolomite.
-SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}
+# Dónde se pide prestada cada moneda para los cortos. Desde 2026-11-05 TODO en Dolomite: Aave Arbitrum puso el
+# LTV del USDC a 0 (ya no sirve como garantía: borrow revierte con LtvValidationFailed; results/research_aave_usdc_check.txt).
+# Dolomite: WETH 1.6 M$ / WBTC 3.1 M$ disponibles, 3.3 % / 1.6 %/año. El camino de Aave se conserva como respaldo.
+SHORT_VENUE = {"BTC": "dolomite", "ETH": "dolomite", "ARB": "dolomite"}
 POSITION_FRACTION = 0.75
 # v4: acumulación. La base de trading se queda con el 70 % de cada ganancia realizada nueva (por encima del
 # máximo anterior); el 30 % compra ACCUM_COINS a partes iguales y se aparta (nunca se vende, no cuenta para
@@ -1004,14 +1006,26 @@ def run_cycle(dry_run: bool, signals: bool = True):
     elif dd < -RISK.max_total_drawdown_pct or day < -RISK.max_daily_loss_pct:
         reason = f"drawdown {dd:+.1%} / día {day:+.1%} supera límites"
         log.warning("CERRANDO TODO: %s", reason)
+        pending = []
         for c in SYMBOLS:
             if pf["val"][c] <= -MIN_TRADE_USD:
-                close_short(ch, c, prices, pf, "límite de riesgo")
-                realize_close(st, c, pf["val"][c], prices[c], "límite de riesgo", ch.dry_run)
+                if close_short(ch, c, prices, pf, "límite de riesgo"):
+                    realize_close(st, c, pf["val"][c], prices[c], "límite de riesgo", ch.dry_run)
+                    st["stops"].pop(c, None)
+                    st.get("pos", {}).pop(c, None)
+                else:
+                    pending.append(c)     # deuda pendiente: no se olvida la posición
             elif pf["val"][c] >= MIN_TRADE_USD:
                 sell_long(ch, c, pf["val"][c], prices, "límite de riesgo")
                 realize_close(st, c, pf["val"][c], prices[c], "límite de riesgo", ch.dry_run)
+                st["stops"].pop(c, None)
+                st.get("pos", {}).pop(c, None)
         tidy_aave(ch, prices)
+        if pending:
+            # no se para el bot con un corto abierto: un bot parado no lo gestionaría. Se reintenta en 15 min.
+            log.error("LÍMITE DE RIESGO: cortos %s sin cerrar del todo; se reintenta en la próxima ejecución (sin parar)", pending)
+            save_state(st)
+            return
         st["stops"], st["pos"] = {}, {}
         st.update(halted=True, halt_reason=reason)
         save_state(st)
