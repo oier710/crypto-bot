@@ -10986,3 +10986,10 @@ web3.exceptions.ContractCustomError: ('0x5b263df7', '0x5b263df7')
 2026-11-05 14:56:51,599 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-05 14:56:54,495 INFO USDC 86.22 (wallet 86.22 + Aave 0.00 + Dolomite 0.00) | ETH +0.16$ BTC +23.66$ ARB +0.00$ | deuda ETH -0.000000 BTC -0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.04 USD (total 110.04)
 2026-11-05 14:56:56,747 INFO Chequeo de stops completado.
+2026-11-05 15:06:15,659 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-05 15:06:18,054 INFO USDC 86.22 (wallet 86.22 + Aave 0.00 + Dolomite 0.00) | ETH +0.16$ BTC +23.38$ ARB +0.00$ | deuda ETH -0.000000 BTC -0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 109.76 USD (total 109.76)
+2026-11-05 15:06:18,056 WARNING STOP largo BTC: 77356.04 <= 77537.47
+2026-11-05 15:06:19,575 INFO SWAP 0x2f2a25 -> 0xaf88d0 | in=30226 out~23388914
+2026-11-05 15:06:21,302 INFO tx ok 428654347c14fdefad99a44112fe21a518a2dea75caf0b31fe4fc832a40614c9 gas=130056
+2026-11-05 15:06:21,303 WARNING RESULTADO BTC largo (stop): bruto -0.01$ costes 0.10$ -> neto -0.10$ | operación completa +0.33$ | realizado acumulado -6.34$
+2026-11-05 15:06:22,722 INFO Chequeo de stops completado.
