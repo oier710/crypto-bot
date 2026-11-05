@@ -1,0 +1,15 @@
+bloque 521376613
+
+## Aave V3 Arbitrum — configuración de reservas
+USDC: LTV 0.00% | umbral liq 78.00% | garantía permitida True | prestable True | activa True | congelada False | pausada False
+USDC.e: LTV 0.00% | umbral liq 78.00% | garantía permitida True | prestable False | activa True | congelada True | pausada False
+WETH: LTV 81.00% | umbral liq 84.00% | garantía permitida True | prestable True | activa True | congelada False | pausada False
+WBTC: LTV 78.00% | umbral liq 82.00% | garantía permitida True | prestable True | activa True | congelada False | pausada False
+
+## Cuenta del bot en Aave
+garantía 0.00 $ | deuda 0.00 $ | disponible para pedir 0.00 $ | umbral 0.00% | LTV 0.00% | eMode 0
+
+## Dolomite (alternativa para cortos de BTC/ETH)
+USDC: id 17 | cerrando False | disponible 975,068 $ | interés 8.27%/año | prima margen 0.000
+WETH: id 0 | cerrando False | disponible 1,610,540 $ | interés 3.28%/año | prima margen 0.000
+WBTC: id 4 | cerrando False | disponible 3,124,464 $ | interés 1.59%/año | prima margen 0.000
