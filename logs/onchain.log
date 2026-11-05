@@ -10860,3 +10860,6 @@ web3.exceptions.ContractCustomError: ('0x5b263df7', '0x5b263df7')
 2026-11-05 04:38:57,761 INFO tx ok 4165ddc84cdcf9edfc773b7e3e6ec31d6281f420979ef598baac88c5f048f766 gas=373274
 2026-11-05 04:39:03,824 INFO USDC 86.22 (wallet 86.22 + Aave 0.00 + Dolomite 0.00) | ETH +0.17$ BTC +24.35$ ARB +0.00$ | deuda ETH -0.000000 BTC -0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.73 USD (total 110.73)
 2026-11-05 04:39:03,825 INFO === PRUEBA TERMINADA: equity 110.74 -> 110.74 -> 110.73 (coste 0.01$) ===
+2026-11-05 04:51:20,174 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-05 04:51:21,438 INFO USDC 86.22 (wallet 86.22 + Aave 0.00 + Dolomite 0.00) | ETH +0.17$ BTC +24.33$ ARB +0.00$ | deuda ETH -0.000000 BTC -0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 110.72 USD (total 110.72)
+2026-11-05 04:51:22,258 INFO Chequeo de stops completado.
