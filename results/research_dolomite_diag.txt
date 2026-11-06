@@ -1,0 +1,40 @@
+bloque 521680037
+ids de mercado: {'USDC': 17, 'WETH': 0, 'WBTC': 4}
+
+## Simulaciones (no se envía nada) — lo importante
+- depositWei(cuenta 1, USDC, 17.37)
+    eth_call: OK (sin error)
+    eth_estimateGas: OK (537771)
+- depositWei(cuenta 1, USDC, 5.0)
+    eth_call: OK (sin error)
+    eth_estimateGas: OK (537769)
+- depositWei(cuenta 1, USDC, 1.0)
+    eth_call: OK (sin error)
+    eth_estimateGas: OK (537769)
+- depositWei(cuenta 2, USDC, 17.37)  [cuenta limpia]
+    eth_call: OK (sin error)
+    eth_estimateGas: OK (357205)
+- withdrawWei(cuenta 1, WETH, 0.002242 ≈ 5 $, None)  [pedir prestado ETH con BTC abierto]
+    eth_call: OK (sin error)
+    eth_estimateGas: OK (690211)
+- withdrawWei(cuenta 1, WBTC, pequeño, None)  [pedir más BTC]
+    eth_call: OK (sin error)
+    eth_estimateGas: OK (548954)
+
+## Wallet
+USDC: saldo 56.85469100 | permiso a DolomiteMargin 1.16e+71 | permiso al proxy 0
+WETH: saldo 0.00006879 | permiso a DolomiteMargin 1.16e+59 | permiso al proxy 0
+WBTC: saldo 0.00000000 | permiso a DolomiteMargin 0 | permiso al proxy 0
+proxy operador global: True
+operador local de la wallet: False
+
+## Mercados
+[mercado USDC] no se pudo leer: ContractLogicError: ('execution reverted', '0x')
+[mercado WETH] no se pudo leer: ContractLogicError: ('execution reverted', '0x')
+[mercado WBTC] no se pudo leer: ContractLogicError: ('execution reverted', '0x')
+
+## Cuentas de la wallet en Dolomite
+cuenta 0: estado 0 | garantía ajustada 0.0000 $ | deuda ajustada 0.0000 $ | mercados con saldo [] | con deuda 0 | vacía
+cuenta 1: estado 0 | garantía ajustada 87.7424 $ | deuda ajustada 34.8887 $ | mercados con saldo [7, 17, 4] | con deuda 1 | USDC +87.73918400 WBTC -0.00046026
+cuenta 2: estado 0 | garantía ajustada 0.0000 $ | deuda ajustada 0.0000 $ | mercados con saldo [] | con deuda 0 | vacía
+máximo de mercados con saldo por cuenta: 32
