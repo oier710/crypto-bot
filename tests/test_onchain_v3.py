@@ -409,7 +409,7 @@ oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,
 s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
 st = run(daily=True)
 acc = st["accum"]
-check(abs(acc["pending_usd"] - 4.90 * 0.30) < 0.01 and not acc["qty"], f"ganancia 4.90$ -> 1.47$ pendientes, aún sin comprar (<5$ por moneda)")
+check(abs(acc["pending_usd"] - 4.90 * 0.30) < 0.01 and not acc["qty"], f"ganancia 4.90$ -> 1.47$ pendientes, aún sin comprar (<1$ por moneda)")
 check(abs(acc["hwm"] - 4.90) < 0.01, "máximo realizado = 4.90")
 oc.PNL_FILE.write_text(oc.PNL_FILE.read_text() + "2026-11-02T00:00:00+00:00,BTC,largo,señal +0,0.001,80000,120000,40.00,0.20,39.80,49.7,39.80,44.70\n")
 s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
@@ -439,7 +439,7 @@ check(abs(FakeChain.state[oc.WETH] - (tr_eth + st["accum"]["qty"]["ETH"])) < 1e-
 st = run(eth=st["stops"]["ETH"] - 1)
 check(abs(FakeChain.state[oc.WETH] - st["accum"]["qty"]["ETH"]) < 1e-6, "el stop vende solo la parte de trading; lo acumulado se queda")
 
-print("\n== 19. Con un corto abierto no se acumula (no se retira garantía de Aave)")
+print("\n== 19. Con un corto abierto se acumula SOLO con USDC libre de la wallet; nunca se toca la garantía")
 SIG.update(ETH=-1, BTC=0, ARB=0); P.update(ETH=2500.0)
 fresh({oc.USDC: 60.0})
 oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,costes_usd,neto_usd,neto_pct,operacion_usd,total_usd\n"
@@ -447,11 +447,28 @@ oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,
 s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
 st = run(daily=True)
 check(FakeChain.state["debt_ETH"] > 0, "corto ETH abierto")
-check(not st["accum"]["qty"] and st["accum"]["pending_usd"] > 10, f"nada comprado; {st['accum']['pending_usd']:.2f}$ pendientes")
+b19 = FakeChain.state
+coll = b19["aUSDC"] + b19["dUSDC"]
+print(f"  wallet USDC {b19[oc.USDC]:.2f}$ | garantía {coll:.2f}$ | pendiente {st['accum']['pending_usd']:.2f}$ | comprado {st['accum']['qty']}")
+check(FakeChain().health_factor() >= oc.HF_TARGET_MIN * 0.98 and FakeChain().dolo_health() >= oc.HF_TARGET_MIN * 0.98, "la garantía no se ha tocado (salud >= 1.5)")
+if b19[oc.USDC] >= st["accum"]["pending_usd"] + 0.5 or st["accum"]["qty"]:
+    check(bool(st["accum"]["qty"]), "había USDC libre: compra con él")
+else:
+    check(not st["accum"]["qty"], "sin USDC libre suficiente: espera")
 SIG["ETH"] = 0
 s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
 st = run(daily=True)
-check(FakeChain.state["debt_ETH"] < 1e-9 and st["accum"]["qty"], f"corto cerrado y entonces sí compra ({st['accum']['qty']})")
+check(FakeChain.state["debt_ETH"] < 1e-9 and st["accum"]["qty"] and st["accum"]["pending_usd"] < 0.05, f"corto cerrado: comprado todo lo pendiente ({st['accum']['qty']})")
+
+print("\n== 19b. Primera acumulación con poca ganancia (mínimo 1 $ por moneda)")
+SIG.update(ETH=0, BTC=0, ARB=0)
+fresh({oc.USDC: 100.0})
+oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,costes_usd,neto_usd,neto_pct,operacion_usd,total_usd\n"
+                       "2026-11-01T00:00:00+00:00,BTC,largo,parcial 1,0.0001,77000,80000,7.00,0.10,6.90,4,6.90,6.90\n")
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+check(st["accum"]["qty"].get("BTC", 0) > 0 and st["accum"]["qty"].get("ETH", 0) > 0,
+      f"+6.90$ realizados -> 2.07$ -> compra ~1.04$ de BTC y de ETH ({st['accum']['qty']}, coste {st['accum']['cost_usd']:.2f}$)")
 
 print("\n== 20. Acumular no altera los límites de riesgo (% desde máximo y % del día)")
 SIG.update(ETH=0, BTC=0)
@@ -469,6 +486,7 @@ print("\n== 21. Pesos reales (BTC 42.5 / ETH 42.5 / ARB 15): tamaño de cada pos
 oc.SYMBOLS = ("BTC", "ETH", "ARB"); oc.WEIGHTS = {"BTC": 0.425, "ETH": 0.425, "ARB": 0.15}
 P.update(ETH=2500.0, BTC=80000.0, ARB=0.30); SIG.update(ETH=1, BTC=1, ARB=-1)
 fresh({oc.USDC: 100.0})
+oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,costes_usd,neto_usd,neto_pct,operacion_usd,total_usd\n")
 s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
 st = run(daily=True)
 b = FakeChain.state

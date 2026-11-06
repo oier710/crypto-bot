@@ -105,6 +105,10 @@ POSITION_FRACTION = 0.75
 # stops ni límites). Las compras se agrupan hasta alcanzar MIN_TRADE_USD por moneda. Oier, 2026-10-25.
 ACCUM_SHARE = 0.30
 ACCUM_COINS = ("BTC", "ETH")
+# compra mínima por moneda para acumular (2026-11-05, Oier: "que desde bien pronto podamos acumular"): con 3 $ por
+# moneda la primera compra exigía +20 $ de ganancia realizada; con 1 $ basta con ~+6.7 $. En Arbitrum una compra de
+# 1 $ cuesta ~0.0005 $ de comisión + céntimos de gas.
+ACCUM_MIN_USD = 1.0
 CAPITAL_REF = 115.75
 STOP_ATR = 2.0
 ATR_N = 14
@@ -1188,8 +1192,8 @@ ACCUM_FILE = LOG_DIR / "accum.csv"
 
 def accumulate(ch: Chain, st: dict, prices: dict, pf: dict):
     """Cada ganancia realizada NUEVA (por encima del máximo realizado anterior, hwm) se reparte:
-    70 % se queda en la base de trading; 30 % se apunta como pendiente y, cuando hay al menos MIN_TRADE_USD
-    por moneda, compra ACCUM_COINS a partes iguales y las aparta. Las pérdidas no restan lo acumulado:
+    70 % se queda en la base de trading; 30 % se apunta como pendiente y, cuando hay al menos ACCUM_MIN_USD
+    por moneda, compra ACCUM_COINS a partes iguales y las aparta (con cortos abiertos, solo con USDC libre). Las pérdidas no restan lo acumulado:
     hay que recuperar el máximo anterior antes de volver a acumular."""
     acc = st.setdefault("accum", {"hwm": 0.0, "pending_usd": 0.0, "qty": {}, "cost_usd": 0.0})
     realized = pnl_total()
@@ -1199,10 +1203,13 @@ def accumulate(ch: Chain, st: dict, prices: dict, pf: dict):
         acc["hwm"] = realized
         log.info("ACUMULACIÓN: ganancia nueva %+.2f$ -> %.2f$ pendientes de comprar (%.0f %%)", gain, acc["pending_usd"], ACCUM_SHARE * 100)
     per_coin = acc["pending_usd"] / len(ACCUM_COINS)
-    if per_coin < MIN_TRADE_USD:
+    if per_coin < ACCUM_MIN_USD:
         return
-    if any(pf["raw"].get(f"debt_{c}", 0.0) * prices.get(c, 1.0) > DOLO_DUST_USD for c in ASSETS):
-        log.info("ACUMULACIÓN: %.2f$ pendientes; se espera a no tener cortos abiertos (no retirar garantía de Aave/Dolomite)", acc["pending_usd"])
+    shorts_open = any(pf["raw"].get(f"debt_{c}", 0.0) * prices.get(c, 1.0) > DOLO_DUST_USD for c in ASSETS)
+    if shorts_open and pf["raw"][USDC] < per_coin * len(ACCUM_COINS) + 0.5:
+        # con cortos abiertos solo se compra con el USDC libre de la wallet: nunca se toca la garantía
+        log.info("ACUMULACIÓN: %.2f$ pendientes; con cortos abiertos solo se usa USDC libre de la wallet (%.2f$): se espera",
+                 acc["pending_usd"], pf["raw"][USDC])
         return
     for c in ACCUM_COINS:
         if c not in prices:
@@ -1210,9 +1217,10 @@ def accumulate(ch: Chain, st: dict, prices: dict, pf: dict):
         _, pf = portfolio(ch, prices)
         before = ch.balances()
         tok = ASSETS[c]
-        usdc_in_wallet(ch, per_coin, pf)
+        if not shorts_open:
+            usdc_in_wallet(ch, per_coin, pf)
         usd = min(per_coin, ch.balances()[USDC]) if not ch.dry_run else per_coin
-        if usd < MIN_TRADE_USD:
+        if usd < ACCUM_MIN_USD:
             log.warning("ACUMULACIÓN %s: sin USDC libre (%.2f$); se intenta en el próximo ciclo", c, usd)
             continue
         ch.swap_exact_in(PATHS[c]["buy"], int(usd * 1e6))
