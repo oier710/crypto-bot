@@ -11095,3 +11095,63 @@ web3.exceptions.ContractCustomError: ('0x5b263df7', '0x5b263df7')
 2026-11-05 23:51:52,295 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-05 23:51:53,781 INFO USDC 109.61 (wallet 109.61 + Aave 0.00 + Dolomite 0.00) | ETH +0.15$ BTC +0.00$ ARB +0.00$ | deuda ETH -0.000000 BTC -0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 109.76 USD (total 109.76)
 2026-11-05 23:51:54,856 INFO Chequeo de stops completado.
+2026-11-06 00:06:25,970 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-06 00:06:29,363 INFO USDC 109.61 (wallet 109.61 + Aave 0.00 + Dolomite 0.00) | ETH +0.15$ BTC +0.00$ ARB +0.00$ | deuda ETH -0.000000 BTC -0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 109.76 USD (total 109.76)
+2026-11-06 00:06:32,348 INFO USDC 109.61 (wallet 109.61 + Aave 0.00 + Dolomite 0.00) | ETH +0.15$ BTC +0.00$ ARB +0.00$ | deuda ETH -0.000000 BTC -0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 109.76 USD (total 109.76)
+2026-11-06 00:06:41,265 INFO BTC cierre=75969.06 señal=-1 ATR=2489.60 tengo=+0.00$ objetivo=-34.99$
+2026-11-06 00:06:50,301 INFO ETH cierre=2234.61 señal=-1 ATR=102.16 tengo=+0.15$ objetivo=-34.99$
+2026-11-06 00:06:58,799 INFO ARB cierre=0.16 señal=+0 ATR=0.01 tengo=+0.00$ objetivo=+0.00$
+2026-11-06 00:07:01,768 INFO USDC 109.61 (wallet 109.61 + Aave 0.00 + Dolomite 0.00) | ETH +0.15$ BTC +0.00$ ARB +0.00$ | deuda ETH -0.000000 BTC -0.000000 ARB 0.000000 | HF ∞ / Dolomite ∞ | acumulado 0.00$ -> equity trading 109.76 USD (total 109.76)
+2026-11-06 00:07:06,621 INFO DOLOMITE deposit 52.81 USDC (cuenta 1)
+2026-11-06 00:07:08,926 INFO tx ok bc43d5886e81a28dd8d7e6fa55c6bad82712c5b5bc8b19e99f5d2f406a9f551d gas=416861
+2026-11-06 00:07:08,927 INFO DOLOMITE borrow 46026 0x2f2a25
+2026-11-06 00:07:10,900 INFO tx ok 47006b50990bfa40a371be47478791117e1425c12d84f2768b81b176841d03bb gas=612178
+2026-11-06 00:07:11,455 INFO SWAP 0x2f2a25 -> 0xaf88d0 | in=46026 out~34981466
+2026-11-06 00:07:13,379 INFO tx ok 288a6a5b711058721ab8b238d99d87b0af492fb470cf5d506c02137ce8c71004 gas=129972
+2026-11-06 00:07:13,643 INFO DOLOMITE deposit 34.93 USDC (cuenta 1)
+2026-11-06 00:07:15,992 INFO tx ok 68915e4ff089c86d43975b9f1b3380fb62d011fba98d498e849e555f220e1ea7 gas=517296
+2026-11-06 00:07:16,256 INFO CORTO BTC abierto en Dolomite: 34.99$ | salud 2.18
+2026-11-06 00:07:19,280 INFO USDC 144.59 (wallet 56.85 + Aave 0.00 + Dolomite 87.74) | ETH +0.15$ BTC -34.99$ ARB +0.00$ | deuda ETH -0.000000 BTC 0.000460 ARB 0.000000 | HF ∞ / Dolomite 2.18 | acumulado 0.00$ -> equity trading 109.76 USD (total 109.76)
+2026-11-06 00:07:24,236 INFO DOLOMITE deposit 17.37 USDC (cuenta 1)
+2026-11-06 00:07:25,314 ERROR ERROR abriendo ETH (('execution reverted', '0x')); el resto del ciclo sigue
+Traceback (most recent call last):
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 1131, in run_cycle
+    open_short(ch, c, -target, prices, pf, f"señal {p['sig']:+d}")
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 599, in open_short
+    return (open_short_dolomite if venue(coin) == "dolomite" else open_short_aave)(ch, coin, usd, prices, pf, reason)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 671, in open_short_dolomite
+    ch.dolo_deposit_usdc(add_coll)
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 284, in dolo_deposit_usdc
+    self._send(self.dolo_proxy.functions.depositWei(DOLO_ACCOUNT, self.dolo_market[USDC], amt))
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 341, in _send
+    tx["gas"] = int(self.w3.eth.estimate_gas(tx) * 1.3)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/eth/eth.py", line 307, in estimate_gas
+    return self._estimate_gas(transaction, block_identifier, state_override)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/module.py", line 106, in caller
+    result = w3.manager.request_blocking(
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/manager.py", line 226, in request_blocking
+    return self.formatted_response(
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/manager.py", line 192, in formatted_response
+    validate_rpc_response_and_raise_if_error(
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/_utils/validation.py", line 395, in validate_rpc_response_and_raise_if_error
+    response = apply_error_formatters(error_formatters, response)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/_utils/formatters.py", line 139, in apply_error_formatters
+    formatted_resp = pipe(response, error_formatters)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "cytoolz/functoolz.pyx", line 805, in cytoolz.functoolz.pipe
+  File "cytoolz/functoolz.pyx", line 780, in cytoolz.functoolz.c_pipe
+  File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/web3/_utils/error_formatters_utils.py", line 166, in raise_contract_logic_error_on_revert
+    raise ContractLogicError(message, data=data)
+web3.exceptions.ContractLogicError: ('execution reverted', '0x')
+2026-11-06 00:07:28,353 INFO USDC 144.59 (wallet 56.85 + Aave 0.00 + Dolomite 87.74) | ETH +0.15$ BTC -34.99$ ARB +0.00$ | deuda ETH -0.000000 BTC 0.000460 ARB 0.000000 | HF ∞ / Dolomite 2.18 | acumulado 0.00$ -> equity trading 109.76 USD (total 109.76)
+2026-11-06 00:07:34,775 INFO USDC 144.59 (wallet 56.85 + Aave 0.00 + Dolomite 87.74) | ETH +0.15$ BTC -34.99$ ARB +0.00$ | deuda ETH -0.000000 BTC 0.000460 ARB 0.000000 | HF ∞ / Dolomite 2.18 | acumulado 0.00$ -> equity trading 109.76 USD (total 109.76)
+2026-11-06 00:07:34,776 INFO BTC nueva operación corta: entrada 76016.25 stop 80995.44 parciales a 72281.86 y 68547.46
+2026-11-06 00:07:37,920 INFO USDC 144.59 (wallet 56.85 + Aave 0.00 + Dolomite 87.74) | ETH +0.15$ BTC -34.99$ ARB +0.00$ | deuda ETH -0.000000 BTC 0.000460 ARB 0.000000 | HF ∞ / Dolomite 2.18 | acumulado 0.00$ -> equity trading 109.76 USD (total 109.76)
+2026-11-06 00:07:37,921 INFO Resultado realizado acumulado: -6.34$ | equity trading 109.76$ (-5.99$ desde 115.75$) | acumulado {} = 0.00$ (coste 0.00$)
+2026-11-06 00:07:37,922 INFO Ciclo diario completado. Stops: {'BTC': 80995.4421854214} | posiciones: {'BTC': {'entrada': 76016.25, 'parciales': 0, 'ref': 76016.25}}
