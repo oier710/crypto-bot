@@ -68,8 +68,7 @@ def decode(data_hex: str) -> str:
 
 
 def sim(label, fn):
-    tx = fn.build_transaction({"from": WALLET, "gas": 3_000_000, "gasPrice": 0, "nonce": 0, "chainId": 42161})
-    call = {"from": WALLET, "to": tx["to"], "data": tx["data"]}
+    call = {"from": WALLET, "to": fn.address, "data": fn._encode_transaction_data()}
     out = []
     for method, params in (("eth_call", [call, "latest"]), ("eth_estimateGas", [call])):
         r = w3.provider.make_request(method, params)
@@ -81,20 +80,49 @@ def sim(label, fn):
     return [f"- {label}"] + [f"    {x}" for x in out]
 
 
+def safe(L, label, f):
+    try:
+        f()
+    except Exception as e:  # noqa: BLE001
+        L.append(f"[{label}] no se pudo leer: {type(e).__name__}: {str(e)[:200]}")
+
+
 def main():
+    L = []
+    try:
+        _main(L)
+    finally:
+        OUT.write_text("\n".join(L))
+        print("\n".join(L))
+
+
+def _main(L):
     m = w3.eth.contract(address=DOLO, abi=DOLO_ABI)
     p = w3.eth.contract(address=PROXY, abi=PROXY_ABI)
     mid = {t: m.functions.getMarketIdByTokenAddress(t).call() for t in (USDC, WETH, WBTC)}
-    L = [f"bloque {w3.eth.block_number}", f"ids de mercado: { {NAME[t]: i for t, i in mid.items()} }"]
+    L += [f"bloque {w3.eth.block_number}", f"ids de mercado: { {NAME[t]: i for t, i in mid.items()} }"]
+    L.append("\n## Simulaciones (no se envía nada) — lo importante")
+    eth_px = 2300.0
+    try:
+        eth_px = m.functions.getMarketPrice(mid[WETH]).call()[0] / 1e18
+    except Exception as e:  # noqa: BLE001
+        L.append(f"[precio WETH] {e}")
+    weth5 = int(5 / eth_px * 1e18)
+    for usd in (17.37, 5.0, 1.0):
+        safe(L, "sim", lambda usd=usd: L.extend(sim(f"depositWei(cuenta 1, USDC, {usd})", p.functions.depositWei(1, mid[USDC], int(usd * 1e6)))))
+    safe(L, "sim", lambda: L.extend(sim("depositWei(cuenta 2, USDC, 17.37)  [cuenta limpia]", p.functions.depositWei(2, mid[USDC], 17_370_000))))
+    safe(L, "sim", lambda: L.extend(sim(f"withdrawWei(cuenta 1, WETH, {weth5/1e18:.6f} ≈ 5 $, None)  [pedir prestado ETH con BTC abierto]",
+                                        p.functions.withdrawWei(1, mid[WETH], weth5, 3))))
+    safe(L, "sim", lambda: L.extend(sim("withdrawWei(cuenta 1, WBTC, pequeño, None)  [pedir más BTC]", p.functions.withdrawWei(1, mid[WBTC], 500, 3))))
     L.append("\n## Wallet")
     for t in (USDC, WETH, WBTC):
         c = w3.eth.contract(address=t, abi=ERC)
-        L.append(f"{NAME[t]}: saldo {c.functions.balanceOf(WALLET).call() / 10**DEC[t]:.8f} | permiso a DolomiteMargin "
-                 f"{c.functions.allowance(WALLET, DOLO).call() / 10**DEC[t]:.3g} | permiso al proxy {c.functions.allowance(WALLET, PROXY).call() / 10**DEC[t]:.3g}")
-    L.append(f"proxy operador global: {m.functions.getIsGlobalOperator(PROXY).call()} | operador local de la wallet: "
-             f"{m.functions.getIsLocalOperator(WALLET, PROXY).call()}")
+        safe(L, NAME[t], lambda c=c, t=t: L.append(f"{NAME[t]}: saldo {c.functions.balanceOf(WALLET).call() / 10**DEC[t]:.8f} | permiso a DolomiteMargin "
+                 f"{c.functions.allowance(WALLET, DOLO).call() / 10**DEC[t]:.3g} | permiso al proxy {c.functions.allowance(WALLET, PROXY).call() / 10**DEC[t]:.3g}"))
+    safe(L, "operador", lambda: L.append(f"proxy operador global: {m.functions.getIsGlobalOperator(PROXY).call()}"))
+    safe(L, "operador local", lambda: L.append(f"operador local de la wallet: {m.functions.getIsLocalOperator(WALLET, PROXY).call()}"))
     L.append("\n## Mercados")
-    for t in (USDC, WETH, WBTC):
+    def market(t):
         i = mid[t]
         tw = m.functions.getMarketTotalWei(i).call()
         mx = m.functions.getMarketMaxWei(i).call()[1]
@@ -109,8 +137,10 @@ def main():
                  f"{m.functions.getMarketIsClosing(i).call()} | precio {px:,.2f}")
         if mx and tw[1] + 17_370_000 * (t == USDC) > mx:
             L.append(f"   ¡¡ {NAME[t]} SIN HUECO bajo su tope de suministro: un depósito revierte !!")
+    for t in (USDC, WETH, WBTC):
+        safe(L, f"mercado {NAME[t]}", lambda t=t: market(t))
     L.append("\n## Cuentas de la wallet en Dolomite")
-    for n in (0, 1, 2):
+    def account(n):
         acc = (WALLET, n)
         sup, bor = m.functions.getAdjustedAccountValues(acc).call()
         try:
@@ -123,25 +153,19 @@ def main():
             sgn, val = m.functions.getAccountWei(acc, mid[t]).call()
             if val:
                 bals.append(f"{NAME[t]} {'+' if sgn else '-'}{val/10**DEC[t]:.8f}")
-        L.append(f"cuenta {n}: estado {m.functions.getAccountStatus(acc).call()} | garantía ajustada {sup[0]/1e36:.4f} $ | "
+        try:
+            stt = m.functions.getAccountStatus(acc).call()
+        except Exception:  # noqa: BLE001
+            stt = "n/d"
+        L.append(f"cuenta {n}: estado {stt} | garantía ajustada {sup[0]/1e36:.4f} $ | "
                  f"deuda ajustada {bor[0]/1e36:.4f} $ | mercados con saldo {mk} | con deuda {nd} | {' '.join(bals) or 'vacía'}")
+    for n in (0, 1, 2):
+        safe(L, f"cuenta {n}", lambda n=n: account(n))
     try:
         L.append(f"máximo de mercados con saldo por cuenta: {m.functions.getAccountMaxNumberOfMarketsWithBalances().call()}")
     except Exception:  # noqa: BLE001
         pass
 
-    L.append("\n## Simulaciones (no se envía nada)")
-    eth_px = m.functions.getMarketPrice(mid[WETH]).call()[0] / 1e18
-    weth5 = int(5 / eth_px * 1e18)
-    for usd in (17.37, 5.0, 1.0):
-        L += sim(f"depositWei(cuenta 1, USDC, {usd})", p.functions.depositWei(1, mid[USDC], int(usd * 1e6)))
-    L += sim("depositWei(cuenta 2, USDC, 17.37)  [cuenta limpia]", p.functions.depositWei(2, mid[USDC], 17_370_000))
-    L += sim(f"withdrawWei(cuenta 1, WETH, {weth5/1e18:.6f} ≈ 5 $, None)  [pedir prestado ETH con BTC abierto]",
-             p.functions.withdrawWei(1, mid[WETH], weth5, 3))
-    L += sim(f"withdrawWei(cuenta 1, WBTC, pequeño, None)  [pedir más BTC]", p.functions.withdrawWei(1, mid[WBTC], 500, 3))
-    txt = "\n".join(L)
-    OUT.write_text(txt)
-    print(txt)
 
 
 if __name__ == "__main__":
