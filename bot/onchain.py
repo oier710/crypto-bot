@@ -38,6 +38,7 @@ from pathlib import Path
 import pandas as pd
 import requests
 from dotenv import load_dotenv
+from web3.exceptions import ContractLogicError
 
 from . import indicators
 from .config import RISK
@@ -337,8 +338,23 @@ class Chain:
 
     # ---- transacciones ---------------------------------------------------
     def _send(self, fn, value: int = 0):
-        tx = fn.build_transaction({"from": self.address, "value": value, "nonce": self.w3.eth.get_transaction_count(self.address), "chainId": CHAIN_ID})
-        tx["gas"] = int(self.w3.eth.estimate_gas(tx) * 1.3)
+        # La RPC pública de Arbitrum reparte las peticiones entre varios nodos; justo después de una transacción
+        # alguno puede ir un bloque por detrás y la estimación de gas revierte SIN motivo ("0x"). Pasó el
+        # 2026-11-06 00:07 UTC (depósito en Dolomite) y la misma operación simulada después pasaba
+        # (results/research_dolomite_diag.txt). Se reintenta solo ese caso; un error con motivo se lanza al momento.
+        for attempt in range(3):
+            tx = fn.build_transaction({"from": self.address, "value": value, "chainId": CHAIN_ID,
+                                       "nonce": self.w3.eth.get_transaction_count(self.address, "pending")})
+            try:
+                tx["gas"] = int(self.w3.eth.estimate_gas(tx) * 1.3)
+                break
+            except ContractLogicError as e:
+                data = getattr(e, "data", None)
+                if attempt < 2 and (data in (None, "", "0x") or str(data) == "0x"):
+                    log.warning("estimación de gas revirtió sin motivo (intento %d/3); reintento en 4 s", attempt + 1)
+                    time.sleep(4)
+                    continue
+                raise
         signed = self.acct.sign_transaction(tx)
         h = self.w3.eth.send_raw_transaction(signed.raw_transaction)
         rc = self.w3.eth.wait_for_transaction_receipt(h, timeout=180)
