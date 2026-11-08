@@ -1,0 +1,120 @@
+# Investigación nov-2026 (4ª parte) — activos del mundo real tokenizados (idea de Oier)
+
+## 1. ESCANEO de activos del mundo real tokenizados (DefiLlama)
+
+### Arbitrum: 10 mercados con activos del mundo real
+protocolo                símbolo                             TVL $ prestable  disp. préstamo $  interés
+blackrock-buidl          BUIDL                          12,625,505        no                 0    0.00%
+ondo-yield-assets        USDY                            3,144,795        no                 0    0.00%
+uniswap-v3               PGOLD-USDT                        329,626        no                 0    0.00%
+uniswap-v3               RAAPL-USDC                        203,388        no                 0    0.00%
+morpho-blue              XAUT0                             185,295        sí            88,692    5.38%
+uniswap-v3               RHOOD-USDC                        168,070        no                 0    0.00%
+morpho-blue              XAUT0                              68,414        sí            37,222    4.16%
+uniswap-v4               XAUT0-USDT                         66,747        no                 0    0.00%
+uniswap-v3               XAUT0-USDT                         15,375        no                 0    0.00%
+uniswap-v3               METAX-USDT                         13,099        no                 0    0.00%
+
+### Base: 98 mercados con activos del mundo real
+protocolo                símbolo                             TVL $ prestable  disp. préstamo $  interés
+aave-v4                  GOOGLC                          5,712,531        no                 0    0.00%
+aave-v4                  METAC                           3,166,677        no                 0    0.00%
+aave-v4                  NVDAC                           3,059,651        no                 0    0.00%
+uniswap-v3               USDC-DESPXA                     1,650,608        no                 0    0.00%
+aave-v4                  TSLAC                           1,065,542        no                 0    0.00%
+makina                   YGOOGLC                           933,222        no                 0    0.00%
+pendle-v2                GOOGLC                            866,099        no                 0    0.00%
+pendle-v2                GOOGLC                            866,099        no                 0    0.00%
+aave-v4                  AAPLC                             796,964        no                 0    0.00%
+pendle-v2                NVDAC                             526,212        no                 0    0.00%
+pendle-v2                NVDAC                             526,212        no                 0    0.00%
+aave-v4                  AMZNC                             508,799        no                 0    0.00%
+superform                SUPERNVDA                         497,697        no                 0    0.00%
+aerodrome-slipstream     USDC-NVDAC                        461,846        no                 0    0.00%
+aave-v4                  MSFTC                             339,673        no                 0    0.00%
+superform                SUPERGOOGL                        306,482        no                 0    0.00%
+uniswap-v3               WETH-GOLD                         284,524        no                 0    0.00%
+uniswap-v2               WETH-BENJI                        263,340        no                 0    0.00%
+uniswap-v4               WETH-BOTCOIN                      244,480        no                 0    0.00%
+makina                   YMETAC                            233,374        no                 0    0.00%
+superform                SUPERTSLA                         233,011        no                 0    0.00%
+beefy                    GOOGL-USDC                        231,581        no                 0    0.00%
+aerodrome-slipstream     USDC-GOOGLC                       210,076        no                 0    0.00%
+uniswap-v4               USDC-NVDAC                        201,180        no                 0    0.00%
+aerodrome-slipstream     USDC-MSTRC                        200,610        no                 0    0.00%
+
+### Optimism: 0 mercados con activos del mundo real
+
+### Ethereum: 101 mercados con activos del mundo real
+protocolo                símbolo                             TVL $ prestable  disp. préstamo $  interés
+ondo-yield-assets        USDY                        1,283,004,883        no                 0    0.00%
+invesco-ustb             USTB                          438,871,444        no                 0    0.00%
+blackrock-buidl          BUIDL                         172,635,065        no                 0    0.00%
+blackrock-buidl          BUIDL                         144,043,762        no                 0    0.00%
+ondo-yield-assets        OUSG                          131,396,576        no                 0    0.00%
+aave-v3                  XAUT                           54,424,818        no        54,424,818    0.00%
+flux-finance             OUSG                           39,411,636        no        39,411,636    4.42%
+circle-usyc              USYC                           35,503,859        no                 0    0.00%
+termmax                  XAUT                           23,725,914        no                 0    0.00%
+matrixdock-stbt          STBT                           22,583,641        no                 0    0.00%
+openeden-tbill           TBILL                          20,009,957        no                 0    0.00%
+uniswap-v2               PAXG-WETH                      14,514,564        no                 0    0.00%
+uniswap-v3               PAXG-WETH                       9,122,492        no                 0    0.00%
+uniswap-v3               XAUT-WETH                       8,006,105        no                 0    0.00%
+aave-v4                  XAUT                            7,751,006        no                 0    0.00%
+uniswap-v3               PAXG-XAUT                       6,657,094        no                 0    0.00%
+morpho-blue              XAUT                            6,468,129        sí         3,883,148    4.53%
+aave-v4                  PAXG                            5,938,006        no                 0    0.00%
+frankencoin              SPYON                           4,027,831        no         2,792,323    1.00%
+aave-v3                  USTB                            3,748,119        no         3,748,119    0.00%
+uniswap-v3               XAUT-USDT                       3,714,015        no                 0    0.00%
+uniswap-v3               PAXG-XAUT                       3,089,198        no                 0    0.00%
+fluid-dex                PAXG-XAUT                       2,241,759        no                 0    0.00%
+uniswap-v3               PAXG-USDC                       2,213,926        no                 0    0.00%
+yo-protocol              XAUT                            2,032,649        no                 0    0.00%
+
+## 2. BACKTEST de la estrategia actual sobre oro y S&P 500
+PAXG (oro) Coinbase 1h: 2025-05-08 -> 2026-11-08, 13161 horas
+SPY (S&P 500) Yahoo 1h: 2023-12-11 -> 2026-11-06, 5083 horas (solo horario de mercado)
+GLD (oro, ETF) Yahoo 1h: 2023-12-11 -> 2026-11-06 (comprobación del oro)
+
+### ORO — periodo completo (2025-08-06 -> 2026-11-06)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  aporte por activo
+PAXG solo largo                        +21.8%  +17.1%   -7.1%   1.43   2/15    -4.6%    11    64%   +5.59   -3.59   10.32  PAXG +25.17$
+PAXG largo y corto                      +4.5%   +3.6%  -19.8%   0.31   7/15    -8.2%    26    54%   +3.10   -3.07   25.60  PAXG +5.25$
+GLD solo largo                         +10.1%   +8.0%   -7.1%   0.07   4/15    -2.7%     9    78%   +2.10   -1.50    7.98  GLD +11.68$
+GLD largo y corto                      -15.6%  -12.7%  -27.3%  -1.89   9/15    -9.5%    19    42%   +2.10   -3.06   16.63  GLD -18.08$
+
+### CARTERA — periodo completo (2025-08-06 -> 2026-11-06)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  aporte por activo
+v5 actual (BTC/ETH/ARB)                +23.3%  +18.2%  -15.3%   0.84   6/15    -6.2%    65    58%   +2.32   -2.26   14.62  BTC +4.90$ ETH +11.94$ ARB +10.10$
+v5 + oro 15% solo largo                +21.0%  +16.5%  -13.7%   0.87   6/15    -5.3%    76    58%   +1.78   -1.69   16.01  BTC +3.85$ ETH +9.85$ ARB +8.21$ PAXG +2.35$
+v5 + oro 15% largo y corto             +17.6%  +13.8%  -15.9%   0.75   8/15    -6.0%    90    53%   +1.63   -1.37   18.91  BTC +3.85$ ETH +9.85$ ARB +8.21$ PAXG -1.63$
+v5 + oro 25% solo largo                +20.6%  +16.1%  -12.5%   0.95   6/15    -4.7%    76    58%   +1.66   -1.55   16.07  BTC +3.15$ ETH +8.45$ ARB +6.95$ PAXG +5.20$
+v5 + oro 25% largo y corto             +15.5%  +12.2%  -16.1%   0.74   8/15    -5.9%    91    54%   +1.50   -1.32   20.73  BTC +3.15$ ETH +8.45$ ARB +6.95$ PAXG -0.64$
+
+### CARTERA — 1ª mitad (2025-08-06 -> 2026-03-23)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  aporte por activo
+v5 actual (BTC/ETH/ARB)                +29.4%  +51.1%  -12.3%   1.79   2/7     -6.1%    30    63%   +2.35   -1.99    7.61  BTC +1.55$ ETH +13.35$ ARB +19.08$
+v5 + oro 15% solo largo                +27.2%  +46.9%   -9.6%   1.96   2/7     -4.8%    38    63%   +1.75   -1.44    9.11  BTC +1.16$ ETH +11.16$ ARB +16.01$ PAXG +3.03$
+v5 + oro 15% largo y corto             +26.9%  +46.4%   -9.8%   1.94   2/7     -5.0%    40    62%   +1.65   -1.36    9.50  BTC +1.16$ ETH +11.16$ ARB +16.01$ PAXG +2.73$
+v5 + oro 25% solo largo                +26.6%  +45.9%   -8.2%   2.17   2/7     -3.7%    38    63%   +1.72   -1.35    9.38  BTC +0.89$ ETH +9.70$ ARB +13.96$ PAXG +6.19$
+v5 + oro 25% largo y corto             +27.0%  +46.6%   -8.2%   2.19   2/7     -3.8%    39    62%   +1.71   -1.29    9.80  BTC +0.89$ ETH +9.70$ ARB +13.96$ PAXG +6.59$
+
+### CARTERA — 2ª mitad (2026-03-23 -> 2026-11-06)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  aporte por activo
+v5 actual (BTC/ETH/ARB)                 -3.3%   -5.2%   -9.2%   0.05   4/8     -5.1%    33    48%   +1.29   -1.50    5.81  BTC +2.00$ ETH -2.16$ ARB -3.61$
+v5 + oro 15% solo largo                 -3.7%   -5.9%   -7.6%  -0.06   4/8     -4.4%    36    47%   +1.02   -1.19    5.84  BTC +1.55$ ETH -1.96$ ARB -3.26$ PAXG -0.61$
+v5 + oro 15% largo y corto              -6.5%  -10.2%   -9.1%  -0.29   6/8     -5.0%    47    40%   +0.92   -0.92    8.09  BTC +1.55$ ETH -1.96$ ARB -3.26$ PAXG -3.84$
+v5 + oro 25% solo largo                 -3.8%   -6.1%   -6.6%  -0.14   5/8     -3.9%    36    47%   +0.90   -1.08    5.70  BTC +1.26$ ETH -1.82$ ARB -3.02$ PAXG -0.87$
+v5 + oro 25% largo y corto              -8.3%  -13.0%   -9.8%  -0.54   6/8     -5.0%    49    41%   +0.78   -0.90    9.28  BTC +1.26$ ETH -1.82$ ARB -3.02$ PAXG -6.04$
+
+### S&P 500 y cartera — últimos ~21 meses (2024-03-10 -> 2026-11-06)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  aporte por activo
+SPY solo largo                          -0.1%   -0.0%   -8.4%  -0.58   9/32    -3.1%    29    48%   +1.16   -1.12   19.19  SPY -0.09$
+SPY largo y corto                       -7.4%   -2.8%  -12.7%  -0.91  11/32    -5.2%    36    47%   +1.13   -1.47   24.98  SPY -8.51$
+v5 actual (BTC/ETH/ARB)                +49.2%  +16.2%  -19.9%   0.71  11/32    -7.3%   137    59%   +2.66   -2.81   31.33  BTC -0.58$ ETH +21.43$ ARB +35.96$
+v5 + S&P 15% solo largo                +35.6%  +12.1%  -17.9%   0.62  12/32    -6.7%   166    54%   +1.96   -1.76   33.10  BTC -1.29$ ETH +17.33$ ARB +27.28$ SPY -2.28$
+
+Correlación diaria estrategia en oro vs cartera v5: -0.04 (cerca de 0 = diversifica; cerca de 1 = se mueven igual)
+Volatilidad anual: oro 26% vs BTC 47%

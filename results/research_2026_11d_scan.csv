@@ -1,0 +1,210 @@
+chain,project,symbol,tvlUsd,totalSupplyUsd,totalBorrowUsd,avail_usd,apyBaseBorrow,borrowable,poolMeta
+Ethereum,ondo-yield-assets,USDY,1283004883,,,,,False,US Dollar Yield
+Ethereum,invesco-ustb,USTB,438871444,,,,,False,
+Ethereum,blackrock-buidl,BUIDL,172635065,,,,,False,
+Ethereum,blackrock-buidl,BUIDL,144043762,,,,,False,Institutional
+Ethereum,ondo-yield-assets,OUSG,131396576,,,,,False,Short-term US Government Securities
+Ethereum,aave-v3,XAUT,54424818,54424818.0,0.0,54424818.0,0.0,False,
+Ethereum,flux-finance,OUSG,39411636,39411636.0,0.0,39411636.0,4.42484,False,
+Ethereum,circle-usyc,USYC,35503859,,,,,False,
+Ethereum,termmax,XAUT,23725914,,,,,False,XAUE XAUt Vault
+Ethereum,matrixdock-stbt,STBT,22583641,,,,,False,Short-term Treasury Bill Token
+Ethereum,openeden-tbill,TBILL,20009957,,,,,False,
+Ethereum,uniswap-v2,PAXG-WETH,14514564,,,,,False,
+Arbitrum,blackrock-buidl,BUIDL,12625505,,,,,False,
+Ethereum,uniswap-v3,PAXG-WETH,9122492,,,,,False,0.3%
+Ethereum,uniswap-v3,XAUT-WETH,8006105,,,,,False,0.3%
+Ethereum,aave-v4,XAUT,7751006,,,,,False,Core
+Ethereum,uniswap-v3,PAXG-XAUT,6657094,,,,,False,0.01%
+Ethereum,morpho-blue,XAUT,6468129,6468129.0,2584981.0,3883148.0,4.52944,True,
+Ethereum,aave-v4,PAXG,5938006,,,,,False,Global Dollar
+Base,aave-v4,GOOGLC,5712531,,,,,False,Coinbase Stocks
+Ethereum,frankencoin,SPYON,4027831,6070267.0,3277944.0,2792323.0,1.0,False,PositionV2
+Ethereum,aave-v3,USTB,3748119,3748119.0,0.0,3748119.0,0.0,False,Aave Horizon Market
+Ethereum,uniswap-v3,XAUT-USDT,3714015,,,,,False,0.05%
+Base,aave-v4,METAC,3166677,,,,,False,Coinbase Stocks
+Arbitrum,ondo-yield-assets,USDY,3144795,,,,,False,US Dollar Yield
+Ethereum,uniswap-v3,PAXG-XAUT,3089198,,,,,False,0.05%
+Base,aave-v4,NVDAC,3059651,,,,,False,Coinbase Stocks
+Ethereum,fluid-dex,PAXG-XAUT,2241759,,,,,False,
+Ethereum,uniswap-v3,PAXG-USDC,2213926,,,,,False,0.05%
+Ethereum,yo-protocol,XAUT,2032649,,,,,False,yoGOLD
+Ethereum,uniswap-v3,WBTC-XAUT,1731728,,,,,False,0.3%
+Base,uniswap-v3,USDC-DESPXA,1650608,,,,,False,0.05%
+Ethereum,uniswap-v3,XAUT-USDT,1584366,,,,,False,0.3%
+Ethereum,uniswap-v2,PEPECOIN-WETH,1495390,,,,,False,
+Ethereum,uniswap-v4,WBTC-PAXG,1349088,,,,,False,0.30%
+Ethereum,fluid-lending,PAXG,1312984,1312984.0,784500.0,528484.0,5.98,True,
+Ethereum,uniswap-v3,QQQAI-USDT,1155908,,,,,False,0.3%
+Base,aave-v4,TSLAC,1065542,,,,,False,Coinbase Stocks
+Ethereum,uniswap-v3,WBTC-STBTC,974545,,,,,False,0.05%
+Ethereum,frankencoin,XAUT,971121,6070267.0,849837.0,5220430.0,1.5,False,PositionV2
+Base,makina,YGOOGLC,933222,,,,,False,Dialectic Yielding GOOGLc
+Ethereum,uniswap-v3,PAXG-USDC,913655,,,,,False,0.3%
+Ethereum,uniswap-v3,BITCOIN-WETH,877851,,,,,False,0.3%
+Base,pendle-v2,GOOGLC,866099,,,,,False,For buying PT-GOOGLc-24DEC2026
+Base,pendle-v2,GOOGLC,866099,,,,,False,For LP | Maturity 24DEC2026
+Ethereum,uniswap-v4,XAUT-USDC,861278,,,,,False,0.30%
+Ethereum,uniswap-v4,XAUT-USDT,845370,,,,,False,0.05%
+Ethereum,plume-vaults,NTBILL,810539,,,,,False,
+Base,aave-v4,AAPLC,796964,,,,,False,Coinbase Stocks
+Ethereum,uniswap-v4,WBTC-PAXG,775560,,,,,False,1.00%
+Ethereum,uniswap-v4,WBTC-XAUT,677212,,,,,False,0.30%
+Ethereum,uniswap-v3,TONCOIN-WETH,630027,,,,,False,1%
+Ethereum,frankencoin,PAXG,608268,6070267.0,455270.0,5614997.0,1.5,False,PositionV2
+Ethereum,uniswap-v4,PAXG-USDC,574522,,,,,False,0.05%
+Ethereum,fluid-lending,PAXG,563291,563291.0,177755.0,385536.0,5.99,True,
+Ethereum,fluid-lending,XAUT,552875,552875.0,243899.0,308976.0,5.98,True,
+Base,pendle-v2,NVDAC,526212,,,,,False,For buying PT-NVDAc-07JAN2027
+Base,pendle-v2,NVDAC,526212,,,,,False,For LP | Maturity 07JAN2027
+Base,aave-v4,AMZNC,508799,,,,,False,Coinbase Stocks
+Ethereum,uniswap-v4,XAUT-USDT,500610,,,,,False,0.04%
+Base,superform,SUPERNVDA,497697,,,,,False,SuperVault
+Ethereum,uniswap-v4,PAXG-DAI,472259,,,,,False,0.05%
+Ethereum,morpho-blue,WSPYX,464153,464153.0,6573.0,457580.0,9.96762,True,
+Base,aerodrome-slipstream,USDC-NVDAC,461846,,,,,False,CL10 - 0.05%
+Ethereum,uniswap-v4,ETH-XAUT,413215,,,,,False,0.30%
+Ethereum,curve-dex,STBT-3CRV,412773,,,,,False,
+Base,aave-v4,MSFTC,339673,,,,,False,Coinbase Stocks
+Arbitrum,uniswap-v3,PGOLD-USDT,329626,,,,,False,0.3%
+Ethereum,compound-v3,XAUT,317230,317230.0,,317230.0,,True,USDT-pool
+Ethereum,uniswap-v3,PAXG-XAUT,307764,,,,,False,0.3%
+Base,superform,SUPERGOOGL,306482,,,,,False,SuperVault
+Ethereum,curve-dex,XAUT-PAXG,295833,,,,,False,
+Ethereum,uniswap-v3,XAUT-USDC,286793,,,,,False,0.3%
+Base,uniswap-v3,WETH-GOLD,284524,,,,,False,1%
+Ethereum,uniswap-v3,BITCOIN2-WETH,277212,,,,,False,1%
+Ethereum,uniswap-v4,PAXG-USDC,266111,,,,,False,0.30%
+Ethereum,morpho-blue,PAXG,264812,264812.0,147370.0,117442.0,7.83063,True,
+Base,uniswap-v2,WETH-BENJI,263340,,,,,False,
+Base,uniswap-v4,WETH-BOTCOIN,244480,,,,,False,1.20%
+Ethereum,beefy,PAXG-USDC,242225,,,,,False,Uniswap
+Base,makina,YMETAC,233374,,,,,False,Dialectic Yielding METAc
+Base,superform,SUPERTSLA,233011,,,,,False,SuperVault
+Base,beefy,GOOGL-USDC,231581,,,,,False,Aero
+Ethereum,uniswap-v4,ETH-PAXG,216662,,,,,False,0.30%
+Ethereum,uniswap-v2,MSTR-WETH,210155,,,,,False,
+Base,aerodrome-slipstream,USDC-GOOGLC,210076,,,,,False,CL10 - 0.05%
+Arbitrum,uniswap-v3,RAAPL-USDC,203388,,,,,False,0.05%
+Ethereum,fluid-lending,XAUT,202940,202940.0,105221.0,97719.0,5.99,True,
+Ethereum,frankencoin,XAUT,202701,6070267.0,151757.0,5918510.0,1.5,False,PositionV2
+Base,uniswap-v4,USDC-NVDAC,201180,,,,,False,3.10%
+Base,aerodrome-slipstream,USDC-MSTRC,200610,,,,,False,CL10 - 0.05%
+Base,uniswap-v4,WTSPYM-STONX,197210,,,,,False,0.05%
+Base,uniswap-v4,ETH-GOLDN,189751,,,,,False,1.10%
+Arbitrum,morpho-blue,XAUT0,185295,185295.0,96603.0,88692.0,5.38036,True,
+Base,uniswap-v4,NVDAC-BLUECHIP,185052,,,,,False,0.00%
+Ethereum,uniswap-v2,XAUH-USDT,184818,,,,,False,
+Ethereum,uniswap-v3,PAXG-USDT,177131,,,,,False,0.05%
+Base,beefy,META-USDC,172253,,,,,False,Aero
+Base,uniswap-v4,IPOD-AAPL,168963,,,,,False,0.00%
+Arbitrum,uniswap-v3,RHOOD-USDC,168070,,,,,False,0.05%
+Ethereum,uniswap-v2,WETH-GOLDEN,163801,,,,,False,
+Ethereum,uniswap-v3,XAUT-SLVON,148761,,,,,False,1%
+Base,uniswap-v3,FARTCOIN-WETH,142563,,,,,False,1%
+Ethereum,uniswap-v4,ETH-TONCOIN,139043,,,,,False,1.00%
+Base,beefy,AAPL-USDC,137370,,,,,False,Aero
+Ethereum,uniswap-v3,BITCOIN-WETH,136769,,,,,False,1%
+Base,uniswap-v4,WETH-GOLD,136532,,,,,False,1.00%
+Ethereum,uniswap-v4,XAUT-USDC,131982,,,,,False,0.05%
+Base,uniswap-v4,ETH-NVDAC,128934,,,,,False,0.00%
+Ethereum,uniswap-v2,SPYRO-WETH,127372,,,,,False,
+Base,uniswap-v4,WETH-BOTCOIN,124183,,,,,False,1.00%
+Ethereum,morpho-blue,XAUT,123038,123038.0,79018.0,44020.0,1.11117,True,
+Ethereum,uniswap-v3,XAUT-WETH,119395,,,,,False,1%
+Base,uniswap-v4,LITCOIN-WETH,117549,,,,,False,1.20%
+Base,uniswap-v3,AMZNC-DGUY,114942,,,,,False,1%
+Base,superform,SUPERAAPL,113174,,,,,False,SuperVault
+Base,pendle-v2,YGOOGLC,111134,,,,,False,For LP | Maturity 07JAN2027
+Base,pendle-v2,YGOOGLC,111134,,,,,False,For buying PT-yGOOGLc-07JAN2027
+Base,aerodrome-slipstream,USDC-METAC,111033,,,,,False,CL10 - 0.05%
+Base,uniswap-v4,BOTCOIN-WETH,110572,,,,,False,0.00%
+Base,uniswap-v2,HOOD-WETH,108525,,,,,False,
+Base,uniswap-v4,WETH-POOPCOIN,106310,,,,,False,0.10%
+Base,beefy,MSFT-USDC,98955,,,,,False,Aero
+Ethereum,uniswap-v4,NVDAON-USDC,97920,,,,,False,0.51%
+Base,uniswap-v3,WETH-COIN,97148,,,,,False,1%
+Base,uniswap-v4,USDC-NVDAC,90876,,,,,False,1.09%
+Ethereum,uniswap-v2,YTSLA-WETH,86550,,,,,False,
+Base,beefy,NVDA-USDC,84093,,,,,False,Aero
+Base,sushiswap-v3,WETH-COIN,82071,,,,,False,1%
+Base,ipor-fusion,GOOGLC,78863,,,,,False,Google Carry Trade
+Ethereum,uniswap-v2,WBTC-STBTC,75763,,,,,False,
+Base,uniswap-v4,ETH-METALOS,72394,,,,,False,1.10%
+Base,pendle-v2,SUPERTSLA,72367,,,,,False,For LP | Maturity 08APR2027
+Base,pendle-v2,SUPERTSLA,72367,,,,,False,For buying PT-superTSLA-08APR2027
+Ethereum,uniswap-v2,WETH-QQQF,71284,,,,,False,
+Ethereum,uniswap-v4,ETH-DACITYCOIN,71164,,,,,False,0.00%
+Base,makina,YAAPLC,70568,,,,,False,Dialectic Yielding AAPLc
+Ethereum,supernova-cl,XAUT-USDT,70568,,,,,False,CL - 10
+Base,beefy,AMZN-USDC,69855,,,,,False,Aero
+Arbitrum,morpho-blue,XAUT0,68414,68414.0,31192.0,37222.0,4.15689,True,
+Ethereum,morpho-blue,XAUE,67447,67447.0,35362.0,32085.0,1.73353,True,
+Base,superform,SUPERMSFT,67189,,,,,False,SuperVault
+Arbitrum,uniswap-v4,XAUT0-USDT,66747,,,,,False,0.60%
+Base,aerodrome-slipstream,USDC-AMZNC,66036,,,,,False,CL10 - 0.05%
+Ethereum,pancakeswap-amm,GOLDGR-WETH,65147,,,,,False,
+Ethereum,uniswap-v4,ETH-MSTR,64599,,,,,False,10.00%
+Ethereum,uniswap-v4,XAUT-USDT,61131,,,,,False,0.30%
+Base,uniswap-v4,ZORA-COINAGE,59316,,,,,False,3.00%
+Base,uniswap-v4,MSTRC-CBBTC,59162,,,,,False,1.00%
+Base,beefy,TSLA-USDC,59065,,,,,False,Aero
+Base,ipor-fusion,NVDA,58618,,,,,False,Nvidia Carry Trade
+Base,aerodrome-slipstream,USDC-AAPLC,58576,,,,,False,CL10 - 0.05%
+Base,ipor-fusion,AAPL,58412,,,,,False,Apple Carry Trade
+Base,uniswap-v4,USDC-GOOGLC,57348,,,,,False,10.09%
+Base,superform,SUPERMETA,56033,,,,,False,SuperVault
+Ethereum,morpho-blue,PAXG,55411,55411.0,35677.0,19734.0,1.111,True,
+Base,makina,YAMZNC,54914,,,,,False,Dialectic Yielding AMZNc
+Base,uniswap-v4,ETH-AMETA,53204,,,,,False,0.06%
+Base,uniswap-v4,USDC-GOOGLC,53091,,,,,False,3.10%
+Base,makina,YMSFTC,51104,,,,,False,Dialectic Yielding MSFTc
+Base,uniswap-v3,METALLICUS-WETH,50623,,,,,False,1%
+Base,makina,YTSLAC,50501,,,,,False,Dialectic Yielding TSLAc
+Base,uniswap-v3,COINYE-WETH,48080,,,,,False,1%
+Base,morpho-blue,DESPXA,46563,46563.0,21599.0,24964.0,5.85562,True,
+Base,morpho-blue,PAXG,45791,45791.0,20274.0,25517.0,5.65719,True,
+Base,makina,YNVDAC,43783,,,,,False,Dialectic Yielding NVDAc
+Ethereum,frankencoin,XAUT,39904,6070267.0,33423.0,6036844.0,1.5,False,PositionV2
+Ethereum,frankencoin,SPYON,38597,6070267.0,27438.0,6042829.0,1.0,False,PositionV2
+Base,pendle-v2,SUPERNVDA,37080,,,,,False,For buying PT-superNVDA-08APR2027
+Base,pendle-v2,SUPERNVDA,37080,,,,,False,For LP | Maturity 08APR2027
+Base,morpho-blue,AAPLC,34714,34714.0,14737.0,19977.0,6.26947,True,
+Ethereum,fluid-lending,XAUT,33467,33467.0,18276.0,15191.0,14.49,True,
+Base,aerodrome-slipstream,USDC-TSLAC,32957,,,,,False,CL10 - 0.05%
+Base,ipor-fusion,METAC,32201,,,,,False,Meta Carry Trade
+Base,uniswap-v3,WETH-SCOIN,31417,,,,,False,1%
+Ethereum,frankencoin,XAUT,31123,6070267.0,17709.0,6052558.0,1.5,False,PositionV2
+Base,uniswap-v3,USDC-GOOGLC,29407,,,,,False,1%
+Ethereum,supernova-cl,PAXG-USDC,28710,,,,,False,CL - 10
+Ethereum,uniswap-v3,TONCOIN-USDT,28427,,,,,False,1%
+Base,uniswap-v3,WETH-PURRCOIN,27979,,,,,False,1%
+Base,superform,SUPERAMZN,26944,,,,,False,SuperVault
+Base,uniswap-v2,WETH-COIN50,25461,,,,,False,
+Base,morpho-blue,NVDAC,24359,24359.0,11519.0,12840.0,12.90464,True,
+Base,pancakeswap-amm-v3,USDC-PAXG,22931,,,,,False,0.05%
+Ethereum,kyberswap-fairflow,PAXG-XAUT,22653,,,,,False,Univ4 Kyber FairFlow
+Base,aerodrome-slipstream,BITCOIN-WETH,22456,,,,,False,CL200 - 0.7%
+Base,morpho-blue,METAC,22198,22198.0,10940.0,11258.0,5.83643,True,
+Base,uniswap-v2,WETH-BUIDL,21739,,,,,False,
+Ethereum,curve-dex,STBT-ETH,21626,,,,,False,
+Ethereum,uniswap-v3,PEPECOIN-WETH,21200,,,,,False,1%
+Ethereum,uniswap-v3,TONCOIN-WETH,21047,,,,,False,0.3%
+Base,aerodrome-slipstream,USDC-MSFTC,16995,,,,,False,CL10 - 0.05%
+Ethereum,balancer-v2,COIN-WETH,16777,,,,,False,50COIN-50WETH
+Ethereum,frankencoin,PAXG,16605,6070267.0,9538.0,6060729.0,1.5,False,PositionV2
+Ethereum,frankencoin,PAXG,16220,6070267.0,12141.0,6058126.0,1.5,False,PositionV2
+Base,pancakeswap-amm-v3,USDC-GOOGLC,15872,,,,,False,0.05%
+Ethereum,frankencoin,PAXG,15633,6070267.0,8326.0,6061941.0,1.5,False,PositionV2
+Base,uniswap-v3,WETH-BENJI,15592,,,,,False,1%
+Arbitrum,uniswap-v3,XAUT0-USDT,15375,,,,,False,0.3%
+Base,beefy,GOOGL-USDC,15152,,,,,False,Aero
+Ethereum,morpho-blue,GOLDX,15115,15115.0,3095.0,12020.0,5.2777,True,
+Base,uniswap-v2,WETH-COIN,14615,,,,,False,
+Base,aerodrome-v1,USDC-COINAGE,14524,,,,,False,
+Ethereum,frankencoin,PAXG,14195,6070267.0,6070.0,6064197.0,1.5,False,PositionV2
+Ethereum,supernova-cl,XAUT-WETH,13435,,,,,False,CL - 50
+Arbitrum,uniswap-v3,METAX-USDT,13099,,,,,False,0.3%
+Base,uniswap-v2,WETH-🪙GOLD,11821,,,,,False,
+Base,morpho-blue,GOOGLC,11274,11274.0,4675.0,6599.0,6.0584,True,
+Ethereum,morpho-blue,TSXAUT,10324,,,,,False,
