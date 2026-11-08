@@ -12069,3 +12069,6 @@ web3.exceptions.ContractLogicError: ('execution reverted', '0x')
 2026-11-08 22:36:37,941 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-08 22:36:39,157 INFO USDC 144.55 (wallet 21.82 + Aave 0.00 + Dolomite 122.73) | ETH -33.00$ BTC +0.17$ ARB +0.00$ | deuda ETH 0.015659 BTC -0.000000 ARB 0.000000 | HF ∞ / Dolomite 3.22 | acumulado 0.00$ -> equity trading 111.72 USD (total 111.72)
 2026-11-08 22:36:39,993 INFO Chequeo de stops completado.
+2026-11-08 22:51:17,992 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-08 22:51:19,271 INFO USDC 144.55 (wallet 21.82 + Aave 0.00 + Dolomite 122.73) | ETH -33.05$ BTC +0.17$ ARB +0.00$ | deuda ETH 0.015659 BTC -0.000000 ARB 0.000000 | HF ∞ / Dolomite 3.21 | acumulado 0.00$ -> equity trading 111.67 USD (total 111.67)
+2026-11-08 22:51:20,128 INFO Chequeo de stops completado.
