@@ -1,0 +1,141 @@
+# Investigación nov-2026 (5ª parte) — estrategia de rango para cuando no hay tendencia
+Datos: Coinbase 1h reales, evaluación 2024-02-09 -> 2026-11-10. Cartera v5 (BTC 42.5 / ETH 42.5 / ARB 15 %). La de rango solo opera con la señal de tendencia en 0.
+Costes 0.10 %/lado + gas; cortos +0.10 %; interés cortos BTC/ETH 4 %/año, ARB 7 %/año.
+BTC: días sin tendencia (señal 0) 30%
+ETH: días sin tendencia (señal 0) 13%
+ARB: días sin tendencia (señal 0) 19%
+
+## PERIODO COMPLETO (2024-02-09 -> 2026-11-10)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$
+ACTUAL (solo tendencia)                +83.4%  +24.7%  -17.8%   0.99  10/33    -7.2%   140    60%   +3.15   -3.09   36.09
+solo rango: B1 Bollinger 2.0, stop 1   -37.5%  -15.7%  -38.8%  -1.60  18/33    -9.0%    89    34%   +1.11   -1.30   12.83
+COMBINADA + B1 Bollinger 2.0, stop 1   +46.1%  +14.8%  -27.1%   0.61  14/33   -11.1%   229    50%   +2.62   -2.17   48.92
+solo rango: B2 Bollinger 2.0, stop 1    +0.6%   +0.2%  -13.1%   0.07  12/33    -4.7%    41    54%   +1.31   -1.48    4.91
+COMBINADA + B2 Bollinger 2.0, stop 1   +84.0%  +24.8%  -17.4%   1.00  11/33    -7.2%   181    59%   +2.77   -2.68   40.99
+solo rango: B3 Bollinger 1.5, stop 1   -47.7%  -21.0%  -48.5%  -1.99  18/33   -10.6%   117    36%   +0.89   -1.23   16.21
+COMBINADA + B3 Bollinger 1.5, stop 1   +36.0%  +11.8%  -29.3%   0.51  15/33   -12.4%   257    49%   +2.40   -2.02   52.30
+solo rango: B4 Bollinger 2.0, stop 2   -35.9%  -14.9%  -37.4%  -1.49  18/33    -7.9%    80    34%   +1.11   -1.35   11.47
+COMBINADA + B4 Bollinger 2.0, stop 2   +47.7%  +15.2%  -26.5%   0.62  13/33   -11.1%   220    50%   +2.66   -2.24   47.56
+solo rango: B5 Bollinger 2.5, stop 2   -35.2%  -14.6%  -35.6%  -1.92  17/33    -9.2%    53    28%   +1.00   -1.46    7.80
+COMBINADA + B5 Bollinger 2.5, stop 2   +48.3%  +15.4%  -26.2%   0.63  14/33   -10.4%   193    51%   +2.83   -2.43   43.89
+solo rango: R1 RSI 30/70, stop 1.5 A   -34.8%  -14.4%  -38.0%  -1.58  16/33    -9.6%   103    48%   +0.70   -1.37   15.03
+COMBINADA + R1 RSI 30/70, stop 1.5 A   +48.6%  +15.5%  -25.3%   0.64  14/33   -10.6%   243    55%   +2.25   -2.25   51.12
+solo rango: R2 RSI 25/75, stop 2.0 A   -17.1%   -6.6%  -18.9%  -0.93  12/33    -7.5%    57    42%   +1.06   -1.36    8.97
+COMBINADA + R2 RSI 25/75, stop 2.0 A   +66.4%  +20.3%  -24.1%   0.81  14/33    -9.3%   197    55%   +2.69   -2.45   45.06
+solo rango: R3 RSI 30/70, stop 1.5 A    +4.3%   +1.5%   -9.5%   0.28   7/33    -4.0%    39    69%   +0.95   -1.72    4.66
+COMBINADA + R3 RSI 30/70, stop 1.5 A   +87.7%  +25.7%  -17.0%   1.04  11/33    -6.9%   179    62%   +2.62   -2.85   40.74
+
+## 1ª MITAD (2024-02-09 -> 2025-06-26)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$
+ACTUAL (solo tendencia)                +38.6%  +26.8%  -15.0%   1.04   4/16    -7.2%    70    61%   +2.75   -2.69   15.91
+solo rango: B1 Bollinger 2.0, stop 1    -6.7%   -5.0%  -15.6%  -0.48   8/16    -6.4%    40    45%   +1.38   -1.60    6.26
+COMBINADA + B1 Bollinger 2.0, stop 1   +31.9%  +22.3%  -20.8%   0.84   7/16    -7.9%   110    55%   +2.35   -2.20   22.17
+solo rango: B2 Bollinger 2.0, stop 1   +15.6%  +11.1%   -5.0%   1.40   4/16    -1.9%    17    76%   +1.62   -1.56    2.09
+COMBINADA + B2 Bollinger 2.0, stop 1   +54.1%  +37.0%  -16.9%   1.33   4/16    -7.0%    87    64%   +2.49   -2.54   17.99
+solo rango: B3 Bollinger 1.5, stop 1   -18.4%  -13.8%  -24.5%  -1.29   8/16    -8.2%    57    42%   +1.05   -1.49    8.62
+COMBINADA + B3 Bollinger 1.5, stop 1   +20.2%  +14.3%  -23.3%   0.59   7/16    -8.4%   127    53%   +2.14   -2.03   24.53
+solo rango: B4 Bollinger 2.0, stop 2    -7.6%   -5.6%  -16.5%  -0.54   8/16    -7.9%    35    46%   +1.37   -1.74    5.37
+COMBINADA + B4 Bollinger 2.0, stop 2   +31.0%  +21.7%  -20.8%   0.82   6/16    -7.9%   105    56%   +2.38   -2.30   21.28
+solo rango: B5 Bollinger 2.5, stop 2   -11.5%   -8.5%  -18.7%  -1.06   7/16    -7.5%    24    42%   +1.21   -1.97    3.81
+COMBINADA + B5 Bollinger 2.5, stop 2   +27.1%  +19.0%  -21.2%   0.74   7/16    -8.0%    94    56%   +2.46   -2.44   19.72
+solo rango: R1 RSI 30/70, stop 1.5 A   -14.9%  -11.1%  -21.6%  -1.22   7/16    -6.4%    49    49%   +0.90   -1.59    7.73
+COMBINADA + R1 RSI 30/70, stop 1.5 A   +23.7%  +16.7%  -23.8%   0.69   7/16    -8.0%   119    56%   +2.09   -2.16   23.64
+solo rango: R2 RSI 25/75, stop 2.0 A    -4.2%   -3.1%  -13.1%  -0.39   5/16    -5.9%    32    50%   +1.18   -1.47    5.08
+COMBINADA + R2 RSI 25/75, stop 2.0 A   +34.3%  +23.9%  -24.1%   0.91   7/16    -7.9%   102    58%   +2.33   -2.23   20.99
+solo rango: R3 RSI 30/70, stop 1.5 A   +12.0%   +8.6%   -3.2%   1.34   2/16    -2.3%    19    79%   +1.22   -1.13    2.23
+COMBINADA + R3 RSI 30/70, stop 1.5 A   +50.5%  +34.6%  -15.5%   1.29   4/16    -6.9%    89    65%   +2.36   -2.48   18.14
+
+## 2ª MITAD (2025-06-26 -> 2026-11-10)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$
+ACTUAL (solo tendencia)                +27.4%  +19.3%  -15.1%   0.88   6/17    -6.2%    70    57%   +2.26   -2.10   15.72
+solo rango: B1 Bollinger 2.0, stop 1   -31.6%  -24.2%  -32.7%  -2.52  11/17    -9.1%    48    21%   +0.69   -1.14    6.87
+COMBINADA + B1 Bollinger 2.0, stop 1    -4.2%   -3.1%  -28.1%   0.04   8/17   -12.1%   118    42%   +1.94   -1.56   22.59
+solo rango: B2 Bollinger 2.0, stop 1   -11.1%   -8.2%  -11.7%  -1.31   8/17    -4.9%    23    35%   +0.58   -1.17    2.58
+COMBINADA + B2 Bollinger 2.0, stop 1   +16.3%  +11.6%  -21.1%   0.56   8/17    -8.1%    93    52%   +1.98   -1.79   18.30
+solo rango: B3 Bollinger 1.5, stop 1   -34.4%  -26.4%  -36.4%  -2.57   9/17   -10.5%    59    27%   +0.74   -1.20    8.55
+COMBINADA + B3 Bollinger 1.5, stop 1    -7.0%   -5.1%  -30.5%  -0.02   8/17   -14.0%   129    43%   +1.83   -1.57   24.27
+solo rango: B4 Bollinger 2.0, stop 2   -29.1%  -22.1%  -30.3%  -2.30  11/17    -8.2%    44    20%   +0.75   -1.15    6.43
+COMBINADA + B4 Bollinger 2.0, stop 2    -1.7%   -1.2%  -26.9%   0.10   8/17   -11.8%   114    43%   +1.98   -1.59   22.15
+solo rango: B5 Bollinger 2.5, stop 2   -26.3%  -19.9%  -26.4%  -2.71  11/17    -9.3%    28    14%   +0.34   -1.32    4.23
+COMBINADA + B5 Bollinger 2.5, stop 2    +1.1%   +0.8%  -26.4%   0.17   8/17   -11.2%    98    45%   +2.08   -1.75   19.95
+solo rango: R1 RSI 30/70, stop 1.5 A   -21.4%  -16.0%  -25.4%  -1.60   9/17    -9.4%    53    47%   +0.65   -1.46    7.89
+COMBINADA + R1 RSI 30/70, stop 1.5 A    +6.1%   +4.4%  -23.8%   0.30   8/17   -11.2%   123    53%   +1.64   -1.79   23.62
+solo rango: R2 RSI 25/75, stop 2.0 A   -10.3%   -7.6%  -13.7%  -1.00   6/17    -7.3%    26    38%   +1.13   -1.45    4.07
+COMBINADA + R2 RSI 25/75, stop 2.0 A   +17.1%  +12.2%  -21.2%   0.59   8/17    -9.3%    96    52%   +2.03   -1.87   19.80
+solo rango: R3 RSI 30/70, stop 1.5 A    -3.7%   -2.7%   -9.8%  -0.33   5/17    -4.2%    23    65%   +0.74   -1.92    2.68
+COMBINADA + R3 RSI 30/70, stop 1.5 A   +23.8%  +16.8%  -19.7%   0.76   7/17    -7.3%    93    59%   +1.84   -2.06   18.40
+
+## TERCIO 1 (2024-02-09 -> 2025-01-09)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$
+ACTUAL (solo tendencia)                +17.2%  +18.9%  -15.0%   0.76   4/11    -7.2%    51    61%   +2.43   -2.61   11.50
+solo rango: B1 Bollinger 2.0, stop 1    -9.2%  -10.0%  -10.8%  -1.64   5/11    -3.9%    24    42%   +1.03   -1.50    3.86
+COMBINADA + B1 Bollinger 2.0, stop 1    +8.0%   +8.8%  -20.8%   0.42   5/11    -7.9%    75    55%   +2.09   -2.15   15.36
+solo rango: B2 Bollinger 2.0, stop 1    +3.4%   +3.7%   -2.8%   0.84   2/11    -1.9%     8    75%   +1.18   -1.59    0.92
+COMBINADA + B2 Bollinger 2.0, stop 1   +20.6%  +22.7%  -16.9%   0.87   4/11    -7.0%    59    63%   +2.23   -2.52   12.42
+solo rango: B3 Bollinger 1.5, stop 1   -11.8%  -12.8%  -14.5%  -1.60   5/11    -5.4%    35    43%   +0.95   -1.44    5.69
+COMBINADA + B3 Bollinger 1.5, stop 1    +5.4%   +5.9%  -23.3%   0.33   5/11    -8.4%    86    53%   +1.95   -2.02   17.19
+solo rango: B4 Bollinger 2.0, stop 2    -9.3%  -10.1%  -11.7%  -1.55   5/11    -4.3%    22    41%   +1.12   -1.61    3.47
+COMBINADA + B4 Bollinger 2.0, stop 2    +7.9%   +8.7%  -20.8%   0.42   5/11    -7.9%    73    55%   +2.14   -2.21   14.97
+solo rango: B5 Bollinger 2.5, stop 2   -11.9%  -12.9%  -12.9%  -2.46   5/11    -3.3%    14    36%   +0.70   -1.92    2.26
+COMBINADA + B5 Bollinger 2.5, stop 2    +5.3%   +5.8%  -21.2%   0.33   5/11    -8.0%    65    55%   +2.19   -2.40   13.76
+solo rango: R1 RSI 30/70, stop 1.5 A   -10.4%  -11.3%  -15.2%  -1.61   4/11    -5.8%    30    47%   +0.81   -1.45    4.87
+COMBINADA + R1 RSI 30/70, stop 1.5 A    +6.8%   +7.4%  -23.8%   0.39   6/11    -8.0%    81    56%   +1.93   -2.09   16.37
+solo rango: R2 RSI 25/75, stop 2.0 A   -10.0%  -10.9%  -13.1%  -2.21   4/11    -5.9%    20    35%   +0.81   -1.32    3.29
+COMBINADA + R2 RSI 25/75, stop 2.0 A    +7.2%   +7.8%  -24.1%   0.40   6/11    -7.9%    71    54%   +2.14   -2.10   14.79
+solo rango: R3 RSI 30/70, stop 1.5 A    +4.9%   +5.3%   -2.4%   1.26   1/11    -0.9%     9    78%   +0.95   -0.52    0.98
+COMBINADA + R3 RSI 30/70, stop 1.5 A   +22.0%  +24.3%  -15.5%   0.93   4/11    -6.9%    60    63%   +2.16   -2.42   12.48
+
+## TERCIO 2 (lateral) (2025-01-09 -> 2025-12-10)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$
+ACTUAL (solo tendencia)                +26.6%  +29.4%  -12.5%   1.22   2/11    -5.8%    43    56%   +2.26   -1.64    9.22
+solo rango: B1 Bollinger 2.0, stop 1   -16.3%  -17.6%  -20.6%  -1.34   8/11    -9.0%    37    35%   +1.64   -1.66    5.84
+COMBINADA + B1 Bollinger 2.0, stop 1   +10.2%  +11.2%  -20.6%   0.54   5/11    -8.8%    80    46%   +2.04   -1.65   15.06
+solo rango: B2 Bollinger 2.0, stop 1    -0.2%   -0.3%  -10.8%   0.03   6/11    -4.7%    19    53%   +1.76   -1.99    2.32
+COMBINADA + B2 Bollinger 2.0, stop 1   +26.3%  +29.1%  -19.4%   1.17   3/11    -7.7%    62    55%   +2.11   -1.75   11.53
+solo rango: B3 Bollinger 1.5, stop 1   -21.7%  -23.4%  -23.7%  -1.73   7/11   -10.5%    51    39%   +1.17   -1.56    7.51
+COMBINADA + B3 Bollinger 1.5, stop 1    +4.7%   +5.2%  -20.5%   0.34   5/11    -8.7%    94    47%   +1.77   -1.59   16.72
+solo rango: B4 Bollinger 2.0, stop 2   -16.0%  -17.3%  -19.1%  -1.33   8/11    -8.0%    32    34%   +1.58   -1.70    5.09
+COMBINADA + B4 Bollinger 2.0, stop 2   +10.5%  +11.5%  -20.4%   0.55   5/11    -8.7%    75    47%   +2.05   -1.67   14.30
+solo rango: B5 Bollinger 2.5, stop 2   -12.5%  -13.6%  -14.8%  -1.26   5/11    -7.3%    24    38%   +1.41   -1.80    3.89
+COMBINADA + B5 Bollinger 2.5, stop 2   +14.0%  +15.4%  -19.2%   0.69   4/11    -8.0%    67    49%   +2.03   -1.71   13.11
+solo rango: R1 RSI 30/70, stop 1.5 A   -17.8%  -19.3%  -20.3%  -1.62   8/11    -7.0%    48    50%   +0.92   -1.77    7.42
+COMBINADA + R1 RSI 30/70, stop 1.5 A    +8.6%   +9.5%  -19.7%   0.49   6/11    -8.1%    91    53%   +1.59   -1.71   16.64
+solo rango: R2 RSI 25/75, stop 2.0 A    -0.9%   -1.0%  -10.4%  -0.05   3/11    -5.4%    29    52%   +1.33   -1.49    4.77
+COMBINADA + R2 RSI 25/75, stop 2.0 A   +25.7%  +28.4%  -13.8%   1.15   5/11    -5.8%    72    54%   +1.90   -1.57   13.99
+solo rango: R3 RSI 30/70, stop 1.5 A    -3.3%   -3.6%   -9.3%  -0.36   4/11    -4.1%    20    60%   +1.12   -2.15    2.46
+COMBINADA + R3 RSI 30/70, stop 1.5 A   +23.3%  +25.7%  -18.4%   1.07   3/11    -6.8%    63    57%   +1.88   -1.79   11.68
+
+## TERCIO 3 (2025-12-10 -> 2026-11-10)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$
+ACTUAL (solo tendencia)                +21.7%  +23.9%  -12.2%   1.11   5/11    -5.7%    48    62%   +1.85   -1.98   11.05
+solo rango: B1 Bollinger 2.0, stop 1   -17.3%  -18.7%  -18.5%  -2.21   5/11    -7.9%    28    25%   +0.52   -1.12    4.05
+COMBINADA + B1 Bollinger 2.0, stop 1    +4.3%   +4.8%  -24.3%   0.28   6/11   -11.1%    76    49%   +1.60   -1.52   15.11
+solo rango: B2 Bollinger 2.0, stop 1    -2.1%   -2.3%   -2.9%  -0.61   4/11    -2.0%    14    43%   +0.48   -0.66    1.58
+COMBINADA + B2 Bollinger 2.0, stop 1   +19.6%  +21.6%  -12.0%   1.01   6/11    -6.0%    62    58%   +1.62   -1.57   12.63
+solo rango: B3 Bollinger 1.5, stop 1   -21.8%  -23.5%  -22.7%  -2.73   6/11    -9.3%    31    23%   +0.44   -1.17    4.46
+COMBINADA + B3 Bollinger 1.5, stop 1    -0.2%   -0.2%  -27.2%   0.08   6/11   -13.2%    79    47%   +1.58   -1.52   15.52
+solo rango: B4 Bollinger 2.0, stop 2   -15.4%  -16.7%  -16.8%  -1.91   5/11    -6.8%    26    27%   +0.52   -1.12    3.76
+COMBINADA + B4 Bollinger 2.0, stop 2    +6.2%   +6.8%  -23.1%   0.36   6/11   -10.8%    74    50%   +1.60   -1.54   14.81
+solo rango: B5 Bollinger 2.5, stop 2   -14.9%  -16.2%  -15.1%  -2.59   6/11    -8.9%    15     7%   +0.31   -1.25    2.31
+COMBINADA + B5 Bollinger 2.5, stop 2    +6.7%   +7.4%  -22.8%   0.39   5/11    -9.8%    63    49%   +1.80   -1.66   13.36
+solo rango: R1 RSI 30/70, stop 1.5 A    -9.7%  -10.6%  -12.1%  -1.43   4/11    -9.3%    26    46%   +0.45   -1.18    4.08
+COMBINADA + R1 RSI 30/70, stop 1.5 A   +11.9%  +13.1%  -19.9%   0.62   5/11   -10.1%    74    57%   +1.45   -1.63   15.13
+solo rango: R2 RSI 25/75, stop 2.0 A    -8.2%   -9.0%   -8.2%  -1.99   4/11    -7.3%     8    12%   +0.30   -1.40    1.34
+COMBINADA + R2 RSI 25/75, stop 2.0 A   +13.4%  +14.8%  -18.5%   0.71   5/11    -8.4%    56    55%   +1.80   -1.82   12.39
+solo rango: R3 RSI 30/70, stop 1.5 A    +1.3%   +1.4%   -1.6%   0.50   2/11    -0.9%     9    78%   +0.42   -0.73    0.96
+COMBINADA + R3 RSI 30/70, stop 1.5 A   +23.0%  +25.4%  -11.3%   1.16   5/11    -6.0%    57    65%   +1.58   -1.85   12.02
+
+## RESUMEN — cartera COMBINADA (tendencia + rango) frente a la actual
+ACTUAL: retorno +83.4%, caída -17.8%, meses en rojo 10, Sharpe 0.99
+                                              ret  max_dd  neg_months  sharpe  gana_ambas_mitades  gana_tercios
+variante                                                                                                       
+B1 Bollinger 2.0, stop 1.5 ATR, L+C         0.461  -0.271          14   0.609               False             0
+B2 Bollinger 2.0, stop 1.5 ATR, solo largo  0.840  -0.174          11   0.999               False             1
+B3 Bollinger 1.5, stop 1.5 ATR, L+C         0.360  -0.293          15   0.508               False             0
+B4 Bollinger 2.0, stop 2.5 ATR, L+C         0.477  -0.265          13   0.622               False             0
+B5 Bollinger 2.5, stop 2.0 ATR, L+C         0.483  -0.262          14   0.627               False             0
+R1 RSI 30/70, stop 1.5 ATR, L+C             0.486  -0.253          14   0.635               False             0
+R2 RSI 25/75, stop 2.0 ATR, L+C             0.664  -0.241          14   0.811               False             0
+R3 RSI 30/70, stop 1.5 ATR, solo largo      0.877  -0.170          11   1.040               False             2
+
+Ninguna variante de rango mejora a la cartera actual de forma consistente.
