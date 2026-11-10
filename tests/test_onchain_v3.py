@@ -50,6 +50,11 @@ class FakeChain:
     def bal(self, token, who=None):
         return self.b[token]
 
+    dex_factor = {}            # {moneda: factor} para simular que Uniswap cotiza distinto que Coinbase
+
+    def dex_price(self, coin, ref_px):
+        return ref_px * FakeChain.dex_factor.get(coin, 0.999)
+
     def _debt(self, venue):
         return sum(self.b[f"debt_{c}"] * P[c] for c in ("ETH", "BTC", "ARB") if oc.SHORT_VENUE.get(c, "aave") == venue)
 
@@ -162,6 +167,7 @@ oc.WEIGHTS = {}                   # partes iguales (como antes); los pesos reale
 REAL_VENUE = dict(oc.SHORT_VENUE)
 oc.SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}   # bloques 1-24: camino Aave (respaldo) + ARB en Dolomite
 oc.spot = lambda s: P[s]
+oc.PX_RETRY_SECONDS = 0
 oc.coinbase_daily = fake_daily
 oc.trend_ema = types.SimpleNamespace(signals=lambda df, **k: pd.Series([SIG[c] for c in SIG if P[c] == df.close.iloc[-1]][:1] * len(df)))
 oc.indicators = types.SimpleNamespace(atr=lambda df, n: pd.Series([[ATR[c] for c in ATR if P[c] == df.close.iloc[-1]][0]] * len(df)))
@@ -604,6 +610,70 @@ check(not st["halted"], "el bot NO se para con un corto abierto")
 st = run()                                                          # siguiente ejecución: ya puede
 check(FakeChain.state["debt_ETH"] < 1e-9 and st["halted"], "en la siguiente ejecución cierra y entonces sí se para")
 oc.SYMBOLS = ("BTC", "ETH"); oc.WEIGHTS = {}; oc.SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}
+
+print("\n== 28. Stop ejecutado y fallo posterior (red): el estado ya está guardado; no recompra el mismo día")
+SIG.update(ETH=1, BTC=0, ARB=0); P.update(ETH=2500.0, BTC=80000.0)
+pos = oc.new_pos(1, 2500.0, 100.0, 0.016, 1)
+fresh({oc.WETH: 0.016, oc.USDC: 60.0}, {"ETH": pos}, {"ETH": 2300.0})
+_tidy = oc.tidy_aave
+def _boom(*a, **k):
+    raise ConnectionError("red caída (simulado)")
+oc.tidy_aave = _boom
+P["ETH"] = 2290.0
+try:
+    run()
+    check(False, "debía fallar la ejecución")
+except ConnectionError:
+    pass
+oc.tidy_aave = _tidy
+st = oc.load_state()
+check(FakeChain.state[oc.WETH] < 1e-9, "el stop se ejecutó")
+check("ETH" not in st["stops"] and "ETH" not in st.get("pos", {}), "estado guardado: sin stop ni posición de ETH")
+check(st.get("stopped_today", {}).get("ETH") == today, "queda apuntado 'parado hoy'")
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+check(FakeChain.state[oc.WETH] < 1e-9, "ciclo diario del mismo día: NO recompra ETH")
+
+print("\n== 29. Stop huérfano (sin posición) se retira y no lo hereda una compra nueva")
+SIG.update(ETH=1, BTC=0); P["ETH"] = 2500.0
+fresh({oc.USDC: 100.0}, {}, {"ETH": 2490.0})
+st = run()
+check("ETH" not in st["stops"], "stop huérfano retirado")
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+check(FakeChain.state[oc.WETH] > 0.01 and abs(st["stops"]["ETH"] - (2500.0 - 2 * ATR["ETH"])) < 1.0,
+      f"compra nueva con stop propio a 2 ATR ({st['stops'].get('ETH', 0):.2f}), no el heredado 2490")
+
+print("\n== 30. Precio dudoso: Coinbase marca stop pero Uniswap no coincide -> no se opera; a la 3ª sigue")
+pos = oc.new_pos(1, 2500.0, 100.0, 0.016, 1)
+fresh({oc.WETH: 0.016, oc.USDC: 60.0}, {"ETH": pos}, {"ETH": 2300.0})
+P["ETH"] = 2000.0                         # tick erróneo de Coinbase (−20 %)
+FakeChain.dex_factor = {"ETH": 1.25}      # Uniswap sigue en ~2500
+st = run()
+check(abs(FakeChain.state[oc.WETH] - 0.016) < 1e-9 and st.get("px_mismatch") == 1, "1ª: no vende, apunta la discrepancia")
+P["ETH"] = 2500.0; FakeChain.dex_factor = {}
+st = run()
+check(abs(FakeChain.state[oc.WETH] - 0.016) < 1e-9 and st.get("px_mismatch") == 0, "precio corregido: sigue normal, contador a 0")
+P["ETH"] = 2000.0; FakeChain.dex_factor = {"ETH": 1.25}
+run(); run()
+check(abs(FakeChain.state[oc.WETH] - 0.016) < 1e-9, "dos discrepancias seguidas: sigue sin vender")
+st = run()
+check(FakeChain.state[oc.WETH] < 1e-9, "3ª seguida: actúa con el precio de Coinbase (no se queda bloqueado para siempre)")
+FakeChain.dex_factor = {}; P["ETH"] = 2500.0
+
+print("\n== 31. Dolomite caído: solo aborta si puede haber un corto abierto allí")
+oc.SHORT_VENUE = dict(REAL_VENUE)
+check(oc.dolomite_shorts_in_state({"pos": {"ETH": {"side": 1}}, "stops": {"ETH": 2300}}) == [], "solo un largo: no aborta (se gestionan sus stops)")
+check(oc.dolomite_shorts_in_state({"pos": {"BTC": {"side": -1}}, "stops": {"BTC": 80000}}) == ["BTC"], "corto abierto: aborta")
+check(oc.dolomite_shorts_in_state({"pos": {}, "stops": {"ARB": 0.2}}) == ["ARB"], "stop sin posición registrada: prudencia, aborta")
+check(oc.dolomite_shorts_in_state({"pos": {}, "stops": {}}) == [], "sin posiciones: no aborta")
+oc.SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}
+FakeChain.dolo_available = False
+pos = oc.new_pos(1, 2500.0, 100.0, 0.016, 1)
+fresh({oc.WETH: 0.016, oc.USDC: 60.0}, {"ETH": pos}, {"ETH": 2300.0})
+st = run(eth=2290.0)
+check(FakeChain.state[oc.WETH] < 1e-9, "con Dolomite caído el stop del largo se ejecuta")
+FakeChain.dolo_available = True; P["ETH"] = 2500.0
 
 eq, _ = oc.portfolio(FakeChain(), P)
 print(f"\nEquity final simulada: {eq:.2f} $")

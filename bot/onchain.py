@@ -76,6 +76,10 @@ DOLO_ACCOUNT = 1              # número de cuenta aislada en Dolomite para el co
 DOLO_FLAG_FROM, DOLO_FLAG_NONE = 1, 3   # AccountBalanceLib.BalanceCheckFlag: Both=0, From=1, To=2, None=3
 DOLO_MARGIN_RATIO_DEFAULT = 0.15        # margen mínimo global si no se puede leer (liquidación si garantía < 1.15 x deuda)
 DOLO_BORROW_BUFFER = 1.30               # al pedir prestado (antes de depositar lo vendido) la garantía cubre deuda x k x 1.30 (> HF_MIN)
+PX_CHECK_USD = 10.0                     # tamaño de la cotización de contraste en Uniswap
+PX_MAX_DIFF = 0.015                     # Coinbase y Uniswap no pueden diferir más de 1.5 % para operar con ese precio
+PX_RETRY_SECONDS = 5                    # espera antes de volver a pedir precio si hay discrepancia
+PX_MISMATCH_MAX = 3                     # ejecuciones seguidas que se saltan por discrepancia antes de seguir igualmente
 DOLO_DUST_USD = 0.05                    # deuda por debajo de esto se considera saldada (intereses de polvo)
 DECIMALS = {USDC: 6, WETH: 18, WBTC: 8, ARB: 18}
 ASSETS = {"ETH": WETH, "BTC": WBTC, "ARB": ARB}
@@ -188,6 +192,19 @@ def spot(symbol: str) -> float:
     return float(r.json()["price"])
 
 
+def dolomite_shorts_in_state(st: dict) -> list:
+    """Monedas que, según el estado guardado, pueden tener un corto abierto en Dolomite.
+    Un largo no depende de Dolomite; un stop sin posición registrada se trata como posible corto (prudencia)."""
+    out = []
+    for c, v in SHORT_VENUE.items():
+        if v != "dolomite":
+            continue
+        pos = st.get("pos", {}).get(c)
+        if (pos is not None and pos.get("side") == -1) or (pos is None and c in st.get("stops", {})):
+            out.append(c)
+    return out
+
+
 # ---------------------------------------------------------------------- cadena
 class Chain:
     def __init__(self, dry_run: bool):
@@ -240,13 +257,12 @@ class Chain:
             self.dolo_min_borrow_usd = self.dolo.functions.getMinBorrowedValue().call()[0] / 1e36
             self.dolo_ok = True
         except Exception as e:  # noqa: BLE001
-            st = load_state()
-            open_pos = [c for c in SHORT_VENUE if SHORT_VENUE[c] == "dolomite"
-                        and (c in st.get("pos", {}) or c in st.get("stops", {}))]
-            if open_pos:
-                # con una posición de ARB abierta no se puede fingir que no existe: mejor fallar esta ejecución
-                raise RuntimeError(f"Dolomite no responde ({e}) y hay posición abierta de {open_pos}") from e
-            log.error("Dolomite no disponible (%s): sin cortos de ARB hasta que vuelva", e)
+            shorts = dolomite_shorts_in_state(load_state())
+            if shorts:
+                # con un corto abierto en Dolomite no se puede fingir que no existe: mejor fallar esta ejecución
+                raise RuntimeError(f"Dolomite no responde ({e}) y hay corto abierto de {shorts}") from e
+            # solo largos (o nada): el bot sigue gestionando sus stops; sin cortos nuevos ni límites globales
+            log.error("Dolomite no disponible (%s): sigo con los largos; sin cortos hasta que vuelva", e)
 
     # ---- Dolomite (lectura) ----------------------------------------------
     def _dolo_wei(self, token, account: int = DOLO_ACCOUNT) -> float:
@@ -383,6 +399,13 @@ class Chain:
             self.ensure_allowance(hops[0][0], SWAP_ROUTER02, amount_in)
             self._send(self.router.functions.exactInput((encode_path(hops), self.address, amount_in, min_out)))
         return q
+
+    def dex_price(self, coin: str, ref_px: float) -> float:
+        """Precio de la moneda en Uniswap (cotización de vender ~10 $ por USDC; incluye la comisión del pool)."""
+        token = ASSETS[coin]
+        qty = PX_CHECK_USD / ref_px
+        out = self.quoter.functions.quoteExactInput(encode_path(PATHS[coin]["sell"]), int(qty * 10 ** DECIMALS[token])).call()[0]
+        return out / 1e6 / qty
 
     def swap_exact_out(self, hops, amount_out: int) -> int:
         """Compra exactamente amount_out del token final pagando como máximo cotización*(1+slippage)."""
@@ -880,6 +903,10 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
         sp = st["stops"].get(c)
         if abs(v) < MIN_TRADE_USD:
             pos_all.pop(c, None)
+            if sp is not None:
+                # stop huérfano (posición ya cerrada en una ejecución que no llegó a guardar): no debe heredarlo otra
+                log.warning("%s: stop %.2f sin posición; lo retiro", c, sp)
+                st["stops"].pop(c, None)
             continue
         side = 1 if v > 0 else -1
         pos = pos_all.get(c)
@@ -914,6 +941,8 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
                     realize(st, c, side, q, px, f"parcial {n}", ch.dry_run, closes_op=False)
                     pos["qty_now"] = qty_now - q
                     traded = True
+                    pos["pt_done"] = n
+                    save_state(st)       # lo ejecutado se guarda ya: un fallo posterior no debe perderlo
                 else:
                     log.warning("PARCIAL %d %s: %.2f$ está por debajo del mínimo operable; no se vende (solo se sube el stop)", n, c, q * px)
             pos["pt_done"], pos["pb"] = n, 0.0
@@ -937,6 +966,7 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
             st["stops"].pop(c, None)
             pos_all.pop(c, None)
             st.setdefault("stopped_today", {})[c] = today
+            save_state(st)               # idem: sin esto, un fallo posterior permitía recomprar el mismo día
             continue
         # 3) reentrada en máximo nuevo tras corrección
         q = pos["full_qty"] - qty_now
@@ -989,12 +1019,42 @@ def tidy_aave(ch: Chain, prices: dict | None = None):
 
 
 # ----------------------------------------------------------------------- ciclo
+def price_mismatch(ch: Chain, prices: dict) -> dict:
+    """Monedas cuyo precio de Coinbase difiere del de Uniswap más de PX_MAX_DIFF. Si la cotización falla, no bloquea."""
+    bad = {}
+    for c in SYMBOLS:
+        try:
+            dex = ch.dex_price(c, prices[c])
+        except Exception as e:  # noqa: BLE001
+            log.warning("no se pudo contrastar el precio de %s en Uniswap (%s)", c, e)
+            continue
+        if dex > 0 and abs(dex / prices[c] - 1) > PX_MAX_DIFF:
+            bad[c] = (prices[c], dex)
+    return bad
+
+
 def run_cycle(dry_run: bool, signals: bool = True):
     global _DRY_RUN
     _DRY_RUN = dry_run
     ch = Chain(dry_run)
     st = load_state()
     prices = {s: spot(s) for s in SYMBOLS}
+    # Un precio erróneo de Coinbase (única fuente) podría disparar un stop o el "cerrar todo": se contrasta con Uniswap.
+    bad = price_mismatch(ch, prices)
+    if bad:
+        time.sleep(PX_RETRY_SECONDS)
+        prices = {s: spot(s) for s in SYMBOLS}
+        bad = price_mismatch(ch, prices)
+    if bad:
+        n = st.get("px_mismatch", 0) + 1
+        detail = ", ".join(f"{c} Coinbase {a:.4f} vs Uniswap {b:.4f}" for c, (a, b) in bad.items())
+        if n < PX_MISMATCH_MAX:
+            log.error("PRECIO DUDOSO (%s): no se opera en esta ejecución (%d/%d)", detail, n, PX_MISMATCH_MAX)
+            st["px_mismatch"] = n
+            save_state(st)
+            return
+        log.error("PRECIO DUDOSO persistente (%s): tras %d ejecuciones sigo con el precio de Coinbase", detail, n)
+    st["px_mismatch"] = 0
     equity, pf = portfolio(ch, prices)
     today = datetime.now(timezone.utc).date().isoformat()
 
@@ -1088,6 +1148,7 @@ def run_cycle(dry_run: bool, signals: bool = True):
             st.get("pos", {}).pop(c, None)
             st.setdefault("stopped_today", {})[c] = today
         _, pf = portfolio(ch, prices)
+    save_state(st)                       # antes de tidy/señales (red): lo gestionado en este ciclo ya queda escrito
     if not signals:
         tidy_aave(ch, prices)
         save_state(st)
