@@ -1,0 +1,74 @@
+# Investigación nov-2026 (6ª parte) — histéresis del ADX y bloqueo tras stop (debate de expertos)
+Datos: Coinbase 1h reales, evaluación 2024-02-09 -> 2026-11-10. Cartera v5, gestión v3 y costes idénticos a producción.
+Comprobación del simulador: diferencia máxima con el de producción 0.000000 $ (debe ser 0).
+Premisa T1 — veces que la señal pasó a 0 SIN cruce de EMAs y volvió al mismo lado en <= 5 días:
+  BTC: 6 de 22 salidas a señal 0
+  ETH: 4 de 11 salidas a señal 0
+  ARB: 7 de 18 salidas a señal 0
+Columnas extra: stops = cierres por stop; señal = cierres por cambio de señal.
+
+## PERIODO COMPLETO (2024-02-09 -> 2026-11-10)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal
+A actual                               +83.5%  +24.7%  -17.8%   0.99  10/33    -7.2%   140    60%   +3.15   -3.09   36.09     72     68
+T1 histéresis: salida ADX<15           +43.0%  +13.9%  -28.5%   0.62  15/33   -10.2%   123    58%   +2.92   -3.05   30.44     87     36
+T1b histéresis: salida ADX<17          +88.3%  +25.9%  -17.6%   1.04  13/33    -7.1%   121    60%   +3.54   -3.22   33.07     79     42
+T1c mantener hasta cruce de EMAs       +28.9%   +9.7%  -28.7%   0.48  16/33   -11.4%   125    54%   +2.93   -2.92   31.31     97     28
+T2 bloqueo tras stop (10 días)         +51.1%  +16.2%  -20.1%   0.89  15/33    -6.8%    72    58%   +3.49   -3.08   19.77     47     25
+T1 + T2                                +47.8%  +15.3%  -17.9%   0.83  16/33    -9.6%    60    62%   +3.89   -4.08   17.63     54      6
+
+## 1ª MITAD (2024-02-09 -> 2025-06-26)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal
+A actual                               +38.6%  +26.8%  -15.0%   1.04   4/16    -7.2%    70    61%   +2.75   -2.69   15.91     34     36
+T1 histéresis: salida ADX<15           +23.3%  +16.4%  -28.5%   0.68   7/16   -10.2%    63    59%   +2.67   -2.90   14.19     44     19
+T1b histéresis: salida ADX<17          +41.4%  +28.7%  -17.6%   1.08   6/16    -7.1%    63    65%   +2.88   -3.12   14.97     40     23
+T1c mantener hasta cruce de EMAs       +13.9%   +9.9%  -28.7%   0.49   7/16   -10.3%    64    55%   +2.75   -2.88   14.79     48     16
+T2 bloqueo tras stop (10 días)         +41.2%  +28.5%  -10.8%   1.41   7/16    -3.8%    36    64%   +3.69   -2.80    9.30     22     14
+T1 + T2                                +31.7%  +22.1%  -15.3%   1.12   8/16    -9.6%    29    72%   +3.64   -4.88    8.11     28      1
+
+## 2ª MITAD (2025-06-26 -> 2026-11-10)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal
+A actual                               +27.5%  +19.3%  -15.1%   0.88   6/17    -6.2%    70    57%   +2.26   -2.10   15.72     38     32
+T1 histéresis: salida ADX<15           +14.2%  +10.1%  -18.5%   0.58   9/17    -5.9%    59    53%   +2.35   -2.14   13.72     42     17
+T1b histéresis: salida ADX<17          +29.6%  +20.7%  -11.5%   0.97   7/17    -5.5%    57    53%   +2.77   -2.02   13.78     38     19
+T1c mantener hasta cruce de EMAs       +17.7%  +12.6%  -19.4%   0.65   9/17    -8.2%    58    53%   +2.61   -2.37   14.65     46     12
+T2 bloqueo tras stop (10 días)          +7.0%   +5.0%  -18.4%   0.37   8/17    -6.8%    37    54%   +1.99   -2.12    8.55     26     11
+T1 + T2                                +10.2%   +7.3%  -13.7%   0.54   9/17    -7.2%    33    48%   +2.55   -2.01    7.93     26      7
+
+## TERCIO 1 (2024-02-09 -> 2025-01-09)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal
+A actual                               +16.2%  +17.9%  -15.0%   0.73   4/11    -7.2%    51    61%   +2.43   -2.61   11.50     27     24
+T1 histéresis: salida ADX<15            +1.5%   +1.6%  -28.5%   0.19   5/11   -10.2%    43    56%   +2.55   -2.84    9.65     32     11
+T1b histéresis: salida ADX<17          +17.1%  +18.8%  -17.6%   0.75   5/11    -7.1%    43    65%   +2.67   -3.23   10.33     30     13
+T1c mantener hasta cruce de EMAs        +0.6%   +0.7%  -28.7%   0.18   5/11   -10.3%    42    52%   +2.89   -2.87    9.96     32     10
+T2 bloqueo tras stop (10 días)         +24.6%  +27.1%   -9.1%   1.31   4/11    -3.8%    26    65%   +2.84   -2.17    6.23     18      8
+T1 + T2                                +19.8%  +21.9%  -15.3%   1.06   5/11    -9.6%    21    76%   +2.94   -4.75    5.46     20      1
+
+## TERCIO 2 (lateral) (2025-01-09 -> 2025-12-10)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal
+A actual                               +26.3%  +29.1%  -12.5%   1.22   2/11    -5.8%    43    56%   +2.29   -1.60    9.26     19     24
+T1 histéresis: salida ADX<15           +23.0%  +25.4%  -18.7%   1.03   6/11    -4.7%    39    56%   +2.39   -2.36    9.53     26     13
+T1b histéresis: salida ADX<17          +33.1%  +36.7%  -11.4%   1.44   3/11    -2.5%    36    56%   +2.39   -1.59    8.91     20     16
+T1c mantener hasta cruce de EMAs       +19.2%  +21.2%  -19.3%   0.88   6/11    -6.0%    39    51%   +2.58   -2.28    9.55     30      9
+T2 bloqueo tras stop (10 días)          +4.1%   +4.4%  -18.8%   0.36   6/11    -5.9%    24    38%   +3.29   -1.98    5.62     12     12
+T1 + T2                                 +9.8%  +10.8%  -16.4%   0.68   7/11    -6.8%    22    41%   +3.31   -2.08    5.59     16      6
+
+## TERCIO 3 (2025-12-10 -> 2026-11-10)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal
+A actual                               +24.0%  +26.5%  -12.2%   1.21   5/11    -5.8%    48    62%   +1.95   -2.01   11.13     28     20
+T1 histéresis: salida ADX<15           +16.7%  +18.4%  -12.4%   0.87   6/11    -5.4%    42    62%   +2.10   -2.48   10.31     30     12
+T1b histéresis: salida ADX<17          +21.4%  +23.6%  -10.6%   1.07   6/11    -5.2%    43    60%   +2.23   -2.31   10.29     30     13
+T1c mantener hasta cruce de EMAs       +11.8%  +12.9%  -16.7%   0.62   6/11    -8.0%    43    58%   +2.11   -2.40   11.05     34      9
+T2 bloqueo tras stop (10 días)         +14.6%  +16.1%  -13.4%   0.89   5/11    -6.8%    25    64%   +2.20   -2.65    6.40     19      6
+T1 + T2                                +15.1%  +16.6%  -13.1%   0.92   5/11    -6.8%    23    65%   +2.31   -2.90    6.10     19      4
+
+## RESUMEN (periodo completo)
+                                    ret  max_dd  neg_months  worst_month  sharpe  trades  win_rate  fees_usd  stops  senal  gana_tercios  gana_ambas_mitades
+variant                                                                                                                                                     
+A actual                          0.835  -0.178          10       -0.072   0.993     140     0.600    36.090     72     68             0               False
+T1 histéresis: salida ADX<15      0.430  -0.285          15       -0.102   0.623     123     0.577    30.438     87     36             0               False
+T1b histéresis: salida ADX<17     0.883  -0.176          13       -0.071   1.039     121     0.595    33.074     79     42             2                True
+T1c mantener hasta cruce de EMAs  0.289  -0.287          16       -0.114   0.483     125     0.544    31.310     97     28             0               False
+T2 bloqueo tras stop (10 días)    0.511  -0.201          15       -0.068   0.893      72     0.583    19.773     47     25             1               False
+T1 + T2                           0.478  -0.179          16       -0.096   0.834      60     0.617    17.629     54      6             1               False
+
+Ninguna variante pasa el criterio: se mantiene el sistema actual.
