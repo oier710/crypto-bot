@@ -13017,3 +13017,6 @@ requests.exceptions.ConnectionError: HTTPSConnectionPool(host='api.exchange.coin
 2026-11-11 17:37:07,960 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-11 17:37:12,325 INFO USDC 169.20 (wallet 11.01 + Aave 0.00 + Dolomite 158.19) | ETH -21.72$ BTC -34.98$ ARB +0.00$ | deuda ETH 0.010467 BTC 0.000472 ARB 0.000000 | HF ∞ / Dolomite 2.41 | acumulado 0.00$ -> equity trading 112.51 USD (total 112.51)
 2026-11-11 17:37:14,848 INFO Chequeo de stops completado.
+2026-11-11 17:51:44,298 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-11 17:51:48,229 INFO USDC 169.20 (wallet 11.01 + Aave 0.00 + Dolomite 158.19) | ETH -21.73$ BTC -34.99$ ARB +0.00$ | deuda ETH 0.010467 BTC 0.000472 ARB 0.000000 | HF ∞ / Dolomite 2.41 | acumulado 0.00$ -> equity trading 112.49 USD (total 112.49)
+2026-11-11 17:51:50,541 INFO Chequeo de stops completado.
