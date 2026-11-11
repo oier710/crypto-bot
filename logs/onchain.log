@@ -12969,3 +12969,6 @@ Traceback (most recent call last):
   File "/opt/hostedtoolcache/Python/3.11.18/x64/lib/python3.11/site-packages/requests/adapters.py", line 729, in send
     raise ConnectionError(e, request=request)
 requests.exceptions.ConnectionError: HTTPSConnectionPool(host='api.exchange.coinbase.com', port=443): Max retries exceeded with url: /products/BTC-USD/ticker (Caused by NameResolutionError("HTTPSConnection(host='api.exchange.coinbase.com', port=443): Failed to resolve 'api.exchange.coinbase.com' ([Errno -3] Temporary failure in name resolution)"))
+2026-11-11 13:51:21,897 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-11 13:51:25,679 INFO USDC 169.19 (wallet 11.01 + Aave 0.00 + Dolomite 158.19) | ETH -21.33$ BTC -34.65$ ARB +0.00$ | deuda ETH 0.010466 BTC 0.000472 ARB 0.000000 | HF ∞ / Dolomite 2.45 | acumulado 0.00$ -> equity trading 113.21 USD (total 113.21)
+2026-11-11 13:51:27,940 INFO Chequeo de stops completado.
