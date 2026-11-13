@@ -13490,3 +13490,17 @@ requests.exceptions.ConnectionError: HTTPSConnectionPool(host='api.exchange.coin
 2026-11-13 04:51:50,794 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-13 04:51:55,419 INFO USDC 147.96 (wallet 0.21 + Aave 0.00 + Dolomite 147.75) | ETH -10.02$ BTC -21.52$ ARB +0.00$ | deuda ETH 0.005272 BTC 0.000316 ARB 0.000000 | HF ∞ / Dolomite 4.04 | acumulado 0.00$ -> equity trading 116.41 USD (total 116.41)
 2026-11-13 04:51:58,089 INFO Chequeo de stops completado.
+2026-11-13 05:06:39,556 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-13 05:06:41,114 INFO USDC 147.96 (wallet 0.21 + Aave 0.00 + Dolomite 147.75) | ETH -9.97$ BTC -21.43$ ARB +0.00$ | deuda ETH 0.005272 BTC 0.000316 ARB 0.000000 | HF ∞ / Dolomite 4.06 | acumulado 0.00$ -> equity trading 116.55 USD (total 116.55)
+2026-11-13 05:06:41,124 WARNING PARCIAL 2 corto BTC: 68378.87 (+3.0 ATR desde 75264.01) -> cierro 1/3 (10.71$)
+2026-11-13 05:06:41,958 INFO DOLOMITE withdraw 10.72 USDC (cuenta 1)
+2026-11-13 05:06:43,313 INFO tx ok 5d6693037bb09fc82aeb5f6cadf4e16c48219a2de3597b30b3b3255ba57abefa gas=640281
+2026-11-13 05:06:44,230 INFO SWAP exactOut 0xaf88d0 -> 0x2f2a25 | out=15666 in~10715740
+2026-11-13 05:06:45,775 INFO tx ok af393d223be05da60b4a81a14a68c43dde493bb06b926ba4c307cc6fc5fbd24f gas=136587
+2026-11-13 05:06:45,776 INFO DOLOMITE repay 15666 0x2f2a25
+2026-11-13 05:06:46,853 INFO tx ok f9f1e28c59acfea68c31c32d6fb8babb43d21066ab5cce4bd2483306a97c217c gas=640821
+2026-11-13 05:06:47,699 INFO CORTO BTC recortado: 10.71$
+2026-11-13 05:06:47,700 WARNING RESULTADO BTC corto (parcial 2): bruto +1.08$ costes 0.09$ -> neto +0.99$ | realizado acumulado -2.78$
+2026-11-13 05:06:47,700 INFO BTC stop a entrada: 75113.48
+2026-11-13 05:06:48,682 INFO USDC 137.24 (wallet 0.21 + Aave 0.00 + Dolomite 137.03) | ETH -9.97$ BTC -10.72$ ARB +0.00$ | deuda ETH 0.005272 BTC 0.000159 ARB 0.000000 | HF ∞ / Dolomite 5.68 | acumulado 0.00$ -> equity trading 116.55 USD (total 116.55)
+2026-11-13 05:06:49,426 INFO Chequeo de stops completado.
