@@ -13911,3 +13911,16 @@ requests.exceptions.ConnectionError: HTTPSConnectionPool(host='api.exchange.coin
 2026-11-14 13:21:07,446 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-14 13:21:11,369 INFO USDC 137.27 (wallet 0.21 + Aave 0.00 + Dolomite 137.06) | ETH -9.85$ BTC -10.46$ ARB +0.00$ | deuda ETH 0.005273 BTC 0.000159 ARB 0.000000 | HF ∞ / Dolomite 5.79 | acumulado 0.00$ -> equity trading 116.96 USD (total 116.96)
 2026-11-14 13:21:13,771 INFO Chequeo de stops completado.
+2026-11-14 13:36:06,464 ERROR EJECUCIÓN FALLIDA: AssertionError: no conecta al RPC de Arbitrum
+Traceback (most recent call last):
+  File "/home/runner/work/crypto-bot/crypto-bot/scripts/run_onchain.py", line 70, in <module>
+    main()
+  File "/home/runner/work/crypto-bot/crypto-bot/scripts/run_onchain.py", line 46, in main
+    onchain.run_cycle(dry_run=False, signals=onchain.load_state().get("last_signal_day") != today)
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 1039, in run_cycle
+    ch = Chain(dry_run)
+         ^^^^^^^^^^^^^^
+  File "/home/runner/work/crypto-bot/crypto-bot/bot/onchain.py", line 214, in __init__
+    assert self.w3.is_connected(), "no conecta al RPC de Arbitrum"
+           ^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: no conecta al RPC de Arbitrum
