@@ -15173,3 +15173,17 @@ AssertionError: no conecta al RPC de Arbitrum
 2026-11-18 16:06:26,501 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-18 16:06:40,242 INFO USDC 137.34 (wallet 0.21 + Aave 0.00 + Dolomite 137.13) | ETH -9.19$ BTC -9.88$ ARB +0.00$ | deuda ETH 0.005275 BTC 0.000159 ARB 0.000000 | HF ∞ / Dolomite 6.16 | acumulado 0.00$ -> equity trading 118.27 USD (total 118.27)
 2026-11-18 16:06:46,102 INFO Chequeo de stops completado.
+2026-11-18 16:21:25,921 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-18 16:21:41,630 INFO USDC 137.34 (wallet 0.21 + Aave 0.00 + Dolomite 137.13) | ETH -9.09$ BTC -9.77$ ARB +0.00$ | deuda ETH 0.005275 BTC 0.000159 ARB 0.000000 | HF ∞ / Dolomite 6.24 | acumulado 0.00$ -> equity trading 118.48 USD (total 118.48)
+2026-11-18 16:21:41,631 INFO BTC stop persigue: 69298.76 -> 69205.13 (extremo 62330.92, 3.0 ATR)
+2026-11-18 16:21:41,631 WARNING REENTRADA BTC en mínimo nuevo 62330.92 (corrección 1.4 ATR): recompro 19.52$
+2026-11-18 16:21:47,302 INFO DOLOMITE borrow 31321 0x2f2a25
+2026-11-18 16:21:50,954 INFO tx ok 4710ca6bce554e57705a448b526918af29165c4b76f4645ca519a3fdebf16cd1 gas=634734
+2026-11-18 16:21:52,398 INFO SWAP 0x2f2a25 -> 0xaf88d0 | in=31321 out~19579070
+2026-11-18 16:21:58,492 INFO tx ok 544b70509d95dbb76fa6f37afa6df7b3f71947e9a07dc7f543e9c27916cde4ef gas=137126
+2026-11-18 16:22:00,469 INFO DOLOMITE deposit 19.54 USDC (cuenta 1)
+2026-11-18 16:22:05,680 INFO tx ok 3fcb4f385c8877907d9e27e5bfd9ed7b44d9e7e7417581c2b1da08ae48ea3e01 gas=640800
+2026-11-18 16:22:06,467 INFO CORTO BTC abierto en Dolomite: 19.52$ | salud 3.52
+2026-11-18 16:22:14,788 INFO USDC 156.93 (wallet 0.26 + Aave 0.00 + Dolomite 156.67) | ETH -9.09$ BTC -29.29$ ARB +0.00$ | deuda ETH 0.005275 BTC 0.000472 ARB 0.000000 | HF ∞ / Dolomite 3.51 | acumulado 0.00$ -> equity trading 118.55 USD (total 118.55)
+2026-11-18 16:22:14,789 INFO BTC stop sube a 66281.98; parciales a 58379.86 y 54428.80
+2026-11-18 16:22:20,399 INFO Chequeo de stops completado.
