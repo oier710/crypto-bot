@@ -1,0 +1,77 @@
+# Investigación nov-2026 (8ª parte) — cierre del último tercio: escalón, persigue y salida rápida (crítica de Oier)
+Datos: Coinbase 1h reales, evaluación 2024-02-17 -> 2026-11-18. Cartera v5, gestión v3 y costes idénticos a producción.
+Comprobación del simulador: diferencia máxima con el de producción 0.000000 $ (debe ser 0).
+Columnas extra: stops = cierres por stop; señal = cierres por cambio de señal; ema20 = cierres por salida rápida.
+
+## PERIODO COMPLETO (2024-02-17 -> 2026-11-18)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal  ema20
+A actual (stop fijo en entrada)        +83.3%  +24.6%  -17.9%   1.00  10/33    -7.3%   140    60%   +3.03   -3.01   35.52     72     68      0
+E1 escalón: stop a +1.5 ATR tras parcial 2   +49.9%  +15.9%  -21.8%   0.70  13/33    -9.8%   153    56%   +2.58   -2.51   34.72     85     68      0
+E2 escalón: stop a +1 ATR tras parcial 2   +69.7%  +21.2%  -19.4%   0.86  12/33   -10.2%   150    59%   +2.83   -2.86   36.55     82     68      0
+E3 escalón +1.5 y persigue 4 ATR       +59.4%  +18.5%  -20.4%   0.77  13/33   -10.0%   156    56%   +2.81   -2.68   36.81     88     68      0
+F1 salida rápida EMA20 tras parcial 2   +84.0%  +24.8%  -21.7%   0.95  12/33   -10.7%   158    59%   +3.07   -3.06   40.19     71     68     19
+F2 escalón +1.5 y salida rápida EMA20   +63.2%  +19.5%  -20.4%   0.79  14/33   -10.9%   164    57%   +2.74   -2.77   38.93     87     68      9
+S3 (11g) persigue 4 ATR tras parcial 2   +87.4%  +25.6%  -18.7%   1.02  11/33   -10.7%   144    60%   +3.06   -2.98   36.62     76     68      0
+
+## 1ª MITAD (2024-02-17 -> 2025-07-03)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal  ema20
+A actual (stop fijo en entrada)        +35.2%  +24.5%  -15.0%   0.98   4/17    -7.3%    70    61%   +2.61   -2.63   15.56     34     36      0
+E1 escalón: stop a +1.5 ATR tras parcial 2   +16.2%  +11.5%  -21.8%   0.54   7/17    -9.8%    78    56%   +2.48   -2.64   16.38     42     36      0
+E2 escalón: stop a +1 ATR tras parcial 2   +27.2%  +19.1%  -18.2%   0.78   6/17   -10.2%    77    61%   +2.46   -2.77   16.75     41     36      0
+E3 escalón +1.5 y persigue 4 ATR       +25.9%  +18.2%  -20.4%   0.74   7/17   -10.0%    79    58%   +2.60   -2.68   17.02     43     36      0
+F1 salida rápida EMA20 tras parcial 2   +43.0%  +29.7%  -18.9%   1.06   6/17   -10.6%    80    61%   +2.69   -2.62   17.80     33     36     11
+F2 escalón +1.5 y salida rápida EMA20   +29.3%  +20.5%  -20.4%   0.79   8/17   -10.0%    84    60%   +2.55   -2.72   17.98     43     36      5
+S3 (11g) persigue 4 ATR tras parcial 2   +40.5%  +28.1%  -18.7%   1.06   5/17   -10.7%    72    62%   +2.70   -2.73   16.11     36     36      0
+
+## 2ª MITAD (2025-07-03 -> 2026-11-18)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal  ema20
+A actual (stop fijo en entrada)        +30.9%  +21.6%  -15.1%   0.96   6/16    -6.2%    70    57%   +2.26   -2.10   15.86     38     32      0
+E1 escalón: stop a +1.5 ATR tras parcial 2   +26.4%  +18.6%  -16.7%   0.84   6/16    -7.5%    75    55%   +2.15   -1.93   16.57     43     32      0
+E2 escalón: stop a +1 ATR tras parcial 2   +29.1%  +20.4%  -16.9%   0.90   6/16    -7.2%    73    55%   +2.26   -1.97   16.47     41     32      0
+E3 escalón +1.5 y persigue 4 ATR       +23.4%  +16.5%  -17.5%   0.76   6/16    -8.3%    77    53%   +2.20   -1.98   16.94     45     32      0
+F1 salida rápida EMA20 tras parcial 2   +23.0%  +16.2%  -20.6%   0.73   6/16   -10.2%    78    55%   +2.22   -2.19   17.49     38     32      8
+F2 escalón +1.5 y salida rápida EMA20   +23.1%  +16.3%  -19.5%   0.74   6/16   -10.4%    80    55%   +2.11   -2.05   17.72     44     32      4
+S3 (11g) persigue 4 ATR tras parcial 2   +29.0%  +20.4%  -15.9%   0.93   6/16    -7.0%    72    56%   +2.27   -2.04   16.13     40     32      0
+
+## TERCIO 1 (2024-02-17 -> 2025-01-17)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal  ema20
+A actual (stop fijo en entrada)        +11.6%  +12.8%  -15.0%   0.58   4/11    -7.3%    54    57%   +2.28   -2.60   11.60     28     26      0
+E1 escalón: stop a +1.5 ATR tras parcial 2    -1.6%   -1.8%  -21.8%   0.10   6/11    -9.8%    60    53%   +2.28   -2.75   12.30     34     26      0
+E2 escalón: stop a +1 ATR tras parcial 2    +4.8%   +5.2%  -18.2%   0.33   5/11   -10.2%    59    56%   +2.29   -2.79   12.47     33     26      0
+E3 escalón +1.5 y persigue 4 ATR        +6.3%   +7.0%  -20.4%   0.38   6/11   -10.0%    61    56%   +2.34   -2.77   12.71     35     26      0
+F1 salida rápida EMA20 tras parcial 2   +16.2%  +17.8%  -17.8%   0.70   5/11   -10.6%    59    58%   +2.36   -2.58   12.44     25     26      8
+F2 escalón +1.5 y salida rápida EMA20    +6.3%   +6.9%  -20.4%   0.38   6/11   -10.0%    63    56%   +2.32   -2.74   13.00     34     26      3
+S3 (11g) persigue 4 ATR tras parcial 2   +17.0%  +18.7%  -17.7%   0.74   5/11   -10.7%    56    59%   +2.39   -2.71   12.11     30     26      0
+
+## TERCIO 2 (lateral) (2025-01-17 -> 2025-12-18)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal  ema20
+A actual (stop fijo en entrada)        +35.4%  +39.2%  -12.3%   1.46   1/11    -5.7%    41    59%   +2.29   -1.78    9.18     19     22      0
+E1 escalón: stop a +1.5 ATR tras parcial 2   +30.9%  +34.2%  -13.9%   1.31   1/11    -5.9%    42    55%   +2.41   -1.84    9.31     20     22      0
+E2 escalón: stop a +1 ATR tras parcial 2   +35.0%  +38.8%  -13.0%   1.45   1/11    -5.8%    42    57%   +2.30   -1.71    9.44     20     22      0
+E3 escalón +1.5 y persigue 4 ATR       +30.9%  +34.2%  -13.9%   1.31   1/11    -5.9%    42    55%   +2.41   -1.84    9.31     20     22      0
+F1 salida rápida EMA20 tras parcial 2   +40.2%  +44.6%  -13.8%   1.51   2/11    -5.6%    49    59%   +2.41   -1.90   10.86     20     22      7
+F2 escalón +1.5 y salida rápida EMA20   +37.9%  +42.1%  -14.4%   1.44   3/11    -5.8%    49    59%   +2.46   -2.07   10.74     22     22      5
+S3 (11g) persigue 4 ATR tras parcial 2   +35.4%  +39.2%  -12.3%   1.46   1/11    -5.7%    41    59%   +2.29   -1.78    9.18     19     22      0
+
+## TERCIO 3 (2025-12-18 -> 2026-11-18)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  stops  señal  ema20
+A actual (stop fijo en entrada)        +14.6%  +16.0%  -10.6%   0.79   5/11    -5.0%    44    55%   +1.93   -1.88    9.71     24     20      0
+E1 escalón: stop a +1.5 ATR tras parcial 2   +13.2%  +14.5%  -13.3%   0.69   5/11    -5.9%    50    54%   +1.84   -1.82   11.09     30     20      0
+E2 escalón: stop a +1 ATR tras parcial 2   +13.3%  +14.7%  -13.3%   0.70   5/11    -6.0%    47    53%   +1.91   -1.83   10.45     27     20      0
+E3 escalón +1.5 y persigue 4 ATR       +11.1%  +12.2%  -14.1%   0.60   5/11    -6.7%    52    52%   +1.89   -1.83   11.39     32     20      0
+F1 salida rápida EMA20 tras parcial 2    +5.9%   +6.4%  -18.5%   0.36   5/11   -10.4%    53    49%   +1.96   -1.90   11.22     26     20      7
+F2 escalón +1.5 y salida rápida EMA20    +7.8%   +8.6%  -17.4%   0.45   5/11   -10.6%    55    49%   +1.86   -1.73   11.77     31     20      4
+S3 (11g) persigue 4 ATR tras parcial 2   +13.0%  +14.3%  -11.3%   0.73   5/11    -5.5%    46    52%   +1.93   -1.79    9.97     26     20      0
+
+## RESUMEN (periodo completo)
+                                              ret  max_dd  neg_months  worst_month  sharpe  trades  win_rate  fees_usd  stops  senal  ema20  gana_tercios  gana_ambas_mitades
+variant                                                                                                                                                                      
+A actual (stop fijo en entrada)             0.833  -0.179          10       -0.073   0.996     140     0.600    35.521     72     68      0             0               False
+E1 escalón: stop a +1.5 ATR tras parcial 2  0.499  -0.218          13       -0.098   0.697     153     0.556    34.723     85     68      0             0               False
+E2 escalón: stop a +1 ATR tras parcial 2    0.697  -0.194          12       -0.102   0.859     150     0.587    36.551     82     68      0             0               False
+E3 escalón +1.5 y persigue 4 ATR            0.594  -0.204          13       -0.100   0.772     156     0.558    36.814     88     68      0             0               False
+F1 salida rápida EMA20 tras parcial 2       0.840  -0.217          12       -0.107   0.949     158     0.589    40.189     71     68     19             2               False
+F2 escalón +1.5 y salida rápida EMA20       0.632  -0.204          14       -0.109   0.790     164     0.573    38.928     87     68      9             1               False
+S3 (11g) persigue 4 ATR tras parcial 2      0.874  -0.187          11       -0.107   1.023     144     0.597    36.622     76     68      0             1               False
+
+Ninguna variante pasa el criterio estricto.
