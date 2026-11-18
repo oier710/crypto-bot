@@ -675,6 +675,89 @@ st = run(eth=2290.0)
 check(FakeChain.state[oc.WETH] < 1e-9, "con Dolomite caído el stop del largo se ejecuta")
 FakeChain.dolo_available = True; P["ETH"] = 2500.0
 
+print("\n== 32. Stop que persigue (3 ATR desde la parcial 1): solo se aprieta, cobra beneficio y no actúa antes de la parcial")
+oc.SHORT_VENUE = dict(REAL_VENUE)
+check(oc.TRAIL_ATR == 3.0 and oc.TRAIL_AFTER_PT == 1, "parámetros: 3 ATR desde la parcial 1")
+# a) largo sin parciales: el stop inicial no se mueve aunque el precio suba (sin llegar a la parcial)
+P.update(ETH=2500.0, BTC=80000.0, ARB=0.30)
+pos = oc.new_pos(1, 2500.0, 100.0, 0.018, 1)
+fresh({oc.WETH: 0.018, oc.USDC: 20.0}, {"ETH": pos}, {"ETH": 2300.0})
+st = run(eth=2640.0)
+check(st["stops"]["ETH"] == 2300.0 and st["pos"]["ETH"]["pt_done"] == 0, "antes de la parcial 1 el stop no persigue")
+# b) parcial 1 a +1.5 ATR: stop a entrada (2505); 3 ATR bajo el máximo (2651-300) queda por debajo -> manda la entrada
+st = run(eth=2651.0)
+check(abs(st["stops"]["ETH"] - 2505.0) < 0.01, f"tras la parcial 1 manda el stop a entrada ({st['stops']['ETH']:.2f})")
+# c) sube a 2900 (parcial 2) -> stop a 2900 - 300 = 2600
+st = run(eth=2900.0)
+check(st["pos"]["ETH"]["pt_done"] == 2 and abs(st["stops"]["ETH"] - 2600.0) < 0.01, f"stop persigue a 2600 ({st['stops']['ETH']:.2f})")
+# d) corrige a 2750: el stop NO se afloja
+st = run(eth=2750.0)
+check(abs(st["stops"]["ETH"] - 2600.0) < 0.01, "en la corrección el stop no baja")
+# e) nuevo máximo 3000 sin corrección suficiente para reentrar (1.5 ATR >= 1 -> hay reentrada): comprobamos el stop tras ella
+st = run(eth=3000.0)
+check(st["stops"]["ETH"] >= 2700.0 - 0.01, f"con el máximo nuevo el stop sube al menos a 2700 ({st['stops']['ETH']:.2f})")
+sp32 = st["stops"]["ETH"]
+n0 = len(pnl_rows())
+# f) cae por debajo del stop: cierra todo con beneficio
+st = run(eth=sp32 - 1)
+r = pnl_rows()
+check(FakeChain.state[oc.WETH] < 1e-9 and "ETH" not in st["pos"] and "ETH" not in st["stops"], "stop que persigue: cierra todo")
+check(len(r) == n0 + 1 and r[-1]["evento"] == "stop" and float(r[-1]["bruto_usd"]) > 0,
+      f"cierre apuntado como stop con ganancia bruta {r[-1]['bruto_usd']}")
+# g) corto con 2 parciales hechas (como los reales): el stop baja con el mínimo y cierra con beneficio al rebotar
+P.update(ETH=1800.0)
+pos = oc.new_pos(-1, 2236.82, 98.0, 0.0156, -1)
+pos.update(pt_done=2, extreme=1731.0)
+fresh({oc.USDC: 0.2, "dUSDC": 137.0, "debt_ETH": 0.0052}, {"ETH": pos}, {"ETH": 2232.35})
+st = run(eth=1800.0)
+check(abs(st["stops"]["ETH"] - (1731.0 + 294.0)) < 0.01, f"corto: stop baja de 2232 a 2025 al desplegar ({st['stops']['ETH']:.2f})")
+check(abs(FakeChain.state["debt_ETH"] - 0.0052) < 1e-9, "sin operar: solo mueve el stop")
+st = run(eth=1700.0)
+check(abs(st["stops"]["ETH"] - 1994.0) < 0.01, f"mínimo nuevo 1700 -> stop 1994 ({st['stops']['ETH']:.2f})")
+st = run(eth=1900.0)
+check(abs(st["stops"]["ETH"] - 1994.0) < 0.01 and abs(FakeChain.state["debt_ETH"] - 0.0052) < 1e-9, "rebote sin tocar el stop: no se afloja ni cierra")
+n0 = len(pnl_rows())
+st = run(eth=1995.0)
+r = pnl_rows()
+check(FakeChain.state["debt_ETH"] < 1e-9 and "ETH" not in st["pos"], "corto cerrado en el stop que persigue")
+check(len(r) == n0 + 1 and float(r[-1]["bruto_usd"]) > 0, f"con ganancia bruta {r[-1]['bruto_usd']} (antes: 0 en la entrada)")
+check(FakeChain.state["dUSDC"] < 0.01, "garantía de Dolomite retirada")
+# h) un stop ya más ajustado (p. ej. tras una reentrada) no se afloja
+pos = oc.new_pos(1, 2500.0, 100.0, 0.018, 1)
+pos.update(pt_done=1, extreme=2900.0)
+fresh({oc.WETH: 0.012, oc.USDC: 20.0}, {"ETH": pos}, {"ETH": 2800.0})
+st = run(eth=2850.0)
+check(st["stops"]["ETH"] == 2800.0, "stop previo más ajustado (2800) se respeta frente al de 3 ATR (2600)")
+# i) el ciclo diario con la misma señal no reinicia el stop que persigue
+SIG.update(ETH=1, BTC=0, ARB=0)
+pos = oc.new_pos(1, 2500.0, 100.0, 0.018, 1)
+pos.update(pt_done=2, extreme=3000.0)
+fresh({oc.WETH: 0.006, oc.USDC: 60.0}, {"ETH": pos}, {"ETH": 2505.0})
+st = run(eth=2950.0, daily=True)
+check(abs(st["stops"]["ETH"] - 2700.0) < 0.01 and abs(FakeChain.state[oc.WETH] - 0.006) < 1e-9,
+      f"ciclo diario: stop sigue en 2700 y no redimensiona ({st['stops']['ETH']:.2f})")
+# j) tras una reentrada (pt_done vuelve a 0) el stop deja de perseguir hasta la siguiente parcial
+pos = oc.new_pos(1, 2500.0, 100.0, 0.018, 1)
+pos.update(pt_done=0, extreme=3000.0, ref=3000.0)
+fresh({oc.WETH: 0.018, oc.USDC: 20.0}, {"ETH": pos}, {"ETH": 2850.0})
+st = run(eth=3100.0)
+check(st["stops"]["ETH"] == 2850.0 and st["pos"]["ETH"]["pt_done"] == 0, "sin parcial desde la reentrada: el stop no persigue")
+st = run(eth=3151.0)
+check(st["pos"]["ETH"]["pt_done"] == 1 and abs(st["stops"]["ETH"] - 2851.0) < 0.01, f"tras la nueva parcial 1 vuelve a perseguir ({st['stops']['ETH']:.2f})")
+# k) TRAIL_ATR = 0 lo desactiva; sin stop guardado no falla
+oc.TRAIL_ATR = 0.0
+pos = oc.new_pos(1, 2500.0, 100.0, 0.018, 1)
+pos.update(pt_done=2, extreme=3000.0)
+fresh({oc.WETH: 0.006, oc.USDC: 60.0}, {"ETH": pos}, {"ETH": 2505.0})
+st = run(eth=2950.0)
+check(st["stops"]["ETH"] == 2505.0, "TRAIL_ATR = 0: stop fijo como antes")
+oc.TRAIL_ATR = 3.0
+fresh({oc.WETH: 0.006, oc.USDC: 60.0}, {"ETH": pos}, {})
+st = run(eth=2950.0)
+check("ETH" not in st["stops"] and abs(FakeChain.state[oc.WETH] - 0.006) < 1e-9, "sin stop guardado: no falla ni inventa uno")
+oc.SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}
+P["ETH"] = 2500.0
+
 eq, _ = oc.portfolio(FakeChain(), P)
 print(f"\nEquity final simulada: {eq:.2f} $")
 print(f"\n{'TODO OK' if not fails else f'{len(fails)} FALLOS'}")

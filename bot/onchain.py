@@ -126,6 +126,13 @@ PT_LEVELS = (1.5, 3.0)        # ventas parciales (1/3 cada una) a +1.5 y +3 ATR 
 RH_PULLBACK_ATR = 1.0         # corrección mínima tras una parcial para aceptar el máximo nuevo
 RH_RESTOP_ATR = 1.5           # al recomprar, stop de toda la posición a precio - 1.5 ATR (nunca baja)
 BE_COST = 0.002               # stop "a entrada" = entrada * (1 ± 0.2 %) para cubrir los costes
+# stop que persigue (2026-11-17, Oier: "que gane más" y tener definido cuándo se cobra el resto): desde la 1ª parcial el
+# stop sigue al extremo (máximo en largos, mínimo en cortos) a TRAIL_ATR × ATR y solo se aprieta, nunca se afloja.
+# Backtest research_2026_11g (S4): +93.5 % vs +78.2 %, caída máx. −21.0 % vs −17.0 %, peor mes −12.8 % vs −7.3 %.
+# OJO: S4 NO pasó el criterio habitual (más caída y pierde en el último tercio: +15.7 % vs +21.5 %); se despliega por
+# decisión expresa de Oier (prioridad: ganar más y cobrar el resto). Poner TRAIL_ATR = 0 lo desactiva.
+TRAIL_ATR = 3.0
+TRAIL_AFTER_PT = 1            # nº de parciales hechas a partir del cual persigue (0 = desactivado si TRAIL_ATR es 0)
 PARTIAL_OUT = 0.95            # la posición está "recortada" si queda < 95 % del tamaño completo
 SHORTS_ENABLED = os.getenv("SHORTS_ENABLED", "1") == "1"
 SHORT_MAX_USD = float(os.getenv("SHORT_MAX_USD", "1e9"))   # tope por corto (fase de prueba)
@@ -896,7 +903,7 @@ def add_position(ch: Chain, c: str, side: int, qty: float, prices: dict, pf: dic
 
 
 def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, allow_rebuy: bool = True):
-    """Cada ejecución: parciales, stop a entrada, stop, reentrada en máximo nuevo (en este orden)."""
+    """Cada ejecución: parciales, stop a entrada, stop que persigue, stop, reentrada en máximo nuevo (en este orden)."""
     pos_all = st.setdefault("pos", {})
     for c in SYMBOLS:
         v, px = pf["val"][c], prices[c]
@@ -950,6 +957,13 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
             if sp is not None:
                 st["stops"][c] = sp = max(sp, be) if side == 1 else min(sp, be)
                 log.info("%s stop a entrada: %.2f", c, sp)
+        # 1b) stop que persigue: tras la parcial, el stop sigue al extremo a TRAIL_ATR × ATR (solo se aprieta)
+        if sp is not None and TRAIL_ATR > 0 and pos["pt_done"] >= TRAIL_AFTER_PT and pos["atr"] > 0:
+            tr = pos["extreme"] - side * TRAIL_ATR * pos["atr"]
+            ns = max(sp, tr) if side == 1 else min(sp, tr)
+            if ns != sp:
+                log.info("%s stop persigue: %.2f -> %.2f (extremo %.2f, %.1f ATR)", c, sp, ns, pos["extreme"], TRAIL_ATR)
+                st["stops"][c] = sp = ns
         # 2) stop
         if sp is not None and ((side == 1 and px <= sp) or (side == -1 and px >= sp)):
             if traded:
