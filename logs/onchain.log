@@ -15659,3 +15659,17 @@ AssertionError: no conecta al RPC de Arbitrum
 2026-11-20 04:21:07,096 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-20 04:21:10,147 INFO USDC 170.29 (wallet 0.31 + Aave 0.00 + Dolomite 169.98) | ETH -9.02$ BTC -29.00$ ARB -12.81$ | deuda ETH 0.005276 BTC 0.000472 ARB 109.195249 | HF ∞ / Dolomite 2.89 | acumulado 0.00$ -> equity trading 119.46 USD (total 119.46)
 2026-11-20 04:21:11,488 INFO Chequeo de stops completado.
+2026-11-20 04:36:08,009 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-20 04:36:09,367 INFO USDC 170.29 (wallet 0.31 + Aave 0.00 + Dolomite 169.98) | ETH -8.95$ BTC -28.84$ ARB -12.70$ | deuda ETH 0.005276 BTC 0.000472 ARB 109.195441 | HF ∞ / Dolomite 2.91 | acumulado 0.00$ -> equity trading 119.80 USD (total 119.80)
+2026-11-20 04:36:09,369 INFO ETH stop persigue: 2015.48 -> 2012.13 (extremo 1717.99, 3.0 ATR)
+2026-11-20 04:36:09,370 WARNING REENTRADA ETH en mínimo nuevo 1717.99 (corrección 1.4 ATR): recompro 17.83$
+2026-11-20 04:36:10,142 INFO DOLOMITE borrow 10380226929137554 0x82aF49
+2026-11-20 04:36:11,432 INFO tx ok 1bc8b458db7dacde6393adb129038601a5852e78c6ea79f2d8fa6ac69c189fc0 gas=631517
+2026-11-20 04:36:11,590 INFO SWAP 0x82aF49 -> 0xaf88d0 | in=10380226929137554 out~17824265
+2026-11-20 04:36:12,935 INFO tx ok 50a0bd9e450a93ef6fb76e1f83ffacd9c3e6c313265fbb67b37e4e75b3a43119 gas=131892
+2026-11-20 04:36:13,024 INFO DOLOMITE deposit 17.77 USDC (cuenta 1)
+2026-11-20 04:36:14,485 INFO tx ok cc9af96ed17779c094dbf6f22ffeafb4dcfa3f39d62216c76c7bc293535ad670 gas=639782
+2026-11-20 04:36:14,573 INFO CORTO ETH abierto en Dolomite: 17.83$ | salud 2.38
+2026-11-20 04:36:15,511 INFO USDC 188.11 (wallet 0.36 + Aave 0.00 + Dolomite 187.75) | ETH -26.78$ BTC -28.84$ ARB -12.70$ | deuda ETH 0.015656 BTC 0.000472 ARB 109.195442 | HF ∞ / Dolomite 2.38 | acumulado 0.00$ -> equity trading 119.79 USD (total 119.79)
+2026-11-20 04:36:15,511 INFO ETH stop sube a 1871.31; parciales a 1564.67 y 1411.35
+2026-11-20 04:36:16,308 INFO Chequeo de stops completado.
