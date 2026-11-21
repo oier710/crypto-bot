@@ -16009,3 +16009,6 @@ AssertionError: no conecta al RPC de Arbitrum
 2026-11-21 04:21:09,787 INFO BTC stop persigue: 63845.93 -> 63700.77 (extremo 55798.65, 3.0 ATR)
 2026-11-21 04:21:09,788 INFO ETH stop persigue: 1860.71 -> 1858.73 (extremo 1552.09, 3.0 ATR)
 2026-11-21 04:21:11,022 INFO Chequeo de stops completado.
+2026-11-21 04:36:02,362 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-21 04:36:03,739 INFO USDC 170.89 (wallet 0.15 + Aave 0.00 + Dolomite 170.75) | ETH -16.14$ BTC -17.58$ ARB -11.67$ | deuda ETH 0.010462 BTC 0.000316 ARB 109.213870 | HF ∞ / Dolomite 3.25 | acumulado 0.00$ -> equity trading 125.49 USD (total 125.49)
+2026-11-21 04:36:04,495 INFO Chequeo de stops completado.
