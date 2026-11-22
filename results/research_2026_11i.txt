@@ -1,0 +1,140 @@
+# Investigación nov-2026 (9ª parte) — más monedas para el bot (sistema de producción)
+
+## 1. Escaneo de préstamos en Dolomite (Arbitrum) — ¿qué se puede poner en corto?
+moneda       suministrado     prestado   disponible  interés
+SAVETH          2,928,537            0    2,928,537    0.00%
+UNI             1,893,983       23,941    1,870,042    0.11%
+GLV[WBTC-USDC]      1,048,174            0    1,048,174    0.00%
+GM                875,552            0      875,552    0.00%
+GLV[WETH-USDC]        835,248            0      835,248    0.00%
+GM                775,258            0      775,258    0.00%
+GM                712,795            0      712,795    0.00%
+GM                589,020            0      589,020    0.00%
+LINK              679,980      114,391      565,589    1.70%
+PENDLE            629,025      141,088      487,937    4.29%
+GM                295,156            0      295,156    0.00%
+GM                287,165            0      287,165    0.00%
+GM                265,742            0      265,742    0.00%
+GM                202,523            0      202,523    0.00%
+GM                 88,501            0       88,501    0.00%
+GM                 87,099            0       87,099    0.00%
+GM                 58,280            0       58,280    0.00%
+GMX                40,135            0       40,135    0.00%
+Candidatos fijos SIN préstamo suficiente hoy en Dolomite (no se podrían poner en corto): GMX, AAVE, CRV, LDO — se prueban igual, pero solo cuentan si Dolomite los presta.
+
+## 2. Datos (Coinbase 1h)
+  BTC: 2023-11-23 → 2026-11-22
+  ETH: 2023-11-23 → 2026-11-22
+  ARB: 2023-11-23 → 2026-11-22
+  PENDLE: 2025-03-27 → 2026-11-22
+  LINK: 2023-11-23 → 2026-11-22
+  UNI: 2023-11-23 → 2026-11-22
+  GMX: no cotiza en Coinbase → fuera
+  AAVE: 2023-11-23 → 2026-11-22
+  CRV: 2023-11-23 → 2026-11-22
+  LDO: 2023-11-23 → 2026-11-22
+
+## 3. Añadir cada moneda a la cartera actual (mismo periodo para las dos)
+Formato: retorno / caída máx. / meses en rojo. «estrés» = costes de la moneda nueva al 0.60 %/lado.
+
+### PENDLE (2025-06-25 → 2026-11-22, préstamo 5.0 %/año)
+  PENDLE sola (100 %): -21.2% / -49.2% / 11 meses rojo, 25 operaciones, acierto 44%
+  +PENDLE al 10%: +27.9% / -22.0% / 7  vs actual +36.9% / -19.8% / 6  → no pasa (completo no, mitades no, tercios 0/3, caída PEOR, meses rojo MÁS); estrés +28.2% → no
+      mitad 1   actual +40.4% (-11.9%)  con PENDLE +36.2% (-11.0%)
+      mitad 2   actual +1.0% (-14.5%)  con PENDLE -3.8% (-16.7%)
+      tercio 1  actual +18.1% (-11.9%)  con PENDLE +15.2% (-11.0%)
+      tercio 2  actual +15.1% (-11.5%)  con PENDLE +10.5% (-12.7%)
+      tercio 3  actual +3.9% (-16.9%)  con PENDLE +3.2% (-17.2%)
+  +PENDLE al 15%: +25.4% / -23.4% / 7  vs actual +36.9% / -19.8% / 6  → no pasa (completo no, mitades no, tercios 0/3, caída PEOR, meses rojo MÁS); estrés +24.4% → no
+      mitad 1   actual +40.4% (-11.9%)  con PENDLE +34.6% (-11.5%)
+      mitad 2   actual +1.0% (-14.5%)  con PENDLE -5.2% (-19.1%)
+      tercio 1  actual +18.1% (-11.9%)  con PENDLE +14.1% (-11.5%)
+      tercio 2  actual +15.1% (-11.5%)  con PENDLE +8.5% (-13.6%)
+      tercio 3  actual +3.9% (-16.9%)  con PENDLE +3.1% (-17.6%)
+
+### LINK (2024-02-21 → 2026-11-22, préstamo 5.0 %/año)
+  LINK sola (100 %): +56.0% / -42.0% / 13 meses rojo, 46 operaciones, acierto 52%
+  +LINK al 10%: +93.5% / -21.0% / 14  vs actual +103.2% / -22.2% / 11  → no pasa (completo no, mitades no, tercios 2/3, caída ok, meses rojo MÁS); estrés +91.0% → no
+      mitad 1   actual +42.2% (-18.4%)  con LINK +36.0% (-17.4%)
+      mitad 2   actual +36.9% (-19.8%)  con LINK +38.2% (-18.0%)
+      tercio 1  actual +14.1% (-18.4%)  con LINK +14.7% (-17.4%)
+      tercio 2  actual +46.4% (-11.8%)  con LINK +39.9% (-10.9%)
+      tercio 3  actual +12.7% (-16.5%)  con LINK +13.6% (-14.4%)
+  +LINK al 15%: +87.7% / -20.0% / 15  vs actual +103.2% / -22.2% / 11  → no pasa (completo no, mitades no, tercios 1/3, caída ok, meses rojo MÁS); estrés +83.7% → no
+      mitad 1   actual +42.2% (-18.4%)  con LINK +31.0% (-17.0%)
+      mitad 2   actual +36.9% (-19.8%)  con LINK +39.7% (-16.9%)
+      tercio 1  actual +14.1% (-18.4%)  con LINK +13.9% (-17.0%)
+      tercio 2  actual +46.4% (-11.8%)  con LINK +37.4% (-10.3%)
+      tercio 3  actual +12.7% (-16.5%)  con LINK +14.8% (-13.6%)
+
+### UNI (2024-02-21 → 2026-11-22, préstamo 5.0 %/año)
+  UNI sola (100 %): +71.2% / -57.2% / 12 meses rojo, 61 operaciones, acierto 57%
+  +UNI al 10%: +96.3% / -20.7% / 14  vs actual +103.2% / -22.2% / 11  → no pasa (completo no, mitades no, tercios 1/3, caída ok, meses rojo MÁS); estrés +92.6% → no
+      mitad 1   actual +42.2% (-18.4%)  con UNI +37.8% (-19.6%)
+      mitad 2   actual +36.9% (-19.8%)  con UNI +36.9% (-18.5%)
+      tercio 1  actual +14.1% (-18.4%)  con UNI +12.6% (-19.6%)
+      tercio 2  actual +46.4% (-11.8%)  con UNI +42.1% (-11.9%)
+      tercio 3  actual +12.7% (-16.5%)  con UNI +15.8% (-14.8%)
+  +UNI al 15%: +93.1% / -22.0% / 15  vs actual +103.2% / -22.2% / 11  → no pasa (completo no, mitades no, tercios 2/3, caída ok, meses rojo MÁS); estrés +89.2% → no
+      mitad 1   actual +42.2% (-18.4%)  con UNI +37.5% (-22.0%)
+      mitad 2   actual +36.9% (-19.8%)  con UNI +39.4% (-17.8%)
+      tercio 1  actual +14.1% (-18.4%)  con UNI +14.5% (-22.0%)
+      tercio 2  actual +46.4% (-11.8%)  con UNI +41.3% (-12.6%)
+      tercio 3  actual +12.7% (-16.5%)  con UNI +17.4% (-14.3%)
+
+### AAVE (2024-02-21 → 2026-11-22, préstamo 10.0 %/año)
+  AAVE sola (100 %): -0.4% / -43.9% / 17 meses rojo, 51 operaciones, acierto 55%
+  +AAVE al 10%: +89.0% / -22.5% / 13  vs actual +103.2% / -22.2% / 11  → no pasa (completo no, mitades no, tercios 0/3, caída PEOR, meses rojo MÁS); estrés +86.6% → no
+      mitad 1   actual +42.2% (-18.4%)  con AAVE +37.0% (-17.4%)
+      mitad 2   actual +36.9% (-19.8%)  con AAVE +30.7% (-20.4%)
+      tercio 1  actual +14.1% (-18.4%)  con AAVE +11.1% (-17.4%)
+      tercio 2  actual +46.4% (-11.8%)  con AAVE +41.4% (-11.2%)
+      tercio 3  actual +12.7% (-16.5%)  con AAVE +9.8% (-17.2%)
+  +AAVE al 15%: +80.4% / -22.7% / 13  vs actual +103.2% / -22.2% / 11  → no pasa (completo no, mitades no, tercios 0/3, caída PEOR, meses rojo MÁS); estrés +77.8% → no
+      mitad 1   actual +42.2% (-18.4%)  con AAVE +36.1% (-17.6%)
+      mitad 2   actual +36.9% (-19.8%)  con AAVE +25.9% (-21.1%)
+      tercio 1  actual +14.1% (-18.4%)  con AAVE +11.8% (-17.6%)
+      tercio 2  actual +46.4% (-11.8%)  con AAVE +39.5% (-10.9%)
+      tercio 3  actual +12.7% (-16.5%)  con AAVE +8.1% (-17.8%)
+
+### CRV (2024-02-21 → 2026-11-22, préstamo 10.0 %/año)
+  CRV sola (100 %): +92.3% / -41.3% / 11 meses rojo, 48 operaciones, acierto 67%
+  +CRV al 10%: +92.7% / -22.1% / 13  vs actual +103.2% / -22.2% / 11  → no pasa (completo no, mitades no, tercios 1/3, caída ok, meses rojo MÁS); estrés +86.9% → no
+      mitad 1   actual +42.2% (-18.4%)  con CRV +38.3% (-19.8%)
+      mitad 2   actual +36.9% (-19.8%)  con CRV +32.8% (-19.8%)
+      tercio 1  actual +14.1% (-18.4%)  con CRV +12.3% (-19.9%)
+      tercio 2  actual +46.4% (-11.8%)  con CRV +39.7% (-11.4%)
+      tercio 3  actual +12.7% (-16.5%)  con CRV +16.6% (-15.8%)
+  +CRV al 15%: +90.0% / -21.5% / 14  vs actual +103.2% / -22.2% / 11  → no pasa (completo no, mitades no, tercios 1/3, caída ok, meses rojo MÁS); estrés +85.4% → no
+      mitad 1   actual +42.2% (-18.4%)  con CRV +40.7% (-20.6%)
+      mitad 2   actual +36.9% (-19.8%)  con CRV +31.9% (-19.6%)
+      tercio 1  actual +14.1% (-18.4%)  con CRV +13.3% (-20.7%)
+      tercio 2  actual +46.4% (-11.8%)  con CRV +39.0% (-11.1%)
+      tercio 3  actual +12.7% (-16.5%)  con CRV +15.5% (-15.9%)
+
+### LDO (2024-02-21 → 2026-11-22, préstamo 10.0 %/año)
+  LDO sola (100 %): -56.7% / -77.1% / 13 meses rojo, 51 operaciones, acierto 49%
+  +LDO al 10%: +86.2% / -21.7% / 11  vs actual +103.2% / -22.2% / 11  → no pasa (completo no, mitades no, tercios 0/3, caída ok, meses rojo ok); estrés +86.1% → no
+      mitad 1   actual +42.2% (-18.4%)  con LDO +32.5% (-17.7%)
+      mitad 2   actual +36.9% (-19.8%)  con LDO +32.3% (-23.1%)
+      tercio 1  actual +14.1% (-18.4%)  con LDO +7.4% (-17.7%)
+      tercio 2  actual +46.2% (-11.8%)  con LDO +45.5% (-10.4%)
+      tercio 3  actual +13.4% (-16.4%)  con LDO +10.0% (-18.6%)
+  +LDO al 15%: +73.2% / -21.4% / 12  vs actual +103.2% / -22.2% / 11  → no pasa (completo no, mitades no, tercios 0/3, caída ok, meses rojo MÁS); estrés +73.1% → no
+      mitad 1   actual +42.2% (-18.4%)  con LDO +24.0% (-19.8%)
+      mitad 2   actual +36.9% (-19.8%)  con LDO +30.6% (-24.9%)
+      tercio 1  actual +14.1% (-18.4%)  con LDO +1.8% (-19.8%)
+      tercio 2  actual +46.2% (-11.8%)  con LDO +45.7% (-10.7%)
+      tercio 3  actual +13.4% (-16.4%)  con LDO +7.4% (-20.5%)
+
+## 4. Cesta con todas las que pasan
+  Ninguna moneda pasa con el 10 % y el 15 % y con costes de estrés.
+
+## RESUMEN
+  PENDLE   no pasa  · Dolomite la presta
+  LINK     no pasa  · Dolomite la presta
+  UNI      no pasa  · Dolomite la presta
+  AAVE     no pasa  · Dolomite NO la presta (solo largos)
+  CRV      no pasa  · Dolomite NO la presta (solo largos)
+  LDO      no pasa  · Dolomite NO la presta (solo largos)
+Una moneda solo se añade si PASA y Dolomite la presta (para poder ir en corto).
