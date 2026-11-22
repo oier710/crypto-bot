@@ -16542,3 +16542,6 @@ AssertionError: no conecta al RPC de Arbitrum
 2026-11-22 22:21:02,135 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-22 22:21:03,517 INFO USDC 170.93 (wallet 0.15 + Aave 0.00 + Dolomite 170.79) | ETH -17.81$ BTC -19.05$ ARB -12.49$ | deuda ETH 0.010464 BTC 0.000316 ARB 109.247183 | HF ∞ / Dolomite 2.99 | acumulado 0.00$ -> equity trading 121.58 USD (total 121.58)
 2026-11-22 22:21:04,723 INFO Chequeo de stops completado.
+2026-11-22 22:36:07,303 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-22 22:36:08,835 INFO USDC 170.93 (wallet 0.15 + Aave 0.00 + Dolomite 170.79) | ETH -17.78$ BTC -19.03$ ARB -12.45$ | deuda ETH 0.010464 BTC 0.000316 ARB 109.247383 | HF ∞ / Dolomite 3.00 | acumulado 0.00$ -> equity trading 121.68 USD (total 121.68)
+2026-11-22 22:36:09,755 INFO Chequeo de stops completado.
