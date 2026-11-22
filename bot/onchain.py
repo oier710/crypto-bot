@@ -40,7 +40,7 @@ import requests
 from dotenv import load_dotenv
 from web3.exceptions import ContractLogicError
 
-from . import indicators
+from . import indicators, notify
 from .config import RISK
 from .strategies import trend_ema
 
@@ -494,6 +494,7 @@ def record(coin, side, usd, price, reason, dry_run=False):
         if new:
             f.write("time,coin,side,usd,price,reason\n")
         f.write(f"{datetime.now(timezone.utc).isoformat()},{coin},{side},{usd:.2f},{price:.2f},{reason}\n")
+    notify.add_trade(coin, side, usd, price, reason)   # aviso al móvil (no hace nada sin NTFY_TOPIC)
 
 
 # ------------------------------------------------------- contabilidad (P&L)

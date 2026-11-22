@@ -17,7 +17,7 @@ from pathlib import Path
 warnings.filterwarnings("ignore")
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from bot import onchain  # noqa: E402
+from bot import notify, onchain  # noqa: E402
 
 DAILY_HOUR_UTC = 0
 
@@ -32,6 +32,11 @@ def main():
     g.add_argument("--loop", action="store_true")
     g.add_argument("--test-short", nargs=2, metavar=("COIN", "USD"))
     a = ap.parse_args()
+    if not a.dry_run:
+        try:
+            notify.install(onchain.log)   # avisos al móvil: solo con NTFY_TOPIC; se mandan al terminar (ver bot/notify.py)
+        except Exception:  # noqa: BLE001 - los avisos nunca deben impedir operar
+            pass
     if a.test_short:
         onchain.test_short(a.test_short[0].upper(), float(a.test_short[1]))
         return
@@ -72,3 +77,5 @@ if __name__ == "__main__":
         # Que el motivo quede en logs/onchain.log (antes solo salía en la consola de GitHub, que caduca).
         onchain.log.exception("EJECUCIÓN FALLIDA: %s: %s", type(e).__name__, e)
         raise
+    finally:
+        notify.flush()
