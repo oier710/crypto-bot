@@ -1,0 +1,21 @@
+familia,rel_antes,k_antes,n,det_antes,rel_después,k_después,det_después,apta,apta_txt,cagr,cagr_t,dd,periodo,c5_antes,c5_desp
+LRS 1x mercado (1926),False,0,1,"0/1 miembros, medias NO",False,0,"0/1 miembros, medias NO",True,peor caída -46 % → apta,0.10354872200813658,0.08684584408346718,-0.4084347639696906,1927-2026,False,False
+LRS 2x mercado (1926),True,1,1,"1/1 miembros, medias ok",False,0,"0/1 miembros, medias NO",False,peor caída -76 % → NO APTA,0.15298744291698174,0.1315455209553711,-0.6888081962751607,1927-2026,True,False
+LRS 3x mercado (1926),False,0,1,"0/1 miembros, medias NO",False,0,"0/1 miembros, medias NO",False,peor caída -90 % → NO APTA,0.19651879654158488,0.17205305460666165,-0.8507754979384716,1927-2026,False,False
+VT con filtro mercado (1926),False,1,3,"1/3 miembros, medias NO",False,0,"0/3 miembros, medias NO",False,peor caída -64 % → NO APTA,0.13471587195888457,0.10753266222606683,-0.4813707526225386,1927-2026,False,False
+VT sin filtro mercado (1926),False,1,3,1/3 miembros,False,0,0/3 miembros,False,peor caída -86 % → NO APTA,0.1247736681275744,0.1010003450472281,-0.7910897836806614,1927-2026,False,False
+mantener 2x mercado (1926),False,0,1,0/1 miembros,False,0,0/1 miembros,False,peor caída -98 % → NO APTA,0.12214994619159847,0.1203085177251122,-0.984404022171338,1927-2026,False,False
+LRS 1x SPY,False,0,1,"0/1 miembros, medias NO",False,0,"0/1 miembros, medias NO",True,peor caída -46 % → apta,0.09123118924961626,0.07624017768913371,-0.2307625196727351,1989-2026,,
+LRS 2x SSO,False,1,1,"1/1 miembros, medias NO",False,1,"1/1 miembros, medias NO",False,peor caída -76 % → NO APTA,0.13010872457345624,0.1116566312576881,-0.4292004377084956,1989-2026,,
+LRS 3x UPRO,False,0,1,"0/1 miembros, medias NO",False,0,"0/1 miembros, medias NO",False,peor caída -90 % → NO APTA,0.16288779072750526,0.14290155455859077,-0.5843703944144467,1989-2026,,
+VT SPY/SSO,False,1,3,"1/3 miembros, medias NO",False,0,"0/3 miembros, medias NO",True,peor caída -57 % → apta,0.11026644373408945,0.08513944060173073,-0.2685652914449592,1989-2026,,
+mantener SSO,False,0,1,0/1 miembros,False,0,0/1 miembros,False,peor caída -98 % → NO APTA,0.14308137128627774,0.13819642873470572,-0.8823449697408983,1989-2026,,
+mantener QQQ,False,0,1,0/1 miembros,False,0,0/1 miembros,False,peor caída -84 % → NO APTA,0.1430851034926679,0.1363196680121188,-0.8296389988272291,1989-2026,,
+LRS 1x QQQ,False,1,1,"1/1 miembros, medias NO",False,1,"1/1 miembros, medias NO",True,peor caída -57 % → apta,0.1311120867333897,0.11161811800570232,-0.41057269561859033,1989-2026,,
+LRS 2x QLD,False,0,1,"0/1 miembros, medias NO",False,0,"0/1 miembros, medias NO",False,peor caída -85 % → NO APTA,0.19009531149323133,0.165644271147533,-0.7266329551008717,1989-2026,,
+LRS 3x TQQQ,False,0,1,"0/1 miembros, medias NO",False,0,"0/1 miembros, medias NO",False,peor caída -96 % → NO APTA,0.21769853811928197,0.19220374593210754,-0.8876660522766945,1989-2026,,
+VT QQQ/QLD,False,2,3,"2/3 miembros, medias NO",False,1,"1/3 miembros, medias NO",True,peor caída -57 % → apta,0.127306188286904,0.09780201855336301,-0.3747411955863258,1989-2026,,
+mantener QLD,False,0,1,0/1 miembros,False,0,0/1 miembros,False,peor caída -99 % → NO APTA,0.17257230545883906,0.1675400157507796,-0.9883489360844371,1989-2026,,
+cesta tendencia 1x,False,0,1,"0/1 miembros, medias NO",False,0,"0/1 miembros, medias NO",False,sin probar en 1929-32 (peor caída -15 %),0.07635166777233304,0.06072547033324538,-0.14567441568055672,2005-2026,,
+cesta tendencia 2x,False,0,1,"0/1 miembros, medias NO",False,0,"0/1 miembros, medias NO",False,sin probar en 1929-32 (peor caída -30 %),0.11483523632292969,0.09551145908786829,-0.30061454363939777,2005-2026,,
+cesta VT,False,0,3,"0/3 miembros, medias NO",False,0,"0/3 miembros, medias NO",False,sin probar en 1929-32 (peor caída -29 %),0.10540991472901062,0.08200587280309546,-0.23784470577957773,2005-2026,,
