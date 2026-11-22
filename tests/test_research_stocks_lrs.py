@@ -162,6 +162,28 @@ def test_summary_families():
     assert "VT con filtro mercado (1926) (antes 1/3" in txt, "debe marcar la suerte"
 
 
+def test_lrs15_weights_and_verdict():
+    d = pd.bdate_range("2000-01-03", periods=400)
+    r = pd.Series(np.r_[np.full(250, 0.002), np.full(150, -0.004)], index=d)
+    u = m.Universe("t", pd.DataFrame({"X": r, "X2": 2 * r}), pd.Series(0.0, index=d),
+                   {"X": {"L": 1, "cost": "1x"}, "X2": {"L": 2, "cost": "lev"}}, "X")
+    W = m.w_lrs15(u, "X", "X", "X2", n=200)
+    inside = W.sum(axis=1)
+    assert set(np.round(inside.unique(), 6)) <= {0.0, 1.0}, "capital 100 % o 0 %"
+    assert np.allclose(m.exposure(u, W)[inside > 0], 1.5), "exposición 1.5x"
+    # veredicto: falla en cuenta normal pero pasa en Roth en los tres bloques → no se monta el bot
+    m.out_lines.clear()
+    m.summary_rows.clear()
+    for f in m.FAM15:
+        m.summary_rows.append({"familia": f, "rel_antes": True, "rel_después": False, "apta": True, "apta_txt": "apta"})
+    m.final_verdict()
+    assert "pasa solo SIN impuestos" in "\n".join(m.out_lines)
+    m.summary_rows[0]["rel_antes"] = False
+    m.out_lines.clear()
+    m.final_verdict()
+    assert "no montar un bot de acciones" in "\n".join(m.out_lines)
+
+
 if __name__ == "__main__":
     n = 0
     for name, f in list(globals().items()):

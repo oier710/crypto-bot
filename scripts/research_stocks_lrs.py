@@ -418,6 +418,16 @@ def w_hold(u, col):
     return W
 
 
+def w_lrs15(u, sig, one, two, n=SMA_MAIN):
+    """LRS 1.5x (21-nov, último test aprobado por Oier): 50 % 1x + 50 % 2x sobre la media; letras debajo.
+    Interpolación entre LRS 1x y 2x, sin parámetro nuevo. Se rebalancea 50/50 si un peso se aleja > 5 puntos."""
+    a = above_sma(u, sig, n)
+    W = u.zeros()
+    W[one] = 0.5 * a
+    W[two] = 0.5 * a
+    return W
+
+
 def w_lrs(u, sig, inst, n=SMA_MAIN):
     W = u.zeros()
     W[inst] = above_sma(u, sig, n)
@@ -710,6 +720,9 @@ FAMILIES = [
     ("LRS 1x mercado (1926)", [("A", "LRS 1x")], [("A", "LRS 1x")], []),
     ("LRS 2x mercado (1926)", [("A", "LRS 2x")], [("A", "LRS 2x")], []),
     ("LRS 3x mercado (1926)", [("A", "LRS 3x")], [("A", "LRS 3x")], []),
+    ("LRS 1.5x mercado (1926)", [("A", "LRS 1.5x")], [("A", "LRS 1.5x")], []),
+    ("LRS 1.5x SPY/SSO (1988)", [("B", "LRS 1.5x SPY/SSO")], [("B", "LRS 1.5x SPY/SSO")], [("A", "LRS 1.5x")]),
+    ("LRS 1.5x SSO real (2006)", [("C", "LRS 1.5x con SSO REAL")], [("C", "LRS 1.5x con SSO REAL")], [("A", "LRS 1.5x")]),
     ("VT con filtro mercado (1926)", [("A", "VT 15 % con filtro"), ("A", "VT 20 % con filtro"), ("A", "VT 25 % con filtro")],
      [("A", "VT 20 %")], []),
     ("VT sin filtro mercado (1926)", [("A", "VT 15 % sin filtro"), ("A", "VT 20 % sin filtro"), ("A", "VT 25 % sin filtro")], [], []),
@@ -879,6 +892,7 @@ def _main():
         guarded("C. SSO real", lambda: block_C(y, spx, rf_all, sp))
         guarded("D. cesta", lambda: block_D(y, spx, ndx, rf_all, sp))
     guarded("resumen", summary)
+    guarded("veredicto final", final_verdict)
 
 
 EPS = [("1929-09 → 1932-06", "1929-09-01", "1932-06-30"), ("1937-03 → 1938-03", "1937-03-01", "1938-03-31"),
@@ -889,6 +903,8 @@ EPS = [("1929-09 → 1932-06", "1929-09-01", "1932-06-30"), ("1937-03 → 1938-0
 
 
 def band_for(name):
+    if "1.5x" in name:
+        return BAND["basket"]
     return BAND["vt"] if name.startswith("VT") else (BAND["basket"] if name.startswith("cesta") else BAND["lrs"])
 
 
@@ -928,7 +944,8 @@ def build_M(mkt_r, rfm, sp):
 
 def strats_M(u):
     S = {"MKT": w_hold(u, "MKT"), "mantener 2x (sin filtro)": w_hold(u, "MKT2x"),
-         "LRS 1x": w_lrs(u, "MKT", "MKT"), "LRS 2x": w_lrs(u, "MKT", "MKT2x"), "LRS 3x": w_lrs(u, "MKT", "MKT3x")}
+         "LRS 1x": w_lrs(u, "MKT", "MKT"), "LRS 1.5x": w_lrs15(u, "MKT", "MKT", "MKT2x"),
+         "LRS 2x": w_lrs(u, "MKT", "MKT2x"), "LRS 3x": w_lrs(u, "MKT", "MKT3x")}
     for tv in TV_GRID:
         S[f"VT {int(tv * 100)} % con filtro"] = w_vt(u, "MKT", "MKT", "MKT2x", tv=tv)
     for tv in TV_GRID:
@@ -947,6 +964,7 @@ def block_A(fr, sp):
     robustness("A", M, lambda n: w_lrs(M, "MKT", "MKT", n), "LRS 1x", st0, st1, BAND["lrs"])
     robustness("A", M, lambda n: w_lrs(M, "MKT", "MKT2x", n), "LRS 2x", st0, st1, BAND["lrs"])
     robustness("A", M, lambda n: w_lrs(M, "MKT", "MKT3x", n), "LRS 3x", st0, st1, BAND["lrs"])
+    robustness("A", M, lambda n: w_lrs15(M, "MKT", "MKT", "MKT2x", n), "LRS 1.5x", st0, st1, BAND["basket"])
     robustness("A", M, lambda n: w_vt(M, "MKT", "MKT", "MKT2x", n=n, tv=0.20), "VT 20 %", st0, st1, BAND["vt"])
     guarded("A5. costes ×5 antes de 1990", lambda: evaluate(
         "A5", M, SM, st0, st1, band_of, "A5. Sesgo de costes: el mismo bloque A con costes ×5 antes de 1990 (solo veredictos)",
@@ -958,7 +976,8 @@ def block_A(fr, sp):
         say(f"  {n:24s} lag1 {cagr_from(e1.iloc[0], e1.iloc[-1], e1.index[0], e1.index[-1]) * 100:6.1f}% "
             f"caída {(e1 / e1.cummax() - 1).min() * 100:6.1f}%   |  lag2 {cagr_from(e2.iloc[0], e2.iloc[-1], e2.index[0], e2.index[-1]) * 100:6.1f}% "
             f"caída {(e2 / e2.cummax() - 1).min() * 100:6.1f}%")
-    show = {k: SM[k] for k in ["MKT", "mantener 2x (sin filtro)", "LRS 1x", "LRS 2x", "LRS 3x", "VT 20 % con filtro", "VT 20 % sin filtro"]}
+    show = {k: SM[k] for k in ["MKT", "mantener 2x (sin filtro)", "LRS 1x", "LRS 1.5x", "LRS 2x", "LRS 3x", "VT 20 % con filtro",
+                               "VT 20 % sin filtro"]}
     full = episodes(M, show, band_of, EPS)
     worst_days(show, full)
     ex = exposure(M, SM["VT 20 % con filtro"])
@@ -987,7 +1006,7 @@ def block_stress(mk, rfm, sp, M, SM, band_of, st0, st1):
         Mi = build_M(mk2, rfm, sp)
         Si = strats_M(Mi)
         say(f"  hueco el {gd.date()}:")
-        for n in ["MKT", "LRS 1x", "LRS 2x", "LRS 3x", "VT 20 % con filtro"]:
+        for n in ["MKT", "LRS 1x", "LRS 1.5x", "LRS 2x", "LRS 3x", "VT 20 % con filtro"]:
             e = simulate(Mi, Si[n], st0, st1, band=band_of[n])[0]
             e0 = simulate(M, SM[n], st0, st1, band=band_of[n])[0]
             expo = float(exposure(Mi, Si[n].shift(LAG_MAIN - 1).fillna(0)).loc[:gd].iloc[-2])
@@ -1012,6 +1031,7 @@ def block_B(spx, ndx, rf_all, sp):
         meta.update({"QQQ": {"L": 1, "cost": "1x", "div": True}, "QLD": {"L": 2, "cost": "lev"}, "TQQQ": {"L": 3, "cost": "lev"}})
     S = Universe("sp_nasdaq1988", pd.DataFrame(R), rfb, meta, "SPY")
     SS = {"SPY": w_hold(S, "SPY"), "mantener SSO (sin filtro)": w_hold(S, "SSO"), "LRS 1x SPY": w_lrs(S, "SPY", "SPY"),
+          "LRS 1.5x SPY/SSO": w_lrs15(S, "SPY", "SPY", "SSO"),
           "LRS 2x SSO": w_lrs(S, "SPY", "SSO"), "LRS 3x UPRO": w_lrs(S, "SPY", "UPRO")}
     for tv in TV_GRID:
         SS[f"VT {int(tv * 100)} % SPY/SSO"] = w_vt(S, "SPY", "SPY", "SSO", tv=tv)
@@ -1028,9 +1048,10 @@ def block_B(spx, ndx, rf_all, sp):
             [("LRS 1x QQQ", "QQQ", "QQQ"), ("LRS 2x QLD", "QQQ", "QLD"), ("LRS 3x TQQQ", "QQQ", "TQQQ")] if ndx is not None else []):
         robustness("B", S, lambda n, sig=sig, inst=inst: w_lrs(S, sig, inst, n), lab, b0, b1, BAND["lrs"])
     robustness("B", S, lambda n: w_vt(S, "SPY", "SPY", "SSO", n=n, tv=0.20), "VT 20 % SPY/SSO", b0, b1, BAND["vt"])
+    robustness("B", S, lambda n: w_lrs15(S, "SPY", "SPY", "SSO", n), "LRS 1.5x SPY/SSO", b0, b1, BAND["basket"])
     if ndx is not None:
         robustness("B", S, lambda n: w_vt(S, "QQQ", "QQQ", "QLD", n=n, tv=0.20), "VT 20 % QQQ/QLD", b0, b1, BAND["vt"])
-    episodes(S, {k: SS[k] for k in SS if k in ("SPY", "LRS 2x SSO", "LRS 3x UPRO", "VT 20 % SPY/SSO", "LRS 2x QLD",
+    episodes(S, {k: SS[k] for k in SS if k in ("SPY", "LRS 1.5x SPY/SSO", "LRS 2x SSO", "LRS 3x UPRO", "VT 20 % SPY/SSO", "LRS 2x QLD",
                                                "VT 20 % QQQ/QLD")}, band_S, EPS[3:])
 
 
@@ -1048,8 +1069,11 @@ def block_C(y, spx, rf_all, sp):
     mr = {"SPY": {"L": 1, "cost": "1x", "div": True}, "SSO_real": {"L": 2, "cost": "lev"}, "SSO_sint": {"L": 2, "cost": "lev"}}
     C = Universe("sso_real", Rr, rfc, mr, "SPY")
     SC = {"SPY": w_hold(C, "SPY"), "mantener SSO real": w_hold(C, "SSO_real"),
+          "LRS 1.5x con SSO REAL": w_lrs15(C, "SPY", "SPY", "SSO_real"),
           "LRS 2x con SSO REAL": w_lrs(C, "SPY", "SSO_real"), "LRS 2x con SSO sintético": w_lrs(C, "SPY", "SSO_sint")}
-    evaluate("C", C, SC, C.R.index[WARMUP], C.R.index[-1], {}, "C. Comprobación: misma regla con el SSO REAL (desde 2006)")
+    c0, c1 = C.R.index[WARMUP], C.R.index[-1]
+    evaluate("C", C, SC, c0, c1, {n: band_for(n) for n in SC}, "C. Comprobación: misma regla con el SSO REAL (desde 2006)")
+    robustness("C", C, lambda n: w_lrs15(C, "SPY", "SPY", "SSO_real", n), "LRS 1.5x con SSO REAL", c0, c1, BAND["basket"])
 
 
 def block_D(y, spx, ndx, rf_all, sp):
@@ -1084,6 +1108,48 @@ def block_D(y, spx, ndx, rf_all, sp):
              band_D, EPS[5:])
     say("Notas: UGL y UBT (oro y bonos 2x) son fondos pequeños: coste 0.15 %/lado y riesgo de cierre del fondo. "
         "GLD tributa a largo plazo como coleccionable (28 %), UGL con la regla 60/40 (≈ 18.6 %).")
+
+
+FAM15 = ["LRS 1.5x mercado (1926)", "LRS 1.5x SPY/SSO (1988)", "LRS 1.5x SSO real (2006)"]
+
+
+def final_verdict():
+    """Regla fijada ANTES de ver los resultados (crítica del 22-nov): la 1.5x solo se monta si pasa en TODO —
+    relativo antes y después de impuestos, las 5 medias y apta (−60 %) — en A (1926), B (1988) y C (SSO real).
+    Si no, la recomendación final es no montar un bot de acciones."""
+    say("\n## VEREDICTO FINAL (regla fijada antes de ver los resultados)")
+    say("Referencia explícita del mejor plan sencillo: mantener el índice en una Roth IRA (= «antes de impuestos»: "
+        "sin impuestos al retirar si se cumplen las reglas de la Roth) frente a una cuenta normal.")
+    say(f"  {'bloque':10s} {'estrategia':28s} {'Roth/IRA':>9s} {'normal':>9s} {'caída':>8s}")
+    for bid, names in [("A", ["MKT", "LRS 1x", "LRS 1.5x", "LRS 2x"]),
+                       ("B", ["SPY", "LRS 1x SPY", "LRS 1.5x SPY/SSO", "LRS 2x SSO"]),
+                       ("C", ["SPY", "LRS 1.5x con SSO REAL", "LRS 2x con SSO REAL"])]:
+        for n in names:
+            g = REG.get((bid, n))
+            if g is None:
+                continue
+            lab = ("mantener " + n) if n in ("MKT", "SPY") else n
+            say(f"  {bid + ' ' + str(g['start'].year) + '-' + str(g['end'].year):10s} {lab:28s} "
+                f"{g['cagr'] * 100:8.1f}% {g['cagr_t'] * 100:8.1f}% {g['dd'] * 100:7.1f}%")
+    rows = {r["familia"]: r for r in summary_rows if isinstance(r, dict) and "familia" in r}
+    missing = [f for f in FAM15 if f not in rows]
+    if missing:
+        say(f"\n  No se puede decidir: faltan bloques ({', '.join(missing)}).")
+        return
+    ok_all = all(rows[f]["rel_antes"] and rows[f]["rel_después"] and rows[f]["apta"] for f in FAM15)
+    ok_roth = all(rows[f]["rel_antes"] and rows[f]["apta"] for f in FAM15)
+    for f in FAM15:
+        r = rows[f]
+        say(f"  {f:28s} relativo antes {'sí' if r['rel_antes'] else 'NO'}, después {'sí' if r['rel_después'] else 'NO'}, "
+            f"{r['apta_txt']}")
+    if ok_all:
+        say("\n  → LRS 1.5x PASA EN TODO: siguiente paso, paper trading en Alpaca (plan en el doc).")
+    elif ok_roth:
+        say("\n  → LRS 1.5x pasa solo SIN impuestos (Roth/IRA), no en cuenta normal: no se monta el bot; como mucho, "
+            "regla manual dentro de una IRA para quien acepte su caída.")
+    else:
+        say("\n  → LRS 1.5x NO pasa: recomendación final = no montar un bot de acciones. Índice (S&P/Nasdaq) mantenido "
+            "en Roth IRA con aportaciones periódicas; LRS 2x en IRA solo para quien acepte caídas del −70 %.")
 
 
 if __name__ == "__main__":
