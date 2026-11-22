@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Panel del crypto-bot</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout: cabecera con la cifra clave → tiras de estado → gráfico de equity → posiciones → operaciones cerradas → salud.
+   Una columna en móvil, dos en escritorio. Estética de terminal de mesa de operaciones, sobria. */
+:root{
+  --bg:#f5f6f4; --panel:#ffffff; --fg:#14181a; --muted:#5d686c; --line:#dde1df;
+  --accent:#1f6f8b; --good:#1d7a4a; --bad:#b4372c; --warn:#a66a00; --grid:#e8ebe9;
+  --font:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0f1314; --panel:#161c1e; --fg:#e6ecea; --muted:#94a19f; --line:#26302f;
+  --accent:#58b4d1; --good:#4cc283; --bad:#ef7a6c; --warn:#e2b04a; --grid:#1f2827; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1314; --panel:#161c1e; --fg:#e6ecea; --muted:#94a19f; --line:#26302f;
+  --accent:#58b4d1; --good:#4cc283; --bad:#ef7a6c; --warn:#e2b04a; --grid:#1f2827; color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--fg);font:15px/1.45 var(--font);
+  padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(24px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.wrap{max-width:1080px;margin:0 auto;display:grid;gap:16px}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+header{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:8px 16px;padding-top:8px}
+h1{font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 4px}
+.big{font:500 40px/1.05 var(--mono);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.sub{color:var(--muted);font-size:14px;margin-top:4px}
+.pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;padding:3px 9px;border-radius:999px;border:1px solid var(--line);background:var(--panel);color:var(--muted);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--good)}
+.dot.warn{background:var(--warn)} .dot.bad{background:var(--bad)}
+.tiles{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.tile{background:var(--panel);padding:12px 14px;min-width:0}
+.tile .k{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.tile .v{font:500 20px/1.3 var(--mono);font-variant-numeric:tabular-nums;margin-top:2px}
+.tile .n{font-size:12px;color:var(--muted)}
+.good{color:var(--good)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+section h2{font-size:12px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0 0 10px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+section h2 span{font-weight:400;letter-spacing:0;text-transform:none}
+.grid2{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:16px}
+.chart{position:relative;height:220px}
+.chart svg{width:100%;height:100%;display:block}
+.chart text{fill:var(--muted);font:11px var(--mono)}
+.tip{position:absolute;pointer-events:none;background:var(--panel);border:1px solid var(--line);border-radius:6px;padding:4px 8px;font:12px var(--mono);white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.12)}
+.ranges{display:flex;gap:4px}
+.ranges button{font:12px var(--font);background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:6px;padding:2px 8px;cursor:pointer}
+.ranges button[aria-pressed="true"]{background:var(--fg);color:var(--bg);border-color:var(--fg)}
+.ranges button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.pos{display:grid;gap:10px}
+.card{border:1px solid var(--line);border-radius:8px;padding:10px 12px;display:grid;gap:6px}
+.card .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.coin{font-weight:600;font-size:16px}
+.side{font-size:11px;font-weight:600;letter-spacing:.06em;padding:1px 6px;border-radius:4px;margin-left:6px;vertical-align:2px}
+.side.s{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.side.l{background:color-mix(in srgb,var(--good) 14%,transparent);color:var(--good)}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px 12px;font-size:12px}
+.kv div span{display:block;color:var(--muted);font-size:11px}
+.kv div b{font:500 13px var(--mono);font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:3px;background:var(--grid);position:relative;overflow:hidden}
+.bar i{position:absolute;top:0;bottom:0;left:0;background:var(--accent);border-radius:3px}
+.empty{color:var(--muted);font-size:14px}
+.tablewrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{font-size:11px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--muted);text-align:left;padding:6px 8px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:6px 8px;border-bottom:1px solid var(--grid);white-space:nowrap}
+td.r,th.r{text-align:right}
+.health{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px;font-size:13px}
+@media (max-width:420px){.health{grid-template-columns:minmax(0,1fr)}}
+.health div{display:flex;justify-content:space-between;align-items:baseline;gap:8px;border-bottom:1px dashed var(--grid);padding-bottom:4px}
+.health b{white-space:nowrap}
+.health span{color:var(--muted)}
+footer{color:var(--muted);font-size:12px;text-align:center}
+.err{border-color:var(--bad);color:var(--bad)}
+@media (max-width:760px){.hdr-r{align-items:flex-start!important;flex-direction:row!important;flex-wrap:wrap} .grid2{grid-template-columns:minmax(0,1fr)} .tiles{grid-template-columns:repeat(2,minmax(0,1fr))} .big{font-size:34px}}
+@media (max-width:380px){.kv{grid-template-columns:repeat(2,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div>
+      <h1>Crypto-bot · equity</h1>
+      <div class="big" id="eq">—</div>
+      <div class="sub" id="eqsub">Cargando datos del bot…</div>
+    </div>
+    <div class="hdr-r" style="display:flex;flex-direction:column;align-items:flex-end;gap:6px">
+      <span class="pill" id="status"><i class="dot warn"></i>conectando</span>
+      <span class="pill" id="updated">—</span>
+    </div>
+  </header>
+
+  <div class="tiles" id="tiles">
+    <div class="tile"><div class="k">Sobre 115,75 $</div><div class="v" id="t-pnl">—</div><div class="n" id="t-pnlp">desde 26-sep</div></div>
+    <div class="tile"><div class="k">Cobrado</div><div class="v" id="t-real">—</div><div class="n" id="t-realn">operaciones cerradas</div></div>
+    <div class="tile"><div class="k">Sin cobrar</div><div class="v" id="t-unr">—</div><div class="n">posiciones abiertas</div></div>
+    <div class="tile"><div class="k">Desde el máximo</div><div class="v" id="t-dd">—</div><div class="n" id="t-ddn">—</div></div>
+  </div>
+
+  <section>
+    <h2>Equity <span class="ranges" role="group" aria-label="Periodo">
+      <button type="button" id="r-7" data-d="7" aria-pressed="false">7 d</button>
+      <button type="button" id="r-30" data-d="30" aria-pressed="true">30 d</button>
+      <button type="button" id="r-all" data-d="0" aria-pressed="false">Todo</button></span></h2>
+    <div class="chart" id="chart" role="img" aria-label="Evolución del equity del bot"></div>
+  </section>
+
+  <div class="grid2">
+    <section>
+      <h2>Posiciones abiertas <span id="posn"></span></h2>
+      <div class="pos" id="pos"><div class="empty">—</div></div>
+    </section>
+    <div style="display:grid;gap:16px;align-content:start;min-width:0">
+      <section>
+        <h2>Acumulación BTC / ETH</h2>
+        <div class="health" id="acc"><div><span>—</span></div></div>
+      </section>
+      <section>
+        <h2>Salud</h2>
+        <div class="health" id="health"><div><span>—</span></div></div>
+      </section>
+    </div>
+  </div>
+
+  <section>
+    <h2>Operaciones cerradas <span id="closedn"></span></h2>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Fecha</th><th>Moneda</th><th>Evento</th><th class="r">Entrada</th><th class="r">Salida</th><th class="r">Neto</th><th class="r">Acumulado</th></tr></thead>
+      <tbody id="closed"></tbody>
+    </table></div>
+  </section>
+
+  <footer id="foot">Datos públicos del repositorio oier710/crypto-bot · se actualiza solo cada 5 min · solo lectura</footer>
+</div>
+
+<script>
+(() => {
+  const RAW = 'https://raw.githubusercontent.com/oier710/crypto-bot/main/logs/';
+  const START = 115.75;
+  const EQ_COLS = ["time","equity_usd","usdc","eth_usd","btc_usd","eth_qty","btc_qty","eth_price","btc_price","gas_eth",
+    "ausdc","debt_eth_usd","debt_btc_usd","hf","arb_usd","arb_qty","arb_price","debt_arb_usd","accum_usd","equity_total","dusdc","hf_dolo"];
+  const $ = (id) => document.getElementById(id);
+  const usd = (v, d = 2) => (v == null || isNaN(v)) ? '—' : v.toLocaleString('es-ES', {minimumFractionDigits: d, maximumFractionDigits: d}) + ' $';
+  const sgn = (v, d = 2) => (v == null || isNaN(v)) ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v).toLocaleString('es-ES', {minimumFractionDigits: d, maximumFractionDigits: d}) + ' $';
+  const pct = (v, d = 1) => (v == null || isNaN(v)) ? '—' : (v > 0 ? '+' : v < 0 ? '−' : '') + Math.abs(v * 100).toLocaleString('es-ES', {minimumFractionDigits: d, maximumFractionDigits: d}) + ' %';
+  const px = (v) => v == null || isNaN(v) ? '—' : v.toLocaleString('es-ES', {maximumFractionDigits: v < 1 ? 4 : v < 100 ? 2 : 0});
+  const cls = (v) => v > 0.005 ? 'good' : v < -0.005 ? 'bad' : '';
+  const miami = (d) => d.toLocaleString('es-ES', {timeZone: 'America/New_York', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+  const set = (id, text, c) => { const el = $(id); if (!el) return; el.textContent = text; if (c !== undefined) el.className = el.className.replace(/\b(good|bad|warn)\b/g, '').trim() + (c ? ' ' + c : ''); };
+
+  let EQ = [], range = 30;
+
+  function parseCSV(txt, cols) {
+    const lines = txt.trim().split(/\r?\n/);
+    const head = cols || lines[0].split(',');
+    return lines.slice(1).map((l) => { const p = l.split(','); const o = {}; head.forEach((h, i) => o[h] = p[i]); return o; });
+  }
+  async function get(name, kind) {
+    const r = await fetch(RAW + name + '?t=' + Math.floor(Date.now() / 60000), {cache: 'no-store'});
+    if (!r.ok) throw new Error(name + ': ' + r.status);
+    return kind === 'json' ? r.json() : r.text();
+  }
+
+  function drawChart() {
+    const box = $('chart');
+    const W = Math.max(280, box.clientWidth), H = box.clientHeight || 220;
+    const now = EQ.length ? EQ[EQ.length - 1].t : Date.now();
+    let rows = range ? EQ.filter((r) => r.t >= now - range * 864e5) : EQ;
+    if (rows.length < 2) rows = EQ;
+    if (rows.length < 2) { box.textContent = 'Sin datos todavía.'; return; }
+    const ys = rows.map((r) => r.v).concat(range ? [] : [START]);
+    let lo = Math.min(...ys), hi = Math.max(...ys);
+    const padv = Math.max(0.5, (hi - lo) * 0.12); lo -= padv; hi += padv;
+    const t0 = rows[0].t, t1 = rows[rows.length - 1].t;
+    const ml = 48, mr = 10, mt = 10, mb = 22;
+    const x = (t) => ml + (t - t0) / (t1 - t0 || 1) * (W - ml - mr);
+    const y = (v) => mt + (hi - v) / (hi - lo) * (H - mt - mb);
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('preserveAspectRatio', 'none');
+    const add = (tag, attrs, text) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); if (text != null) e.textContent = text; svg.appendChild(e); return e; };
+    const step = (hi - lo) > 12 ? 5 : (hi - lo) > 5 ? 2 : (hi - lo) > 2 ? 1 : 0.5;
+    for (let v = Math.ceil(lo / step) * step; v <= hi; v += step) {
+      add('line', {x1: ml, x2: W - mr, y1: y(v), y2: y(v), stroke: 'var(--grid)', 'stroke-width': 1});
+      add('text', {x: ml - 6, y: y(v) + 4, 'text-anchor': 'end'}, v.toFixed(step < 1 ? 1 : 0));
+    }
+    if (START > lo && START < hi) {
+      add('line', {x1: ml, x2: W - mr, y1: y(START), y2: y(START), stroke: 'var(--muted)', 'stroke-dasharray': '4 4', 'stroke-width': 1});
+      add('text', {x: W - mr, y: y(START) - 4, 'text-anchor': 'end'}, 'inicio 115,75');
+    }
+    const days = (t1 - t0) / 864e5, nt = W < 500 ? 3 : 5;
+    for (let i = 0; i <= nt; i++) {
+      const t = t0 + (t1 - t0) * i / nt;
+      add('text', {x: x(t), y: H - 6, 'text-anchor': i === 0 ? 'start' : i === nt ? 'end' : 'middle'},
+        new Date(t).toLocaleDateString('es-ES', {day: 'numeric', month: 'short', ...(days < 3 ? {hour: '2-digit'} : {})}));
+    }
+    const d = rows.map((r, i) => (i ? 'L' : 'M') + x(r.t).toFixed(1) + ' ' + y(r.v).toFixed(1)).join(' ');
+    add('path', {d: d + ` L${x(t1)} ${H - mb} L${x(t0)} ${H - mb} Z`, fill: 'var(--accent)', 'fill-opacity': 0.1, stroke: 'none'});
+    add('path', {d, fill: 'none', stroke: 'var(--accent)', 'stroke-width': 1.8, 'stroke-linejoin': 'round'});
+    const last = rows[rows.length - 1];
+    add('circle', {cx: x(last.t), cy: y(last.v), r: 3.5, fill: 'var(--accent)'});
+    const cross = add('line', {y1: mt, y2: H - mb, stroke: 'var(--muted)', 'stroke-width': 1, opacity: 0});
+    const tip = document.createElement('div'); tip.className = 'tip'; tip.hidden = true;
+    box.replaceChildren(svg, tip);
+    const move = (ev) => {
+      const r = box.getBoundingClientRect(); const cx = (ev.touches ? ev.touches[0].clientX : ev.clientX) - r.left;
+      const t = t0 + (cx * W / r.width - ml) / (W - ml - mr) * (t1 - t0);
+      let best = rows[0]; for (const p of rows) if (Math.abs(p.t - t) < Math.abs(best.t - t)) best = p;
+      cross.setAttribute('x1', x(best.t)); cross.setAttribute('x2', x(best.t)); cross.setAttribute('opacity', .6);
+      tip.hidden = false; tip.textContent = `${miami(new Date(best.t))} · ${usd(best.v)}`;
+      const left = Math.min(Math.max(0, x(best.t) * r.width / W - tip.offsetWidth / 2), r.width - tip.offsetWidth);
+      tip.style.left = left + 'px'; tip.style.top = '0px';
+    };
+    box.onmousemove = move; box.ontouchmove = move;
+    box.onmouseleave = () => { tip.hidden = true; cross.setAttribute('opacity', 0); };
+  }
+
+  function render(eqTxt, st, pnlTxt) {
+    EQ = parseCSV(eqTxt, EQ_COLS).map((r) => ({t: Date.parse(r.time), v: parseFloat(r.equity_total || r.equity_usd), r}))
+      .filter((p) => !isNaN(p.t) && !isNaN(p.v));
+    const lastRow = EQ[EQ.length - 1], L = lastRow.r;
+    const eq = lastRow.v, peak = Math.max(...EQ.map((p) => p.v));
+    const pnl = parseCSV(pnlTxt);
+    const realized = pnl.length ? parseFloat(pnl[pnl.length - 1].total_usd) : 0;
+    const prices = {ETH: parseFloat(L.eth_price), BTC: parseFloat(L.btc_price), ARB: parseFloat(L.arb_price)};
+
+    set('eq', usd(eq));
+    set('t-pnl', sgn(eq - START), cls(eq - START)); set('t-pnlp', pct(eq / START - 1) + ' desde el 26-sep');
+    set('t-real', sgn(realized), cls(realized)); set('t-realn', `${pnl.length} cierres`);
+    set('t-dd', pct(eq / peak - 1), eq / peak - 1 < -0.10 ? 'bad' : eq / peak - 1 < -0.03 ? 'warn' : '');
+    set('t-ddn', 'máximo ' + usd(peak));
+
+    // posiciones
+    const posEl = $('pos'); posEl.replaceChildren();
+    let unr = 0; const coins = Object.keys(st.pos || {});
+    for (const c of coins) {
+      const p = st.pos[c], s = p.side, price = prices[c], stop = (st.stops || {})[c];
+      const u = s * (price - p.entry) * p.qty_now; unr += u;
+      const lock = stop != null ? s * (stop - p.entry) * p.qty_now : null;
+      const next = p.pt_done === 0 ? p.ref + s * 1.5 * p.atr : p.pt_done === 1 ? p.ref + s * 3 * p.atr : null;
+      const frac = p.full_qty ? p.qty_now / p.full_qty : 1;
+      const card = document.createElement('div'); card.className = 'card';
+      const top = document.createElement('div'); top.className = 'top';
+      const name = document.createElement('div'); name.className = 'coin'; name.textContent = c;
+      const tag = document.createElement('span'); tag.className = 'side ' + (s < 0 ? 's' : 'l'); tag.textContent = s < 0 ? 'CORTO' : 'LARGO';
+      name.appendChild(tag);
+      const val = document.createElement('div'); val.className = 'num ' + cls(u); val.textContent = sgn(u);
+      top.append(name, val);
+      const kv = document.createElement('div'); kv.className = 'kv';
+      const cell = (k, v, c2) => { const d = document.createElement('div'); const sp = document.createElement('span'); sp.textContent = k; const b = document.createElement('b'); b.textContent = v; if (c2) b.className = c2; d.append(sp, b); kv.appendChild(d); };
+      cell('Entrada', px(p.entry)); cell('Precio', px(price)); cell('Tamaño', frac > 0.99 ? 'completo' : frac > 0.6 ? '2/3' : '1/3');
+      cell(p.pt_done >= 1 ? 'Stop (persigue)' : 'Stop', px(stop)); cell('Si salta', lock == null ? '—' : sgn(lock), lock == null ? '' : cls(lock));
+      cell('Próx. parcial', next == null ? 'hechos' : px(next));
+      card.append(top, kv);
+      if (next != null && stop != null) {   // progreso desde el stop hasta el próximo parcial
+        const f = Math.min(1, Math.max(0, (price - stop) / (next - stop)));
+        const bar = document.createElement('div'); bar.className = 'bar'; bar.title = 'del stop al próximo parcial';
+        const i = document.createElement('i'); i.style.width = (f * 100).toFixed(0) + '%'; bar.appendChild(i); card.appendChild(bar);
+      }
+      posEl.appendChild(card);
+    }
+    if (!coins.length) { const e = document.createElement('div'); e.className = 'empty'; e.textContent = 'Sin posiciones abiertas: el bot está fuera del mercado.'; posEl.appendChild(e); }
+    set('posn', coins.length ? `${coins.length} abiertas · Dolomite` : '');
+    set('t-unr', sgn(unr), cls(unr));
+
+    // frase resumen
+    const day = EQ.filter((p) => p.t >= lastRow.t - 864e5)[0];
+    const dch = day ? eq - day.v : 0;
+    set('eqsub', `${sgn(eq - START)} sobre el capital inicial · ${sgn(dch)} en 24 h · cobrado ${sgn(realized)}`);
+
+    // acumulación
+    const a = st.accum || {}; const acc = $('acc'); acc.replaceChildren();
+    const row = (el, k, v, c2) => { const d = document.createElement('div'); const sp = document.createElement('span'); sp.textContent = k; const b = document.createElement('b'); b.className = 'num' + (c2 ? ' ' + c2 : ''); b.textContent = v; d.append(sp, b); el.appendChild(d); };
+    const q = a.qty || {};
+    row(acc, 'BTC guardado', q.BTC ? q.BTC.toFixed(6) + ' BTC' : '0');
+    row(acc, 'ETH guardado', q.ETH ? q.ETH.toFixed(5) + ' ETH' : '0');
+    row(acc, 'Apartado para comprar', usd(a.pending_usd || 0));
+    row(acc, 'Valor acumulado', usd(parseFloat(L.accum_usd) || 0));
+
+    // salud
+    const h = $('health'); h.replaceChildren();
+    const age = (Date.now() - lastRow.t) / 60000;
+    const hf = parseFloat(L.hf_dolo);
+    row(h, 'Última ejecución', age < 1 ? 'ahora' : `hace ${Math.round(age)} min`, age > 120 ? 'bad' : age > 40 ? 'warn' : 'good');
+    row(h, 'Estado', st.halted ? 'PARADO' : 'operando', st.halted ? 'bad' : 'good');
+    row(h, 'Salud Dolomite', isNaN(hf) || hf > 1e6 ? '∞' : hf.toFixed(2), hf < 1.5 ? 'bad' : hf < 2 ? 'warn' : 'good');
+    row(h, 'Gas (ETH)', (parseFloat(L.gas_eth) || 0).toFixed(5), parseFloat(L.gas_eth) < 0.0008 ? 'bad' : '');
+    row(h, 'Ciclo diario', st.last_signal_day || '—');
+    row(h, 'USDC', usd(parseFloat(L.usdc) + (parseFloat(L.dusdc) || 0)));
+
+    const dot = age > 120 || st.halted ? 'bad' : age > 40 ? 'warn' : '';
+    const stEl = $('status'); stEl.replaceChildren();
+    const i = document.createElement('i'); i.className = 'dot ' + dot; stEl.append(i, document.createTextNode(st.halted ? 'parado' : age > 120 ? 'sin ejecutar' : 'operando'));
+    set('updated', 'datos ' + miami(new Date(lastRow.t)) + ' Miami');
+
+    // cerradas
+    const tb = $('closed'); tb.replaceChildren();
+    for (const r of pnl.slice().reverse()) {
+      const tr = document.createElement('tr');
+      const td = (v, c2) => { const e = document.createElement('td'); e.textContent = v; if (c2) e.className = c2; tr.appendChild(e); };
+      td(new Date(r.time).toLocaleDateString('es-ES', {day: 'numeric', month: 'short'}));
+      td(r.coin + ' ' + r.lado); td(r.evento); td(px(parseFloat(r.entrada)), 'r num'); td(px(parseFloat(r.salida)), 'r num');
+      const n = parseFloat(r.neto_usd); td(sgn(n), 'r num ' + cls(n));
+      const t = parseFloat(r.total_usd); td(sgn(t), 'r num ' + cls(t));
+      tb.appendChild(tr);
+    }
+    set('closedn', pnl.length + ' en total');
+    drawChart();
+  }
+
+  async function load() {
+    try {
+      const [eqTxt, st, pnlTxt] = await Promise.all([get('equity.csv'), get('onchain_state.json', 'json'), get('pnl.csv')]);
+      render(eqTxt, st, pnlTxt);
+      $('foot').classList.remove('err');
+      $('foot').textContent = 'Datos públicos del repositorio oier710/crypto-bot · se actualiza solo cada 5 min · solo lectura';
+    } catch (e) {
+      $('foot').classList.add('err');
+      $('foot').textContent = 'No se pudieron leer los datos (' + e.message + '). Se reintenta en 5 min.';
+    }
+  }
+  for (const b of document.querySelectorAll('.ranges button')) b.addEventListener('click', () => {
+    range = +b.dataset.d; for (const o of document.querySelectorAll('.ranges button')) o.setAttribute('aria-pressed', o === b ? 'true' : 'false'); drawChart();
+  });
+  let rt; window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => EQ.length && drawChart(), 150); });
+  load(); setInterval(load, 5 * 60 * 1000);
+})();
+</script>
+</body>
+</html>
