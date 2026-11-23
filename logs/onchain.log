@@ -16757,3 +16757,6 @@ AssertionError: no conecta al RPC de Arbitrum
 2026-11-23 14:21:32,559 INFO CORTO BTC cerrado: 20.20$
 2026-11-23 14:21:32,560 WARNING RESULTADO BTC corto (stop): bruto +0.93$ costes 0.14$ -> neto +0.79$ | operación completa +3.53$ | realizado acumulado +0.92$
 2026-11-23 14:21:35,169 INFO Chequeo de stops completado.
+2026-11-23 14:36:05,424 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-23 14:36:06,848 INFO USDC 150.68 (wallet 0.34 + Aave 0.00 + Dolomite 150.35) | ETH -18.75$ BTC +0.15$ ARB -13.22$ | deuda ETH 0.010464 BTC 0.000000 ARB 109.262595 | HF ∞ / Dolomite 4.08 | acumulado 0.00$ -> equity trading 118.86 USD (total 118.86)
+2026-11-23 14:36:07,682 INFO Chequeo de stops completado.
