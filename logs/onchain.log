@@ -16745,3 +16745,15 @@ AssertionError: no conecta al RPC de Arbitrum
 2026-11-23 14:08:13,613 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-23 14:08:15,059 INFO USDC 170.95 (wallet 0.15 + Aave 0.00 + Dolomite 170.80) | ETH -18.60$ BTC -19.71$ ARB -12.80$ | deuda ETH 0.010464 BTC 0.000316 ARB 109.262127 | HF ∞ / Dolomite 2.89 | acumulado 0.00$ -> equity trading 119.83 USD (total 119.83)
 2026-11-23 14:08:15,896 INFO Chequeo de stops completado.
+2026-11-23 14:21:12,045 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-23 14:21:15,954 INFO USDC 170.95 (wallet 0.15 + Aave 0.00 + Dolomite 170.80) | ETH -18.91$ BTC -19.95$ ARB -13.18$ | deuda ETH 0.010464 BTC 0.000316 ARB 109.262347 | HF ∞ / Dolomite 2.83 | acumulado 0.00$ -> equity trading 118.91 USD (total 118.91)
+2026-11-23 14:21:15,956 WARNING STOP corto BTC: 63670.11 >= 63588.82
+2026-11-23 14:21:18,621 INFO DOLOMITE withdraw 20.46 USDC (cuenta 1)
+2026-11-23 14:21:20,637 INFO tx ok ca40247da1a13cc5a00d51dc4c04bb1935c6aee1575ed4269d59447b70420593 gas=692276
+2026-11-23 14:21:23,271 INFO SWAP exactOut 0xaf88d0 -> 0x2f2a25 | out=31727 in~20267876
+2026-11-23 14:21:25,707 INFO tx ok e680f4421055f56e5418d60aa9708332aa29cb2bbaa0444e568ee694bf3ef712 gas=209158
+2026-11-23 14:21:25,708 INFO DOLOMITE repay 31727 0x2f2a25
+2026-11-23 14:21:27,570 INFO tx ok f7b82c581b961b11cc49c3a15a576f6212686a5e211cfcf5be373d904209d0d4 gas=694057
+2026-11-23 14:21:32,559 INFO CORTO BTC cerrado: 20.20$
+2026-11-23 14:21:32,560 WARNING RESULTADO BTC corto (stop): bruto +0.93$ costes 0.14$ -> neto +0.79$ | operación completa +3.53$ | realizado acumulado +0.92$
+2026-11-23 14:21:35,169 INFO Chequeo de stops completado.
