@@ -1,0 +1,91 @@
+# Investigación nov-2026 (10ª parte) — indicadores de giro: cerrar y darse la vuelta antes del stop (idea de Oier)
+Datos: Coinbase 1h reales, evaluación 2024-02-22 -> 2026-11-23. Base = producción v6 (cartera v5, gestión v3, stop que persigue 3 ATR tras parcial 1), costes reales.
+Comprobación del simulador: diferencia máxima con el de producción (11g S4) 0.000000 $ (debe ser 0).
+Columnas extra: giros = posiciones cerradas por el indicador; giradas = veces que se abrió la contraria.
+
+## PERIODO COMPLETO (2024-02-22 -> 2026-11-23)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  giros  girad
+A actual (producción v6)              +100.4%  +28.8%  -22.2%   1.08  11/33   -12.4%   154    61%   +3.26   -3.33   40.90      0      0
+R1 EMA 9/21: girar                     +58.8%  +18.3%  -26.7%   0.80  15/33   -12.9%   158    55%   +2.30   -1.98   34.15     41     41
+R2 divergencia RSI: girar              -22.8%   -9.0%  -32.6%  -0.32  17/33   -12.4%   217    58%   +1.42   -2.19   36.84     49     49
+R3 MACD: girar                         -25.8%  -10.3%  -46.0%  -0.29  17/33   -14.6%   202    45%   +1.88   -1.78   37.60     85     85
+R4 2 de 3: girar                       +59.9%  +18.6%  -26.6%   0.81  14/33   -12.8%   169    53%   +2.44   -2.00   36.61     39     39
+C1 EMA 9/21: solo cerrar               +82.2%  +24.4%  -21.2%   1.02  14/33    -8.9%   132    57%   +3.05   -2.50   31.99     41      0
+C2 divergencia RSI: solo cerrar        +13.4%   +4.7%  -22.0%   0.33  13/33    -9.2%   169    60%   +1.64   -2.23   32.22     49      0
+C3 MACD: solo cerrar                   +25.8%   +8.7%  -21.2%   0.53  16/33    -9.6%   137    45%   +2.50   -1.74   27.86     88      0
+C4 2 de 3: solo cerrar                 +79.3%  +23.6%  -22.0%   0.98  15/33    -9.0%   142    57%   +2.96   -2.57   33.85     39      0
+
+## 1ª MITAD (2024-02-22 -> 2025-07-09)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  giros  girad
+A actual (producción v6)               +42.1%  +29.1%  -18.3%   1.07   5/17   -10.2%    76    64%   +2.60   -2.88   16.76      0      0
+R1 EMA 9/21: girar                      +8.3%   +5.9%  -26.7%   0.36   8/17   -12.9%    81    52%   +2.32   -2.23   16.11     20     20
+R2 divergencia RSI: girar               -2.0%   -1.5%  -26.1%   0.05   7/17   -12.4%   102    58%   +1.68   -2.33   17.65     23     23
+R3 MACD: girar                          -9.1%   -6.7%  -28.6%  -0.11   9/17   -10.7%   109    47%   +2.19   -2.08   21.38     43     43
+R4 2 de 3: girar                        +6.3%   +4.5%  -26.6%   0.31   7/17   -12.8%    85    49%   +2.38   -2.14   16.63     18     18
+C1 EMA 9/21: solo cerrar               +28.4%  +19.9%  -21.2%   0.86   6/17    -8.3%    69    55%   +2.70   -2.24   14.79     20      0
+C2 divergencia RSI: solo cerrar        +12.6%   +9.0%  -13.7%   0.54   6/17    -9.2%    79    63%   +1.57   -2.16   13.82     23      0
+C3 MACD: solo cerrar                   +18.2%  +12.9%  -14.3%   0.70   9/17    -8.4%    75    52%   +2.13   -1.72   14.52     44      0
+C4 2 de 3: solo cerrar                 +23.3%  +16.5%  -22.0%   0.74   7/17    -8.3%    74    55%   +2.54   -2.32   15.28     18      0
+
+## 2ª MITAD (2025-07-09 -> 2026-11-23)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  giros  girad
+A actual (producción v6)               +35.1%  +24.5%  -19.8%   1.02   6/16   -12.4%    78    56%   +2.48   -2.22   18.49      0      0
+R1 EMA 9/21: girar                     +44.5%  +30.7%  -10.5%   1.28   7/16    -7.3%    77    58%   +2.11   -1.58   17.20     21     21
+R2 divergencia RSI: girar              -10.9%   -8.0%  -23.4%  -0.28   9/16    -6.5%   115    57%   +1.57   -2.34   20.91     26     26
+R3 MACD: girar                         -16.1%  -12.0%  -31.8%  -0.38   9/16   -13.9%    96    42%   +1.72   -1.62   17.48     43     43
+R4 2 de 3: girar                       +50.0%  +34.3%   -9.7%   1.41   7/16    -7.7%    84    57%   +2.22   -1.58   19.09     21     21
+C1 EMA 9/21: solo cerrar               +38.3%  +26.6%  -13.5%   1.17   8/16    -8.7%    63    57%   +2.44   -1.87   14.40     21      0
+C2 divergencia RSI: solo cerrar         +2.5%   +1.8%  -23.4%   0.19   7/16    -8.8%    90    58%   +1.64   -2.12   17.48     26      0
+C3 MACD: solo cerrar                    +6.1%   +4.4%  -21.9%   0.33   9/16    -9.7%    62    37%   +2.39   -1.37   11.92     44      0
+C4 2 de 3: solo cerrar                 +40.0%  +27.7%  -13.1%   1.20   8/16    -9.1%    68    57%   +2.38   -1.86   15.73     21      0
+
+## TERCIO 1 (2024-02-22 -> 2025-01-22)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  giros  girad
+A actual (producción v6)               +14.8%  +16.2%  -18.2%   0.66   5/11   -10.2%    61    62%   +2.22   -2.86   12.87      0      0
+R1 EMA 9/21: girar                     -15.9%  -17.2%  -26.6%  -0.52   7/11   -13.8%    69    48%   +1.96   -2.27   13.24     17     17
+R2 divergencia RSI: girar              -10.6%  -11.5%  -20.2%  -0.43   6/11   -12.4%    66    56%   +1.56   -2.35   11.58     11     11
+R3 MACD: girar                          +2.0%   +2.1%  -20.7%   0.22   4/11   -10.2%    75    49%   +2.19   -2.04   15.46     28     28
+R4 2 de 3: girar                       -15.0%  -16.3%  -26.5%  -0.49   7/11   -14.1%    72    46%   +2.03   -2.13   13.54     15     15
+C1 EMA 9/21: solo cerrar                +2.4%   +2.6%  -21.1%   0.24   6/11    -8.3%    57    49%   +2.43   -2.22   11.59     17      0
+C2 divergencia RSI: solo cerrar         -5.3%   -5.7%  -13.6%  -0.16   5/11    -9.2%    55    60%   +1.31   -2.17    9.49     11      0
+C3 MACD: solo cerrar                    +5.3%   +5.8%  -14.3%   0.39   7/11    -8.8%    57    51%   +1.86   -1.70   10.88     29      0
+C4 2 de 3: solo cerrar                  +0.8%   +0.8%  -21.9%   0.18   7/11    -8.3%    61    51%   +2.27   -2.28   12.04     15      0
+
+## TERCIO 2 (lateral) (2025-01-22 -> 2025-12-23)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  giros  girad
+A actual (producción v6)               +47.8%  +53.3%  -11.8%   1.88   1/11    -5.4%    40    62%   +2.70   -1.89    9.30      0      0
+R1 EMA 9/21: girar                     +43.0%  +47.8%  -11.7%   1.71   3/11    -5.7%    38    61%   +3.05   -1.90    9.21      8      8
+R2 divergencia RSI: girar               +7.8%   +8.6%  -16.1%   0.48   3/11    -7.1%    78    62%   +1.69   -2.51   14.22     23     23
+R3 MACD: girar                         -30.7%  -33.0%  -33.4%  -1.24   9/11   -14.0%    74    41%   +1.78   -1.97   12.72     33     33
+R4 2 de 3: girar                       +42.4%  +47.1%  -10.7%   1.64   3/11    -4.4%    40    60%   +2.98   -1.89    9.48      8      8
+C1 EMA 9/21: solo cerrar               +36.1%  +40.0%  -13.8%   1.56   3/11    -7.3%    35    63%   +2.59   -1.89    8.34      8      0
+C2 divergencia RSI: solo cerrar        +33.1%  +36.6%  -10.4%   1.68   2/11    -5.0%    57    65%   +2.00   -1.99   11.01     23      0
+C3 MACD: solo cerrar                    +2.8%   +3.1%  -21.9%   0.25   5/11    -9.6%    45    44%   +2.42   -1.75    8.52     33      0
+C4 2 de 3: solo cerrar                 +35.2%  +39.0%  -12.8%   1.50   3/11    -6.2%    37    62%   +2.52   -1.89    8.60      8      0
+
+## TERCIO 3 (2025-12-23 -> 2026-11-23)
+variante                              retorno    CAGR   maxDD Sharpe      m-  peor m   ops acierto   gana$ pierde$ costes$  giros  girad
+A actual (producción v6)               +13.5%  +14.9%  -15.5%   0.75   5/11    -9.9%    54    54%   +1.88   -1.80   12.10      0      0
+R1 EMA 9/21: girar                     +34.8%  +38.6%   -8.3%   1.56   4/11    -6.3%    50    58%   +2.11   -1.39   11.46     16     16
+R2 divergencia RSI: girar              -15.9%  -17.2%  -20.8%  -0.85   8/11    -5.3%    72    54%   +1.27   -2.04   12.56     15     15
+R3 MACD: girar                          +8.8%   +9.7%  -19.4%   0.51   5/11    -8.3%    56    45%   +2.46   -1.84   12.11     26     26
+R4 2 de 3: girar                       +37.6%  +41.7%   -9.6%   1.71   4/11    -6.6%    56    55%   +2.24   -1.38   12.94     16     16
+C1 EMA 9/21: solo cerrar               +26.7%  +29.5%  -10.6%   1.40   4/11    -8.0%    40    55%   +2.27   -1.48    9.28     16      0
+C2 divergencia RSI: solo cerrar         -6.9%   -7.5%  -20.2%  -0.29   6/11    -8.2%    58    55%   +1.34   -1.93   10.93     15      0
+C3 MACD: solo cerrar                   +15.0%  +16.5%  -10.0%   1.06   5/11    -2.5%    35    37%   +2.86   -1.19    7.54     26      0
+C4 2 de 3: solo cerrar                 +26.2%  +29.0%  -11.1%   1.39   4/11    -8.4%    44    55%   +2.19   -1.50   10.26     16      0
+
+## RESUMEN (periodo completo)
+                                   ret  max_dd  neg_months  worst_month  sharpe  trades  win_rate  fees_usd  giros  giradas  gana_tercios  gana_ambas_mitades
+variant                                                                                                                                                      
+A actual (producción v6)         1.004  -0.222          11       -0.124   1.081     154     0.610    40.900      0        0             0               False
+R1 EMA 9/21: girar               0.588  -0.267          15       -0.129   0.798     158     0.551    34.147     41       41             1               False
+R2 divergencia RSI: girar       -0.228  -0.326          17       -0.124  -0.320     217     0.576    36.843     49       49             0               False
+R3 MACD: girar                  -0.258  -0.460          17       -0.146  -0.288     202     0.446    37.598     85       85             0               False
+R4 2 de 3: girar                 0.599  -0.266          14       -0.128   0.810     169     0.533    36.610     39       39             1               False
+C1 EMA 9/21: solo cerrar         0.822  -0.212          14       -0.089   1.021     132     0.568    31.986     41        0             1               False
+C2 divergencia RSI: solo cerrar  0.134  -0.220          13       -0.092   0.330     169     0.604    32.219     49        0             0               False
+C3 MACD: solo cerrar             0.258  -0.212          16       -0.096   0.527     137     0.453    27.860     88        0             1               False
+C4 2 de 3: solo cerrar           0.793  -0.220          15       -0.090   0.981     142     0.570    33.847     39        0             1               False
+
+Ninguna variante pasa el criterio: se mantiene el sistema actual.
