@@ -119,6 +119,17 @@ class FakeChain:
         self.b[tout] += out
         return out
 
+    gas_fails = False
+
+    def buy_gas_eth(self, usd):
+        if FakeChain.gas_fails:
+            raise RuntimeError("swap de gas revertido (simulado)")
+        assert self.b[oc.USDC] >= usd - 1e-9, "sin USDC para el gas"
+        self.b[oc.USDC] -= usd
+        eth = usd * (1 - COST) / P["ETH"]
+        self.b["ETH_native"] += eth
+        return int(eth * 1e18)
+
     def swap_exact_in(self, hops, amount_in):
         tin, tout = hops[0][0], hops[-1][2]
         out = self._move(tin, tout, amount_in / 10 ** oc.DECIMALS[tin])
@@ -927,6 +938,56 @@ oc.PARK_USDC = True
 oc.SYMBOLS = ("BTC", "ETH"); oc.WEIGHTS = {}
 oc.SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}
 SIG.update(ETH=0, BTC=0, ARB=0)
+
+print("\n== 34. Recarga automática de gas: con poco ETH nativo compra el justo con USDC, una vez al día")
+oc.SHORT_VENUE = dict(REAL_VENUE)
+SIG.update(ETH=0, BTC=0, ARB=0); P.update(ETH=2500.0, BTC=80000.0)
+check(oc.GAS_AUTO and oc.GAS_MIN_ETH < oc.GAS_TARGET_ETH < oc.GAS_RESERVE_ETH, "objetivo de recarga por debajo de la reserva (el gas no cuenta como posición)")
+fresh({oc.USDC: 0.5, "dUSDC": 100.0, "ETH_native": 0.0008})
+s = oc.load_state(); s["day_start_equity"] = s["peak_equity"]; oc.save_state(s)
+e0, _ = oc.portfolio(FakeChain(), P)
+st = run()
+nat = FakeChain.state["ETH_native"]
+usd = (oc.GAS_TARGET_ETH - 0.0008) * 2500.0
+check(abs(nat - oc.GAS_TARGET_ETH) < 0.00002, f"ETH nativo recargado a {nat:.5f} (objetivo {oc.GAS_TARGET_ETH})")
+e1, pf1 = oc.portfolio(FakeChain(), P)
+check(abs((e0 - e1) - usd) < 0.05 and abs(pf1["val"]["ETH"]) < 1e-9, f"cuesta {e0 - e1:.2f}$ de USDC y no aparece como posición de ETH")
+check(not st["halted"] and abs(st["peak_equity"] / e1 - e0 / e0) < 0.01, "el máximo se reescala: la recarga no cuenta como pérdida")
+check(st.get("gas_topup_day") == today, "apunta el día de la recarga")
+# segunda bajada el mismo día: no recarga otra vez (un intento al día)
+FakeChain.state["ETH_native"] = 0.0005
+st = run()
+check(abs(FakeChain.state["ETH_native"] - 0.0005) < 1e-12, "como mucho una recarga al día")
+# con gas suficiente no hace nada
+fresh({oc.USDC: 0.5, "dUSDC": 100.0, "ETH_native": 0.002})
+st = run()
+check(abs(FakeChain.state["ETH_native"] - 0.002) < 1e-12 and "gas_topup_day" not in st, "con gas suficiente no recarga")
+# si la recarga falla, los stops siguen funcionando
+pos = oc.new_pos(1, 2600.0, 90.0, 0.016, 1)
+fresh({oc.USDC: 0.5, "dUSDC": 100.0, "ETH_native": 0.0008, oc.WETH: 0.016}, {"ETH": pos}, {"ETH": 2450.0})
+FakeChain.gas_fails = True
+st = run(eth=2440.0)
+FakeChain.gas_fails = False
+check(FakeChain.state[oc.WETH] < 1e-9 and "ETH" not in st["stops"], "recarga fallida: el stop del largo se ejecuta igual")
+# recarga minada pero con error al confirmar: se detecta por el saldo y se reescala igual (no cuenta como pérdida)
+fresh({oc.USDC: 0.5, "dUSDC": 100.0, "ETH_native": 0.0008})
+s = oc.load_state(); s["day_start_equity"] = s["peak_equity"]; oc.save_state(s)
+_orig = FakeChain.buy_gas_eth
+def _mined_then_error(self, usd):
+    _orig(self, usd)
+    raise RuntimeError("timeout esperando el recibo (simulado)")
+FakeChain.buy_gas_eth = _mined_then_error
+st = run()
+FakeChain.buy_gas_eth = _orig
+e1, _ = oc.portfolio(FakeChain(), P)
+check(FakeChain.state["ETH_native"] > 0.0025 and abs(st["day_start_equity"] - e1) < 0.05, "recarga hecha pese al error: se reescala el arranque del día")
+# con cortos abiertos usa USDC por encima de la salud de 1.5 (nunca la garantía necesaria)
+fresh({oc.USDC: 0.5, "dUSDC": 0.0009 * 80000.0 * 1.15 * 1.6, "debt_BTC": 0.0009, "ETH_native": 0.0008},
+      {"BTC": oc.new_pos(-1, 80000.0, 2000.0, 0.0009, -1)}, {"BTC": 85000.0})
+st = run(btc=80000.0)
+check(FakeChain().dolo_health() >= oc.HF_TARGET_MIN - 1e-6, f"con corto abierto: salud {FakeChain().dolo_health():.2f} >= 1.5 tras recargar")
+oc.SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}
+P["ETH"] = 2500.0
 
 eq, _ = oc.portfolio(FakeChain(), P)
 print(f"\nEquity final simulada: {eq:.2f} $")

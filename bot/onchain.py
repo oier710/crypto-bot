@@ -20,7 +20,7 @@ v3 (2026-10-10, investigación de octubre, idea de Oier): ventas parciales + ree
 
 Seguridad:
   - Clave privada en .env / secreto de GitHub. Solo la cuenta del experimento.
-  - Reserva de gas en ETH nativo (GAS_RESERVE_ETH).
+  - Reserva de gas en ETH nativo (GAS_RESERVE_ETH), con recarga automática desde USDC (topup_gas).
   - amountOutMinimum / amountInMaximum siempre acotados por cotización ± MAX_SLIPPAGE.
   - Cortos: si el factor de salud de Aave cae por debajo de HF_MIN se cierran todos.
   - SHORT_MAX_USD limita el tamaño de cada corto (para la fase de prueba).
@@ -118,7 +118,15 @@ STOP_ATR = 2.0
 ATR_N = 14
 MIN_TRADE_USD = 3.0           # bajado de 5 a 3 (2026-10-29): la parcial (1/3) de una posición de ARB de ~12$ son ~4$
 MAX_SLIPPAGE = 0.005
-GAS_RESERVE_ETH = 0.0015
+GAS_RESERVE_ETH = 0.003        # ETH nativo para gas: no cuenta como posición (subido de 0.0015 el 2026-11-24)
+# Recarga automática de gas (2026-11-24, Oier: "que no dependa de mí"): si el ETH nativo baja de GAS_MIN_ETH, el bot
+# cambia USDC por ETH nativo (Uniswap + unwrap en una sola tx) hasta ~GAS_TARGET_ETH (< GAS_RESERVE_ETH, así no cuenta
+# como posición de ETH). Un intento al día como mucho. Real: ~8 $/año de gas (nov-2026).
+GAS_AUTO = True
+GAS_MIN_ETH = 0.0012
+GAS_TARGET_ETH = 0.0027
+GAS_TOPUP_MIN_USD, GAS_TOPUP_MAX_USD = 2.0, 8.0
+ROUTER_ADDRESS_THIS = "0x0000000000000000000000000000000000000002"   # SwapRouter02: el router se queda la salida (para unwrap)
 HF_MIN = 1.25                 # factor de salud mínimo en Aave; por debajo se cierran los cortos
 HF_TARGET_MIN = 1.5           # al abrir un corto, el HF resultante debe quedar por encima
 LIQ_THRESHOLD = 0.78          # umbral de liquidación del USDC como garantía en Aave (conservador)
@@ -148,7 +156,9 @@ ERC20_ABI = json.loads('[{"name":"balanceOf","type":"function","stateMutability"
                        '{"name":"allowance","type":"function","stateMutability":"view","inputs":[{"name":"o","type":"address"},{"name":"s","type":"address"}],"outputs":[{"type":"uint256"}]},'
                        '{"name":"approve","type":"function","stateMutability":"nonpayable","inputs":[{"name":"s","type":"address"},{"name":"v","type":"uint256"}],"outputs":[{"type":"bool"}]}]')
 ROUTER_ABI = json.loads('[{"name":"exactInput","type":"function","stateMutability":"payable","inputs":[{"name":"params","type":"tuple","components":[{"name":"path","type":"bytes"},{"name":"recipient","type":"address"},{"name":"amountIn","type":"uint256"},{"name":"amountOutMinimum","type":"uint256"}]}],"outputs":[{"name":"amountOut","type":"uint256"}]},'
-                        '{"name":"exactOutput","type":"function","stateMutability":"payable","inputs":[{"name":"params","type":"tuple","components":[{"name":"path","type":"bytes"},{"name":"recipient","type":"address"},{"name":"amountOut","type":"uint256"},{"name":"amountInMaximum","type":"uint256"}]}],"outputs":[{"name":"amountIn","type":"uint256"}]}]')
+                        '{"name":"exactOutput","type":"function","stateMutability":"payable","inputs":[{"name":"params","type":"tuple","components":[{"name":"path","type":"bytes"},{"name":"recipient","type":"address"},{"name":"amountOut","type":"uint256"},{"name":"amountInMaximum","type":"uint256"}]}],"outputs":[{"name":"amountIn","type":"uint256"}]},'
+                        '{"name":"unwrapWETH9","type":"function","stateMutability":"payable","inputs":[{"name":"amountMinimum","type":"uint256"},{"name":"recipient","type":"address"}],"outputs":[]},'
+                        '{"name":"multicall","type":"function","stateMutability":"payable","inputs":[{"name":"deadline","type":"uint256"},{"name":"data","type":"bytes[]"}],"outputs":[{"name":"results","type":"bytes[]"}]}]')
 QUOTER_ABI = json.loads('[{"name":"quoteExactInput","type":"function","stateMutability":"nonpayable","inputs":[{"name":"path","type":"bytes"},{"name":"amountIn","type":"uint256"}],"outputs":[{"name":"amountOut","type":"uint256"},{"name":"a","type":"uint160[]"},{"name":"b","type":"uint32[]"},{"name":"gasEstimate","type":"uint256"}]},'
                         '{"name":"quoteExactOutput","type":"function","stateMutability":"nonpayable","inputs":[{"name":"path","type":"bytes"},{"name":"amountOut","type":"uint256"}],"outputs":[{"name":"amountIn","type":"uint256"},{"name":"a","type":"uint160[]"},{"name":"b","type":"uint32[]"},{"name":"gasEstimate","type":"uint256"}]}]')
 PROVIDER_ABI = json.loads('[{"name":"getPool","type":"function","stateMutability":"view","inputs":[],"outputs":[{"type":"address"}]},'
@@ -171,6 +181,13 @@ DOLO_MARGIN_ABI = json.loads('[{"name":"getMarketIdByTokenAddress","type":"funct
                              '{"name":"getAdjustedAccountValues","type":"function","stateMutability":"view","inputs":[' + _ACC + '],"outputs":[' + _VAL + ',' + _VAL + ']}]')
 DOLO_PROXY_ABI = json.loads('[{"name":"depositWei","type":"function","stateMutability":"nonpayable","inputs":[{"name":"toAccountNumber","type":"uint256"},{"name":"marketId","type":"uint256"},{"name":"amountWei","type":"uint256"}],"outputs":[]},'
                             '{"name":"withdrawWei","type":"function","stateMutability":"nonpayable","inputs":[{"name":"fromAccountNumber","type":"uint256"},{"name":"marketId","type":"uint256"},{"name":"amountWei","type":"uint256"},{"name":"balanceCheckFlag","type":"uint8"}],"outputs":[]}]')
+
+
+def _encode_call(contract, fn: str, args: list) -> str:
+    """Calldata de una función (web3 v6: encodeABI; v7+: encode_abi)."""
+    if hasattr(contract, "encode_abi"):
+        return contract.encode_abi(fn, args=args)
+    return contract.encodeABI(fn_name=fn, args=args)
 
 
 def encode_path(hops) -> bytes:
@@ -425,6 +442,21 @@ class Chain:
         if not self.dry_run:
             self.ensure_allowance(hops[0][0], SWAP_ROUTER02, amount_in)
             self._send(self.router.functions.exactInput((encode_path(hops), self.address, amount_in, min_out)))
+        return q
+
+    def buy_gas_eth(self, usd: float) -> int:
+        """Cambia `usd` USDC por ETH NATIVO (para gas) en una sola transacción: swap USDC->WETH dejando el WETH en el
+        router y unwrapWETH9 a la wallet (multicall de SwapRouter02). Si algo falla, revierte entero. Devuelve wei."""
+        hops = PATHS["ETH"]["buy"]
+        amount_in = int(usd * 1e6)
+        q = self.quoter.functions.quoteExactInput(encode_path(hops), amount_in).call()[0]
+        min_out = int(q * (1 - MAX_SLIPPAGE))
+        log.info("GAS: USDC -> ETH nativo | in=%s out~%s wei", amount_in, q)
+        if not self.dry_run:
+            self.ensure_allowance(USDC, SWAP_ROUTER02, amount_in)
+            calls = [_encode_call(self.router, "exactInput", [(encode_path(hops), ROUTER_ADDRESS_THIS, amount_in, min_out)]),
+                     _encode_call(self.router, "unwrapWETH9", [min_out, self.address])]
+            self._send(self.router.functions.multicall(int(time.time()) + 600, calls))
         return q
 
     def dex_price(self, coin: str, ref_px: float) -> float:
@@ -1095,6 +1127,48 @@ def price_mismatch(ch: Chain, prices: dict) -> dict:
     return bad
 
 
+def topup_gas(ch: Chain, st: dict, prices: dict, pf: dict, today: str) -> bool:
+    """Si el ETH nativo para gas baja de GAS_MIN_ETH, compra ETH nativo con USDC hasta ~GAS_TARGET_ETH (un intento al
+    día). El gas no cuenta en la equity de trading: como en la acumulación, el máximo y el arranque del día se
+    reescalan para que la recarga no cuente como pérdida en los límites de riesgo."""
+    native = pf["raw"]["ETH_native"]
+    if not GAS_AUTO or native >= GAS_MIN_ETH or st.get("gas_topup_day") == today or "ETH" not in prices:
+        return False
+    usd = min(max((GAS_TARGET_ETH - native) * prices["ETH"], GAS_TOPUP_MIN_USD), GAS_TOPUP_MAX_USD)
+    st["gas_topup_day"] = today            # un intento al día, salga bien o mal (sin reintentos cada 15 min)
+    save_state(st)
+    log.warning("GAS: quedan %.5f ETH (< %.4f); recargo con %.2f$ de USDC", native, GAS_MIN_ETH, usd)
+    usdc_in_wallet(ch, usd + 0.2, pf)
+    have = ch.balances()[USDC] if not ch.dry_run else usd
+    if have < usd:
+        log.error("ERROR GAS: sin USDC libre para recargar (%.2f$ < %.2f$); se reintenta mañana", have, usd)
+        return False
+    eq_before = pf["cash"] + sum(pf["val"].values())
+    err = None
+    try:
+        got = ch.buy_gas_eth(usd)
+    except Exception as e:  # noqa: BLE001 - p. ej. la tx se minó pero falló la espera del recibo: se mira el saldo
+        err, got = e, 0
+    if not ch.dry_run:
+        gained = ch.balances()["ETH_native"] - native
+        done = gained * prices["ETH"] > usd * 0.5          # el ETH nativo subió: la recarga se hizo
+        got = int(max(gained, 0) * 1e18)
+    else:
+        done = err is None
+    if done:
+        # el USDC gastado sale de la equity de trading: no debe contar como pérdida en los límites de riesgo
+        if eq_before > usd:
+            for k in ("peak_equity", "day_start_equity"):
+                if st.get(k):
+                    st[k] = st[k] * (eq_before - usd) / eq_before
+        record("ETH", "GAS", usd, prices["ETH"], "recarga de gas", ch.dry_run)
+        log.warning("GAS: recargados ~%.5f ETH por %.2f$ (había %.5f)", got / 1e18, usd, native)
+    save_state(st)
+    if err is not None and not done:
+        raise err
+    return done
+
+
 def run_cycle(dry_run: bool, signals: bool = True):
     global _DRY_RUN
     _DRY_RUN = dry_run
@@ -1236,6 +1310,12 @@ def run_cycle(dry_run: bool, signals: bool = True):
             st.setdefault("stopped_today", {})[c] = today
         _, pf = portfolio(ch, prices)
     save_state(st)                       # antes de tidy/señales (red): lo gestionado en este ciclo ya queda escrito
+    # recarga de gas DESPUÉS de los stops (sus transacciones no deben retrasarlos)
+    if not blind:
+        try:
+            topup_gas(ch, st, prices, pf, today)
+        except Exception as e:  # noqa: BLE001 - la recarga de gas nunca debe romper la ejecución
+            log.exception("ERROR GAS: la recarga falló (%s); se reintenta mañana", e)
     if not signals:
         tidy_aave(ch, prices, st)
         save_state(st)
