@@ -222,18 +222,21 @@ footer{color:var(--muted);font-size:12px;text-align:center}
     box.onmouseleave = () => { tip.hidden = true; cross.setAttribute('opacity', 0); };
   }
 
-  function render(eqTxt, st, pnlTxt) {
+  function render(eqTxt, st, pnlTxt, trTxt) {
     EQ = parseCSV(eqTxt, EQ_COLS).map((r) => ({t: Date.parse(r.time), v: parseFloat(r.equity_total || r.equity_usd), r}))
       .filter((p) => !isNaN(p.t) && !isNaN(p.v));
     const lastRow = EQ[EQ.length - 1], L = lastRow.r;
     const eq = lastRow.v, peak = Math.max(...EQ.map((p) => p.v));
     const pnl = parseCSV(pnlTxt);
     const realized = pnl.length ? parseFloat(pnl[pnl.length - 1].total_usd) : 0;
+    // costes operativos: recargas de gas pagadas con USDC (filas GAS de onchain_trades.csv)
+    const gasRows = trTxt ? parseCSV(trTxt).filter((r) => r.side === 'GAS') : [];
+    const gasUsd = gasRows.reduce((a, r) => a + (parseFloat(r.usd) || 0), 0);
     const prices = {ETH: parseFloat(L.eth_price), BTC: parseFloat(L.btc_price), ARB: parseFloat(L.arb_price)};
 
     set('eq', usd(eq));
     set('t-pnl', sgn(eq - START), cls(eq - START)); set('t-pnlp', pct(eq / START - 1) + ' desde el 26-sep');
-    set('t-real', sgn(realized), cls(realized)); set('t-realn', `${pnl.length} cierres`);
+    set('t-real', sgn(realized), cls(realized)); set('t-realn', `${pnl.length} cierres · costes operativos −${gasUsd.toFixed(2)} $`);
     set('t-dd', pct(eq / peak - 1), eq / peak - 1 < -0.10 ? 'bad' : eq / peak - 1 < -0.03 ? 'warn' : '');
     set('t-ddn', 'máximo ' + usd(peak));
 
@@ -292,6 +295,7 @@ footer{color:var(--muted);font-size:12px;text-align:center}
     row(h, 'Estado', st.halted ? 'PARADO' : 'operando', st.halted ? 'bad' : 'good');
     row(h, 'Salud Dolomite', isNaN(hf) || hf > 1e6 ? '∞' : hf.toFixed(2), hf < 1.5 ? 'bad' : hf < 2 ? 'warn' : 'good');
     row(h, 'Gas (ETH)', (parseFloat(L.gas_eth) || 0).toFixed(5), parseFloat(L.gas_eth) < 0.0008 ? 'bad' : '');
+    row(h, 'Costes operativos (gas)', gasRows.length ? `−${gasUsd.toFixed(2)} $ en ${gasRows.length} recarga${gasRows.length > 1 ? 's' : ''}` : '0 $');
     row(h, 'Ciclo diario', st.last_signal_day || '—');
     row(h, 'USDC', usd(parseFloat(L.usdc) + (parseFloat(L.dusdc) || 0)));
 
@@ -317,8 +321,9 @@ footer{color:var(--muted);font-size:12px;text-align:center}
 
   async function load() {
     try {
-      const [eqTxt, st, pnlTxt] = await Promise.all([get('equity.csv'), get('onchain_state.json', 'json'), get('pnl.csv')]);
-      render(eqTxt, st, pnlTxt);
+      const [eqTxt, st, pnlTxt, trTxt] = await Promise.all([get('equity.csv'), get('onchain_state.json', 'json'), get('pnl.csv'),
+        get('onchain_trades.csv').catch(() => '')]);
+      render(eqTxt, st, pnlTxt, trTxt);
       $('foot').classList.remove('err');
       $('foot').textContent = 'Datos públicos del repositorio oier710/crypto-bot · se actualiza solo cada 5 min · solo lectura';
     } catch (e) {

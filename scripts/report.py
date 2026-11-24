@@ -60,6 +60,13 @@ def main():
     else:
         lines += ["(sin datos de equity todavía)", ""]
 
+    gas = tr[tr.side == "GAS"] if len(tr) else tr
+    lines += ["## Costes operativos",
+              f"- Gas (recargas automáticas pagadas con USDC): **{gas.usd.sum() if len(gas) else 0.0:.2f} $** en {len(gas)} recarga(s)"
+              + (f" · última {gas.time.iloc[-1]:%Y-%m-%d}" if len(gas) else ""),
+              "- Ya están descontados del valor actual (el USDC salió de la cartera). Las comisiones de los pools y el",
+              "  deslizamiento van en el coste de cada operación (pnl.csv).", ""]
+    tr = tr[tr.side != "GAS"] if len(tr) else tr
     if len(tr):
         lines += ["## Operaciones", f"- Total: {len(tr)} (compras {int((tr.side == 'BUY').sum())}, ventas {int((tr.side == 'SELL').sum())}, cortos {int((tr.side == 'SHORT').sum())}, cierres de corto {int((tr.side == 'COVER').sum())})",
                   f"- Volumen operado: {tr.usd.sum():.2f} $ · coste estimado fees+slippage (~0.1 %): {tr.usd.sum() * 0.001:.2f} $", "",
