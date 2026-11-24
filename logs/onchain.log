@@ -17123,3 +17123,6 @@ AssertionError: no conecta al RPC de Arbitrum
 2026-11-24 18:22:22,242 INFO tx ok 871ebb60c076ccde03e4446f2c9caf00800dbb637b48c0e8ec99a31c0e6fa001 gas=161187
 2026-11-24 18:22:24,727 WARNING GAS: recargados ~0.00181 ETH por 3.07$ (había 0.00087)
 2026-11-24 18:22:32,087 INFO Chequeo de stops completado.
+2026-11-24 18:27:31,795 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-24 18:27:33,344 INFO USDC 186.18 (wallet 0.70 + Aave 0.00 + Dolomite 185.48) | ETH -17.50$ BTC -37.58$ ARB -12.21$ | deuda ETH 0.010466 BTC 0.000628 ARB 109.287038 | HF ∞ / Dolomite 2.38 | acumulado 0.00$ -> equity trading 118.89 USD (total 118.89)
+2026-11-24 18:27:36,003 INFO Chequeo de stops completado.
