@@ -35,12 +35,17 @@ DEBTKEY = {oc.WETH: "debt_ETH", oc.WBTC: "debt_BTC", oc.ARB: "debt_ARB"}
 class FakeChain:
     address = "0xFAKE"
     dolo_available = True      # simula Dolomite caído
+    dolo_blind = 0.0           # simula Dolomite ilegible con USDC en espera (modo solo stops)
+    withdraw_fails = False     # simula que Dolomite no deja retirar USDC (liquidez al 100 % / pausa)
+    closing = ()               # monedas cuyo mercado de Dolomite se está cerrando
 
     def __init__(self, dry_run=False):
         self.dry_run = False
         self.b = FakeChain.state
         self.b.setdefault("dUSDC", 0.0)
         self.dolo_ok = FakeChain.dolo_available
+        self.dolo_blind = FakeChain.dolo_blind
+        self.dolo_closing = set(FakeChain.closing)
         self.dolo_margin_ratio = 0.15
         self.dolo_min_borrow_usd = 0.0
 
@@ -75,6 +80,8 @@ class FakeChain:
 
     def dolo_withdraw_usdc(self, usd):
         assert self.dolo_ok, "Dolomite caído"
+        if FakeChain.withdraw_fails:
+            raise RuntimeError("Dolomite revierte: sin liquidez de USDC")
         usd = self.b["dUSDC"] if usd is None else min(usd, self.b["dUSDC"])
         debt = self._debt("dolomite")
         if debt > 0 and (self.b["dUSDC"] - usd) < debt * (1 + self.dolo_margin_ratio):
@@ -328,7 +335,7 @@ print(f"  corto abierto {d0 * P['ETH']:.2f}$ con HF {hf0:.2f}")
 check(d0 > 0 and hf0 < 1.6, "corto al máximo que permite la garantía")
 st = run(eth=st["stops"]["ETH"] + 1)
 check(FakeChain.state["debt_ETH"] < 1e-9, f"deuda saldada (queda {FakeChain.state['debt_ETH']:.8f})")
-check(FakeChain.state["aUSDC"] < 0.01 and FakeChain.state[oc.USDC] > 10, f"USDC recuperado {FakeChain.state[oc.USDC]:.2f}")
+check(FakeChain.state["aUSDC"] < 0.01 and FakeChain.state[oc.USDC] + FakeChain.state["dUSDC"] > 10, f"USDC recuperado {FakeChain.state[oc.USDC] + FakeChain.state['dUSDC']:.2f} (wallet + en espera en Dolomite)")
 SIG["ETH"] = 1
 
 print("\n== 12. Si la gestión v3 falla, los stops de siempre siguen funcionando")
@@ -403,7 +410,7 @@ SIG["ARB"] = 0
 s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
 st = run(daily=True)
 check(FakeChain.state["debt_ARB"] < 1e-9, "corto ARB cerrado por señal 0")
-check(FakeChain.state["dUSDC"] < 0.01, "garantía retirada de Dolomite al no quedar deuda")
+check(FakeChain.state["dUSDC"] > 1 and FakeChain.state[oc.USDC] < oc.PARK_MIN_USD, "sin deuda: el USDC se queda en espera en Dolomite (cobra interés)")
 oc.SYMBOLS = ("BTC", "ETH")
 
 print("\n== 18. Acumulación: 30 % de la ganancia realizada nueva compra BTC y ETH y se aparta")
@@ -419,13 +426,13 @@ check(abs(acc["pending_usd"] - 4.90 * 0.30) < 0.01 and not acc["qty"], f"gananci
 check(abs(acc["hwm"] - 4.90) < 0.01, "máximo realizado = 4.90")
 oc.PNL_FILE.write_text(oc.PNL_FILE.read_text() + "2026-11-02T00:00:00+00:00,BTC,largo,señal +0,0.001,80000,120000,40.00,0.20,39.80,49.7,39.80,44.70\n")
 s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
-usdc0 = FakeChain.state[oc.USDC]
+usdc0 = FakeChain.state[oc.USDC] + FakeChain.state["dUSDC"]
 st = run(daily=True)
 acc = st["accum"]
 exp_pend = 44.70 * 0.30
 check(acc["qty"].get("BTC", 0) > 0 and acc["qty"].get("ETH", 0) > 0, f"compra BTC y ETH ({acc['qty']})")
 check(abs(acc["cost_usd"] - 2 * (exp_pend / 2)) < 0.05 and acc["pending_usd"] < 0.05, f"gastados {acc['cost_usd']:.2f}$ (esperado {exp_pend:.2f}$), pendiente {acc['pending_usd']:.2f}$")
-check(abs(usdc0 - FakeChain.state[oc.USDC] - acc["cost_usd"]) < 0.05, "el USDC bajó justo lo gastado")
+check(abs(usdc0 - FakeChain.state[oc.USDC] - FakeChain.state["dUSDC"] - acc["cost_usd"]) < 0.05, "el USDC (wallet + en espera) bajó justo lo gastado")
 eq_tr, pf = oc.portfolio(FakeChain(), P)
 check(abs(pf["accum_usd"] - acc["cost_usd"] * (1 - COST)) < 0.1 and abs(pf["val"]["BTC"]) < 0.01 and abs(pf["val"]["ETH"]) < 0.01,
       f"las monedas acumuladas no cuentan como posición (val BTC {pf['val']['BTC']:.2f}, ETH {pf['val']['ETH']:.2f}; acumulado {pf['accum_usd']:.2f}$)")
@@ -515,7 +522,7 @@ check(abs(FakeChain.state["debt_ETH"] - 0.008) < 1e-12 and FakeChain.state["aUSD
 P["ARB"] = st["stops"]["ARB"] + 0.001       # stop
 st = run()
 check(FakeChain.state["debt_ARB"] < 1e-9 and "ARB" not in st["pos"], "stop: corto ARB cerrado del todo")
-check(FakeChain.state["dUSDC"] < 0.01, "garantía Dolomite retirada")
+check(FakeChain.state[oc.USDC] < oc.PARK_MIN_USD and FakeChain.state["dUSDC"] > 1, f"sin deuda: USDC en espera en Dolomite ({FakeChain.state['dUSDC']:.2f}$), no suelto en la wallet")
 rows = [r for r in pnl_rows() if r["coin"] == "ARB"]
 check(len(rows) == 2 and rows[-1]["lado"] == "corto", f"pnl.csv apunta parcial y stop de ARB ({len(rows)} filas)")
 
@@ -550,7 +557,7 @@ FakeChain.swap_exact_in = _swap_fail
 st = run(daily=True)
 FakeChain.swap_exact_in = _swap
 b = FakeChain.state
-check(b["debt_ARB"] < 1e-9 and b["dUSDC"] < 0.01 and b[oc.ARB] < 1e-9, f"sin deuda, sin garantía atrapada ni ARB suelto (deuda {b['debt_ARB']:.4f}, dUSDC {b['dUSDC']:.2f}, ARB {b[oc.ARB]:.4f})")
+check(b["debt_ARB"] < 1e-9 and b[oc.USDC] < oc.PARK_MIN_USD and b["dUSDC"] > 1 and b[oc.ARB] < 1e-9, f"sin deuda, USDC en espera en Dolomite y sin ARB suelto (deuda {b['debt_ARB']:.4f}, dUSDC {b['dUSDC']:.2f}, ARB {b[oc.ARB]:.4f})")
 check(b[oc.WETH] * P["ETH"] > 25 and "ETH" in st["stops"], "el largo de ETH se abrió y tiene stop pese al fallo de ARB")
 _, pf24 = oc.portfolio(FakeChain(), P)
 check(abs(pf24["equity_total"] - 100) < 1.0, f"capital intacto (total {pf24['equity_total']:.2f}$)")
@@ -585,7 +592,7 @@ SIG.update(ETH=0, BTC=0, ARB=0)
 s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
 st = run(daily=True)
 b = FakeChain.state
-check(b["debt_ETH"] < 1e-12 and b["debt_ARB"] < 1e-12 and b["dUSDC"] < 0.01, "señal 0: todo cerrado y garantía retirada de Dolomite")
+check(b["debt_ETH"] < 1e-12 and b["debt_ARB"] < 1e-12 and b[oc.USDC] < oc.PARK_MIN_USD and b["dUSDC"] > 1, "señal 0: todo cerrado y el USDC en espera en Dolomite")
 
 print("\n== 26. v6: corto grande de ETH con poca holgura se cierra por tramos en Dolomite")
 pos = oc.new_pos(-1, 2500.0, 90.0, 0.03, -1)
@@ -593,7 +600,7 @@ P["ETH"] = 2601.0
 fresh({oc.USDC: 0.0, "dUSDC": 0.03 * 2601 * 1.15 * 1.30, "debt_ETH": 0.03}, {"ETH": pos}, {"ETH": 2600.0})
 st = run()
 check(FakeChain.state["debt_ETH"] < 1e-9 and "ETH" not in st["pos"], f"stop: cerrado del todo por tramos (deuda {FakeChain.state['debt_ETH']:.6f})")
-check(FakeChain.state["dUSDC"] < 0.01, "garantía retirada")
+check(FakeChain.state[oc.USDC] < oc.PARK_MIN_USD and FakeChain.state["dUSDC"] > 1, f"cerrado: USDC en espera en Dolomite ({FakeChain.state['dUSDC']:.2f}$)")
 
 print("\n== 27. Límite de riesgo con un corto que no se puede cerrar: NO se olvida la posición ni se para el bot")
 pos = oc.new_pos(-1, 2500.0, 90.0, 0.03, -1)
@@ -721,7 +728,7 @@ st = run(eth=1995.0)
 r = pnl_rows()
 check(FakeChain.state["debt_ETH"] < 1e-9 and "ETH" not in st["pos"], "corto cerrado en el stop que persigue")
 check(len(r) == n0 + 1 and float(r[-1]["bruto_usd"]) > 0, f"con ganancia bruta {r[-1]['bruto_usd']} (antes: 0 en la entrada)")
-check(FakeChain.state["dUSDC"] < 0.01, "garantía de Dolomite retirada")
+check(FakeChain.state[oc.USDC] < oc.PARK_MIN_USD and FakeChain.state["dUSDC"] > 1, f"cerrado: USDC en espera en Dolomite ({FakeChain.state['dUSDC']:.2f}$)")
 # h) un stop ya más ajustado (p. ej. tras una reentrada) no se afloja
 pos = oc.new_pos(1, 2500.0, 100.0, 0.018, 1)
 pos.update(pt_done=1, extreme=2900.0)
@@ -757,6 +764,169 @@ st = run(eth=2950.0)
 check("ETH" not in st["stops"] and abs(FakeChain.state[oc.WETH] - 0.006) < 1e-9, "sin stop guardado: no falla ni inventa uno")
 oc.SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}
 P["ETH"] = 2500.0
+
+print("\n== 33. USDC en espera: el dinero fuera de mercado queda en Dolomite cobrando interés y se usa al entrar")
+oc.SHORT_VENUE = dict(REAL_VENUE)
+oc.SYMBOLS = ("BTC", "ETH", "ARB")
+oc.WEIGHTS = {"BTC": 0.425, "ETH": 0.425, "ARB": 0.15}
+SIG.update(ETH=0, BTC=0, ARB=0); P.update(ETH=2500.0, BTC=80000.0, ARB=0.30)
+check(oc.PARK_USDC and oc.PARK_MIN_USD == 10.0, "activado; se deposita a partir de 10 $")
+# a) sin posiciones y 100 $ en la wallet: al terminar la ejecución se depositan (queda 0.5 $)
+fresh({oc.USDC: 100.0})
+e0, _ = oc.portfolio(FakeChain(), P)
+st = run()
+b = FakeChain.state
+check(abs(b[oc.USDC] - oc.PARK_KEEP_USD) < 1e-6 and abs(b["dUSDC"] - 99.5) < 1e-6, f"depositados 99.50 $ en Dolomite (wallet {b[oc.USDC]:.2f}, Dolomite {b['dUSDC']:.2f})")
+e1, _ = oc.portfolio(FakeChain(), P)
+check(abs(e1 - e0) < 1e-6, "la equity no cambia al depositar")
+check(abs(st.get("dolo_usdc", 0) - 99.5) < 0.01, "el estado apunta lo depositado (si Dolomite no responde: modo solo stops)")
+# b) poco USDC suelto (< 10 $): no se mueve (el gas no compensa)
+fresh({oc.USDC: 6.0, "dUSDC": 50.0})
+st = run()
+check(abs(FakeChain.state[oc.USDC] - 6.0) < 1e-9 and abs(FakeChain.state["dUSDC"] - 50.0) < 1e-9, "6 $ sueltos se quedan en la wallet")
+# c) señal +1 con todo el USDC en Dolomite: retira lo justo y compra el tamaño normal
+fresh({oc.USDC: 0.5, "dUSDC": 120.0})
+SIG.update(ETH=1)
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+e0, _ = oc.portfolio(FakeChain(), P)
+st = run(daily=True)
+eth_usd = FakeChain.state[oc.WETH] * P["ETH"]
+want = e0 * 0.425 * oc.POSITION_FRACTION
+check(abs(eth_usd - want * (1 - COST)) < 0.5, f"compra ETH {eth_usd:.2f}$ (esperado ~{want:.2f}$) sacando el USDC de Dolomite")
+check(FakeChain.state[oc.USDC] < oc.PARK_MIN_USD and FakeChain.state["dUSDC"] > 70, f"el resto sigue en espera (wallet {FakeChain.state[oc.USDC]:.2f}, Dolomite {FakeChain.state['dUSDC']:.2f})")
+check(st["pos"]["ETH"]["side"] == 1 and "ETH" in st["stops"], "posición y stop normales")
+# d) señal 0: vende y lo cobrado vuelve a Dolomite en la misma ejecución
+SIG.update(ETH=0)
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+check(FakeChain.state[oc.WETH] < 1e-9 and FakeChain.state[oc.USDC] < oc.PARK_MIN_USD and FakeChain.state["dUSDC"] > 115,
+      f"vendido; el USDC vuelve a Dolomite ({FakeChain.state['dUSDC']:.2f}$)")
+# e) corto con el USDC en espera: se usa como garantía sin moverlo; salud >= 1.5
+SIG.update(BTC=-1)
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+d_before = FakeChain.state["dUSDC"]
+st = run(daily=True)
+check(FakeChain.state["debt_BTC"] > 0 and FakeChain().dolo_health() >= oc.HF_TARGET_MIN, f"corto BTC abierto; salud {FakeChain().dolo_health():.2f}")
+check(FakeChain.state[oc.USDC] < oc.PARK_MIN_USD, "lo vendido en corto también queda depositado")
+# f) parcial de un largo: lo cobrado se deposita en la ejecución de 15 min
+SIG.update(BTC=0, ETH=1)
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+lvl = st["pos"]["ETH"]["ref"] + oc.PT_LEVELS[0] * st["pos"]["ETH"]["atr"]
+st = run(eth=lvl + 1)
+check(st["pos"]["ETH"]["pt_done"] == 1 and FakeChain.state[oc.USDC] < oc.PARK_MIN_USD,
+      f"parcial cobrada y depositada (wallet {FakeChain.state[oc.USDC]:.2f})")
+P["ETH"] = 2500.0
+# g) acumulación con un corto abierto: usa lo depositado por encima de salud 2.0, nunca la garantía necesaria
+SIG.update(ETH=-1, BTC=0, ARB=0)
+fresh({oc.USDC: 0.5, "dUSDC": 100.0})
+oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,costes_usd,neto_usd,neto_pct,operacion_usd,total_usd\n"
+                       "2026-11-01T00:00:00+00:00,ETH,largo,señal +0,0.01,2000,2500,20.00,0.10,19.90,24.5,19.90,19.90\n")
+s = oc.load_state(); s["last_signal_day"] = None; s.pop("accum", None); oc.save_state(s)
+st = run(daily=True)
+check(FakeChain.state["debt_ETH"] > 0 and st["accum"]["qty"], f"con corto abierto compra lo pendiente con USDC en espera ({st['accum']['qty']})")
+check(FakeChain().dolo_health() >= oc.ACCUM_HF_MIN - 1e-6, f"salud Dolomite tras acumular {FakeChain().dolo_health():.2f} >= 2.0")
+oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,costes_usd,neto_usd,neto_pct,operacion_usd,total_usd\n")
+# g2) acumulación con la cuenta cerca de salud 2.0: no la baja de 2.0 (compra solo lo que cabe o espera)
+P["ETH"] = 2500.0
+fresh({oc.USDC: 0.5, "debt_ETH": 0.0074, "dUSDC": 0.0074 * 2500.0 * 1.15 * 2.3},   # corto de 18.5$ con salud 2.3
+      {"ETH": oc.new_pos(-1, 2500.0, 90.0, 0.0074, -1)}, {"ETH": 2700.0})
+s = oc.load_state(); s["last_signal_day"] = None; s.pop("accum", None); oc.save_state(s)
+oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,costes_usd,neto_usd,neto_pct,operacion_usd,total_usd\n"
+                       "2026-11-01T00:00:00+00:00,BTC,largo,señal +0,0.01,2000,2500,40.00,0.10,39.90,24.5,39.90,39.90\n")
+st = run(daily=True)
+check(FakeChain().dolo_health() >= oc.ACCUM_HF_MIN - 1e-6, f"salud tras acumular {FakeChain().dolo_health():.2f} >= 2.0 (la garantía necesaria no se toca)")
+check(st["accum"]["pending_usd"] > 1, f"lo que no cabe queda pendiente ({st['accum']['pending_usd']:.2f}$)")
+oc.PNL_FILE.write_text("time,coin,lado,evento,cantidad,entrada,salida,bruto_usd,costes_usd,neto_usd,neto_pct,operacion_usd,total_usd\n")
+# g3) Dolomite no deja retirar USDC con un corto en su stop: el error no bloquea el stop de un largo POSTERIOR
+#     (orden BTC, ETH, ARB: el corto de BTC falla primero; el largo de ETH va después)
+SIG.update(ETH=1, BTC=-1, ARB=0); P.update(ETH=2500.0, BTC=80000.0)
+fresh({oc.USDC: 0.5, "dUSDC": 200.0, oc.WETH: 0.016, "debt_BTC": 0.0009},      # recomprar el corto (~75$) exige sacar USDC
+      {"BTC": oc.new_pos(-1, 79000.0, 2000.0, 0.0009, -1), "ETH": oc.new_pos(1, 2600.0, 90.0, 0.016, 1)},
+      {"BTC": 79500.0, "ETH": 2450.0})
+FakeChain.withdraw_fails = True
+st = run(eth=2440.0, btc=80000.0)
+FakeChain.withdraw_fails = False
+check(FakeChain.state[oc.WETH] < 1e-9 and "ETH" not in st["stops"], "el stop del largo ETH se ejecuta aunque antes falle el corto de BTC")
+check(FakeChain.state["debt_BTC"] > 0 and "BTC" in st["stops"], "el corto de BTC sigue con su stop para reintentar en 15 min")
+st = run(btc=80000.0)
+check(FakeChain.state["debt_BTC"] < 1e-9, "cuando Dolomite vuelve a dejar retirar, el corto se cierra")
+# g3b) salud baja + Dolomite sin liquidez: el error no impide los stops de esta ejecución
+fresh({oc.USDC: 0.5, "dUSDC": 0.0009 * 80000.0 * 1.15 * 1.2, oc.WETH: 0.016, "debt_BTC": 0.0009},   # salud 1.2 < 1.25
+      {"BTC": oc.new_pos(-1, 79000.0, 2000.0, 0.0009, -1), "ETH": oc.new_pos(1, 2600.0, 90.0, 0.016, 1)},
+      {"BTC": 85000.0, "ETH": 2450.0})
+FakeChain.withdraw_fails = True
+st = run(eth=2440.0, btc=80000.0)
+FakeChain.withdraw_fails = False
+check(FakeChain.state[oc.WETH] < 1e-9, "salud baja con Dolomite sin liquidez: el stop del largo ETH se ejecuta igual")
+# g3c) con un corto abierto, el USDC de la wallet necesario para recomprarlo NO se deposita (solo el resto)
+fresh({oc.USDC: 100.0, "dUSDC": 200.0, "debt_BTC": 0.0009}, {"BTC": oc.new_pos(-1, 80000.0, 2000.0, 0.0009, -1)}, {"BTC": 85000.0})
+st = run(btc=80000.0)
+res = 0.0009 * 80000.0 * 1.03
+check(abs(FakeChain.state[oc.USDC] - res - oc.PARK_KEEP_USD) < 0.01, f"queda en la wallet lo de recomprar el corto ({FakeChain.state[oc.USDC]:.2f}$ ≈ {res:.2f}$ + 0.5)")
+# g3d) mercado de una moneda cerrándose en Dolomite: no abre cortos de esa moneda; el resto sigue normal
+SIG.update(ETH=-1, BTC=-1, ARB=0); FakeChain.closing = ("ETH",)
+fresh({oc.USDC: 0.5, "dUSDC": 150.0})
+s = oc.load_state(); s["last_signal_day"] = None; oc.save_state(s)
+st = run(daily=True)
+FakeChain.closing = ()
+check(FakeChain.state["debt_ETH"] < 1e-12 and FakeChain.state["debt_BTC"] > 0, "mercado de ETH cerrándose: sin corto de ETH; BTC sí abre")
+SIG.update(ETH=0, BTC=0, ARB=0)
+# g4) Dolomite ilegible con USDC en espera: modo solo stops (no se para; sin señales, sin registrar equity)
+SIG.update(ETH=1, BTC=0, ARB=0)
+fresh({oc.USDC: 0.5, oc.WETH: 0.016}, {"ETH": oc.new_pos(1, 2500.0, 100.0, 0.016, 1)}, {"ETH": 2300.0})
+s = oc.load_state(); s["last_signal_day"] = None; peak0 = s["peak_equity"]; oc.save_state(s)
+FakeChain.dolo_available, FakeChain.dolo_blind = False, 80.0
+n_eq = len(oc.EQUITY_FILE.read_text().splitlines()) if oc.EQUITY_FILE.exists() else 0
+st = run(eth=2290.0, daily=True)
+FakeChain.dolo_available, FakeChain.dolo_blind = True, 0.0
+check(FakeChain.state[oc.WETH] < 1e-9, "modo solo stops: el stop del largo se ejecuta")
+check(st["last_signal_day"] is None and st["peak_equity"] == peak0, "sin ciclo diario y sin tocar máximos")
+check((len(oc.EQUITY_FILE.read_text().splitlines()) if oc.EQUITY_FILE.exists() else 0) == n_eq, "no se registra una equity incompleta")
+P["ETH"] = 2500.0
+# g5) límite de riesgo: se cierra todo y el USDC vuelve a la wallet antes de parar el bot
+SIG.update(ETH=0, BTC=0, ARB=0)
+fresh({oc.USDC: 0.5, "dUSDC": 60.0, oc.WETH: 0.016})
+s = oc.load_state(); s["peak_equity"] = 200.0; s["pos"] = {"ETH": oc.new_pos(1, 2500.0, 100.0, 0.016, 1)}; s["stops"] = {"ETH": 2000.0}; oc.save_state(s)
+st = run(eth=2500.0)
+check(st["halted"] and FakeChain.state["dUSDC"] < 0.01 and FakeChain.state[oc.USDC] > 90, f"bot parado con el dinero en la wallet ({FakeChain.state[oc.USDC]:.2f}$)")
+check(st.get("dolo_usdc", 0) < 0.01, "el estado apunta 0 en Dolomite (un fallo de Dolomite no afecta al bot parado)")
+fresh({oc.USDC: 0.5, "dUSDC": 60.0, oc.WETH: 0.016})
+s = oc.load_state(); s["peak_equity"] = 200.0; s["pos"] = {"ETH": oc.new_pos(1, 2500.0, 100.0, 0.016, 1)}; s["stops"] = {"ETH": 2000.0}; oc.save_state(s)
+FakeChain.withdraw_fails = True
+st = run(eth=2500.0)
+FakeChain.withdraw_fails = False
+check(st["halted"] and not st["pos"] and FakeChain.state[oc.WETH] < 1e-9, "si Dolomite no deja retirar al parar, se para igual y guarda el estado")
+# h) Dolomite no responde con USDC depositado: la ejecución falla (no se calcula una equity falsa)
+import importlib.util as _ilu
+_spec = _ilu.spec_from_file_location("bot._onchain_real", str(Path(oc.__file__)))
+oc_real = _ilu.module_from_spec(_spec); _spec.loader.exec_module(oc_real)
+for h in list(logging.getLogger().handlers):
+    if isinstance(h, logging.FileHandler):
+        logging.getLogger().removeHandler(h)
+oc_real.STATE_FILE = tmp / "state_real.json"
+_down = types.SimpleNamespace(w3=types.SimpleNamespace(eth=types.SimpleNamespace(contract=lambda **k: (_ for _ in ()).throw(RuntimeError("rpc caída")))))
+oc_real.STATE_FILE.write_text('{"stops": {}, "pos": {}, "dolo_usdc": 80.0}')
+oc_real.Chain._init_dolomite(_down)
+check(_down.dolo_ok is False and _down.dolo_blind == 80.0, "Dolomite ilegible con USDC en espera: no se para, pasa a modo solo stops")
+oc_real.STATE_FILE.write_text('{"stops": {}, "pos": {"ETH": {"side": -1}}, "dolo_usdc": 80.0}')
+try:
+    oc_real.Chain._init_dolomite(_down)
+    check(False, "con un corto abierto y Dolomite caído debería fallar")
+except RuntimeError:
+    check(True, "con un corto abierto en Dolomite la ejecución sigue fallando (como antes)")
+oc_real.STATE_FILE.write_text('{"stops": {}, "pos": {}, "dolo_usdc": 0.0}')
+oc_real.Chain._init_dolomite(_down)
+check(_down.dolo_ok is False, "sin nada depositado: sigue sin Dolomite (como antes)")
+# i) PARK_USDC = False: comportamiento anterior (sin deuda se retira todo de Dolomite)
+oc.PARK_USDC = False
+fresh({oc.USDC: 0.5, "dUSDC": 50.0})
+st = run()
+check(FakeChain.state["dUSDC"] < 0.01 and FakeChain.state[oc.USDC] > 50, "PARK_USDC = False: se retira como antes")
+oc.PARK_USDC = True
+oc.SYMBOLS = ("BTC", "ETH"); oc.WEIGHTS = {}
+oc.SHORT_VENUE = {"BTC": "aave", "ETH": "aave", "ARB": "dolomite"}
+SIG.update(ETH=0, BTC=0, ARB=0)
 
 eq, _ = oc.portfolio(FakeChain(), P)
 print(f"\nEquity final simulada: {eq:.2f} $")

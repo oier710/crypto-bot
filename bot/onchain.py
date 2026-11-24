@@ -134,6 +134,13 @@ BE_COST = 0.002               # stop "a entrada" = entrada * (1 ± 0.2 %) para c
 TRAIL_ATR = 3.0
 TRAIL_AFTER_PT = 1            # nº de parciales hechas a partir del cual persigue (0 = desactivado si TRAIL_ATR es 0)
 PARTIAL_OUT = 0.95            # la posición está "recortada" si queda < 95 % del tamaño completo
+# USDC en espera con interés (2026-11-24, Oier: "que los dólares que esperan a entrar al mercado generen interés"):
+# el USDC fuera de mercado se queda depositado en Dolomite (cuenta 1, ~5 %/año; depositar/retirar cuesta céntimos de gas)
+# y se retira solo cuando hace falta (compras, garantía de cortos, recompras, acumulación). False = como antes.
+PARK_USDC = True
+PARK_MIN_USD = 10.0          # USDC suelto en la wallet a partir del cual se deposita al terminar la ejecución
+PARK_KEEP_USD = 0.5          # lo que se deja siempre en la wallet
+ACCUM_HF_MIN = 2.0           # con cortos abiertos, la acumulación solo usa USDC de Dolomite por encima de esta salud
 SHORTS_ENABLED = os.getenv("SHORTS_ENABLED", "1") == "1"
 SHORT_MAX_USD = float(os.getenv("SHORT_MAX_USD", "1e9"))   # tope por corto (fase de prueba)
 
@@ -244,16 +251,21 @@ class Chain:
                  "ok" if self.dolo_ok else "NO disponible", dry_run)
 
     def _init_dolomite(self):
-        """Dolomite solo se usa para los cortos de ARB. Si algo falla al leerlo, el bot sigue (sin cortos de ARB)."""
-        self.dolo_ok, self.dolo_market = False, {}
+        """Dolomite: cortos y USDC en espera. Si algo falla al leerlo, el bot sigue sin cortos; con un corto abierto
+        la ejecución falla; con USDC en espera pasa a modo "solo stops" (dolo_blind)."""
+        self.dolo_ok, self.dolo_market, self.dolo_blind, self.dolo_closing = False, {}, 0.0, set()
         self.dolo_margin_ratio, self.dolo_min_borrow_usd = DOLO_MARGIN_RATIO_DEFAULT, 0.0
         try:
             self.dolo = self.w3.eth.contract(address=DOLOMITE_MARGIN, abi=DOLO_MARGIN_ABI)
             self.dolo_proxy = self.w3.eth.contract(address=DOLOMITE_DEPOSIT_WITHDRAWAL_PROXY, abi=DOLO_PROXY_ABI)
             for t in (USDC,) + tuple(ASSETS[c] for c, v in SHORT_VENUE.items() if v == "dolomite"):
                 self.dolo_market[t] = self.dolo.functions.getMarketIdByTokenAddress(t).call()
-                if t != USDC and self.dolo.functions.getMarketIsClosing(self.dolo_market[t]).call():
-                    raise RuntimeError(f"mercado {t[:8]} cerrándose en Dolomite")
+            # mercado de una moneda cerrándose (gobernanza): solo se dejan de abrir cortos de esa moneda; el USDC
+            # (en espera y garantía) y los cortos ya abiertos se siguen gestionando (cerrar/devolver sí se permite)
+            for c, v in SHORT_VENUE.items():
+                if v == "dolomite" and self.dolo.functions.getMarketIsClosing(self.dolo_market[ASSETS[c]]).call():
+                    self.dolo_closing.add(c)
+                    log.warning("Dolomite: el mercado de %s se está cerrando; sin cortos nuevos de %s", c, c)
             if not self.dolo.functions.getIsGlobalOperator(DOLOMITE_DEPOSIT_WITHDRAWAL_PROXY).call():
                 raise RuntimeError("el DepositWithdrawalProxy no es operador global de DolomiteMargin")
             # requisito efectivo de garantía: margen global x primas de los mercados implicados (USDC y la moneda)
@@ -264,10 +276,18 @@ class Chain:
             self.dolo_min_borrow_usd = self.dolo.functions.getMinBorrowedValue().call()[0] / 1e36
             self.dolo_ok = True
         except Exception as e:  # noqa: BLE001
-            shorts = dolomite_shorts_in_state(load_state())
+            st0 = load_state()
+            shorts = dolomite_shorts_in_state(st0)
             if shorts:
                 # con un corto abierto en Dolomite no se puede fingir que no existe: mejor fallar esta ejecución
                 raise RuntimeError(f"Dolomite no responde ({e}) y hay corto abierto de {shorts}") from e
+            if st0.get("dolo_usdc", 0.0) > 1.0:
+                # USDC en espera depositado y sin poder leerlo: la equity saldría falsa. No se para (los largos siguen
+                # necesitando sus stops): run_cycle pasa a modo "solo stops" (sin señales, límites ni registro de equity)
+                self.dolo_blind = float(st0["dolo_usdc"])
+                log.error("ERROR Dolomite no responde (%s) y hay %.2f$ de USDC en espera: solo stops hasta que vuelva",
+                          e, self.dolo_blind)
+                return
             # solo largos (o nada): el bot sigue gestionando sus stops; sin cortos nuevos ni límites globales
             log.error("Dolomite no disponible (%s): sigo con los largos; sin cortos hasta que vuelva", e)
 
@@ -686,6 +706,9 @@ def open_short_dolomite(ch: Chain, coin: str, usd: float, prices: dict, pf: dict
     if not ch.dolo_ok:
         log.warning("CORTO %s: Dolomite no disponible, no se abre", coin)
         return
+    if coin in getattr(ch, "dolo_closing", set()):
+        log.warning("CORTO %s: el mercado se está cerrando en Dolomite, no se abre", coin)
+        return
     b = ch.balances() if not ch.dry_run else pf["raw"]   # saldos frescos: otras aperturas del ciclo han podido gastar USDC
     pf = dict(pf, raw=b)
     k = 1 + ch.dolo_margin_ratio
@@ -732,7 +755,8 @@ def open_short_dolomite(ch: Chain, coin: str, usd: float, prices: dict, pf: dict
         log.exception("CORTO %s: fallo tras pedir prestado (%s); devuelvo el préstamo y retiro la garantía", coin, e)
         try:
             ch.dolo_repay_all(token)
-            ch.dolo_withdraw_usdc(None)
+            if not PARK_USDC:
+                ch.dolo_withdraw_usdc(None)   # con USDC en espera la garantía se queda depositada (cobra interés)
         except Exception:  # noqa: BLE001
             log.exception("CORTO %s: no se pudo deshacer del todo; se reintenta en la próxima ejecución", coin)
         raise
@@ -1009,12 +1033,19 @@ def manage_positions(ch: Chain, st: dict, prices: dict, pf: dict, today: str, al
     return pf
 
 
-def tidy_aave(ch: Chain, prices: dict | None = None):
-    """Sin deuda en un protocolo -> retirar todo su USDC para tenerlo disponible (Aave y Dolomite por separado).
-    En Dolomite, una deuda de polvo (< DOLO_DUST_USD, intereses) se salda con lo que haya en la wallet y no bloquea."""
+def tidy_aave(ch: Chain, prices: dict | None = None, st: dict | None = None, park: bool = True):
+    """Ordena el USDC al terminar cada ejecución.
+    Aave: sin deuda -> se retira su USDC (Aave ya no se usa: LTV del USDC a 0).
+    Dolomite: una deuda de polvo (< DOLO_DUST_USD, intereses) se salda con lo que haya en la wallet. Con PARK_USDC el
+    USDC depositado se QUEDA en Dolomite cobrando interés y el USDC suelto de la wallet (>= PARK_MIN_USD) se deposita,
+    salvo lo necesario para recomprar los cortos abiertos (+3 %), que se queda en la wallet;
+    se retira solo cuando hace falta (usdc_in_wallet, _cover, acumulación). Sin PARK_USDC (o park=False, al parar el bot
+    por límite de riesgo): sin deuda se retira todo, como antes.
+    Con `st`, apunta en st["dolo_usdc"] lo depositado (si Dolomite deja de responder, la ejecución falla)."""
     b = ch.balances()
     if all(b[f"debt_{c}"] <= 0 for c in ASSETS if venue(c) == "aave") and b["aUSDC"] > 0.5:
         ch.aave_withdraw_usdc(None)
+        b = ch.balances()
     if not ch.dolo_ok:
         return
     prices = prices or {}
@@ -1029,8 +1060,24 @@ def tidy_aave(ch: Chain, prices: dict | None = None):
             ch.dolo_repay_all(ASSETS[c])
         else:
             clear = False
-    if clear and b.get("dUSDC", 0.0) > 0.5:
-        ch.dolo_withdraw_usdc(None)
+    if not (PARK_USDC and park):
+        if clear and b.get("dUSDC", 0.0) > 0.5:
+            ch.dolo_withdraw_usdc(None)
+    else:
+        b = ch.balances()
+        # con cortos abiertos se deja en la wallet lo que cuesta recomprarlos (+3 %): sus stops no dependen de poder
+        # sacar USDC de Dolomite en un momento de estrés (liquidez al 100 %)
+        reserve = sum(b.get(f"debt_{c}", 0.0) * prices[c] * 1.03 for c in ASSETS
+                      if venue(c) == "dolomite" and c in prices)
+        if b[USDC] - reserve >= PARK_MIN_USD:
+            usd = b[USDC] - reserve - PARK_KEEP_USD
+            log.info("USDC en espera: deposito %.2f$ en Dolomite (cobra interés hasta que haga falta)", usd)
+            try:
+                ch.dolo_deposit_usdc(usd)
+            except Exception as e:  # noqa: BLE001 - si no se puede depositar, el USDC se queda en la wallet (inofensivo)
+                log.warning("USDC en espera: no se pudo depositar (%s); se queda en la wallet y se reintenta", e)
+    if st is not None and not ch.dry_run:
+        st["dolo_usdc"] = round(ch.balances().get("dUSDC", 0.0), 2)
 
 
 # ----------------------------------------------------------------------- ciclo
@@ -1071,12 +1118,20 @@ def run_cycle(dry_run: bool, signals: bool = True):
         log.error("PRECIO DUDOSO persistente (%s): tras %d ejecuciones sigo con el precio de Coinbase", detail, n)
     st["px_mismatch"] = 0
     equity, pf = portfolio(ch, prices)
+    if ch.dolo_ok and not dry_run:
+        st["dolo_usdc"] = round(pf["raw"].get("dUSDC", 0.0), 2)
     today = datetime.now(timezone.utc).date().isoformat()
+    blind = getattr(ch, "dolo_blind", 0.0) > 0
+    if blind:
+        # equity incompleta (falta el USDC en espera): no se registra, no mueve máximos ni el arranque del día y no hay
+        # señales (redimensionaría a la baja); se gestionan parciales y stops de lo abierto
+        signals = False
 
-    if equity < MIN_TRADE_USD * 2:
+    if equity < MIN_TRADE_USD * 2 and not blind:
         log.warning("Sin fondos suficientes (equity %.2f USD).", equity)
         return
-    record_equity(equity, pf, prices)
+    if not blind:
+        record_equity(equity, pf, prices)
 
     now_iso = datetime.now(timezone.utc).isoformat(timespec="seconds")
     if st.get("last_run"):
@@ -1085,16 +1140,16 @@ def run_cycle(dry_run: bool, signals: bool = True):
             log.warning("HUECO: %.1f h desde la ejecución anterior (GitHub no ejecutó alguna hora)", gap_h)
             st["gaps"] = st.get("gaps", 0) + 1
     st["last_run"] = now_iso
-    if st["peak_equity"] is None or equity > st["peak_equity"]:
+    if not blind and (st["peak_equity"] is None or equity > st["peak_equity"]):
         st["peak_equity"] = equity
-    if st["day"] != today:
+    if not blind and st["day"] != today:
         st["day"], st["day_start_equity"] = today, equity
     if st["halted"]:
         log.error("BOT PARADO: %s. Revisa y borra 'halted' en logs/onchain_state.json", st["halt_reason"])
         save_state(st)
         return
-    dd = equity / st["peak_equity"] - 1
-    day = equity / st["day_start_equity"] - 1
+    dd = equity / st["peak_equity"] - 1 if st["peak_equity"] else 0.0
+    day = equity / st["day_start_equity"] - 1 if st["day_start_equity"] else 0.0
     if not ch.dolo_ok:
         # sin lectura de Dolomite la equity puede ir sin su garantía: no se evalúan los límites con un dato incompleto
         log.warning("Dolomite no disponible: no se evalúan los límites de riesgo en esta ejecución")
@@ -1104,7 +1159,12 @@ def run_cycle(dry_run: bool, signals: bool = True):
         pending = []
         for c in SYMBOLS:
             if pf["val"][c] <= -MIN_TRADE_USD:
-                if close_short(ch, c, prices, pf, "límite de riesgo"):
+                try:
+                    closed = close_short(ch, c, prices, pf, "límite de riesgo")
+                except Exception as e:  # noqa: BLE001 - un corto que falla no debe impedir cerrar el resto
+                    log.exception("ERROR cerrando el corto de %s por límite de riesgo (%s); se reintenta", c, e)
+                    closed = False
+                if closed:
                     realize_close(st, c, pf["val"][c], prices[c], "límite de riesgo", ch.dry_run)
                     st["stops"].pop(c, None)
                     st.get("pos", {}).pop(c, None)
@@ -1115,7 +1175,10 @@ def run_cycle(dry_run: bool, signals: bool = True):
                 realize_close(st, c, pf["val"][c], prices[c], "límite de riesgo", ch.dry_run)
                 st["stops"].pop(c, None)
                 st.get("pos", {}).pop(c, None)
-        tidy_aave(ch, prices)
+        try:
+            tidy_aave(ch, prices, st, park=False)   # bot parado: el USDC vuelve a la wallet, no se queda en Dolomite
+        except Exception as e:  # noqa: BLE001 - lo cerrado ya está cerrado: que no impida guardar el estado y parar
+            log.exception("ERROR retirando el USDC de Dolomite al parar (%s); queda depositado, retíralo a mano", e)
         if pending:
             # no se para el bot con un corto abierto: un bot parado no lo gestionaría. Se reintenta en 15 min.
             log.error("LÍMITE DE RIESGO: cortos %s sin cerrar del todo; se reintenta en la próxima ejecución (sin parar)", pending)
@@ -1132,11 +1195,16 @@ def run_cycle(dry_run: bool, signals: bool = True):
         log.warning("HF Aave %.2f / Dolomite %.2f: cerrando cortos de %s por seguridad", pf["hf"], pf.get("hf_dolo", 1e9), low)
         for c in SYMBOLS:
             if pf["raw"].get(f"debt_{c}", 0.0) * prices[c] > DOLO_DUST_USD and venue(c) in low:
-                if close_short(ch, c, prices, pf, "factor de salud bajo"):
+                try:
+                    closed = close_short(ch, c, prices, pf, "factor de salud bajo")
+                except Exception as e:  # noqa: BLE001 - que no impida los stops del resto ni la gestión de esta ejecución
+                    log.exception("ERROR cerrando el corto de %s por salud baja (%s); se reintenta en 15 min", c, e)
+                    closed = False
+                if closed:
                     realize_close(st, c, pf["val"][c], prices[c], "factor de salud bajo", ch.dry_run)
                     st["stops"].pop(c, None)
                     st.get("pos", {}).pop(c, None)
-        tidy_aave(ch, prices)
+        tidy_aave(ch, prices, st)
         equity, pf = portfolio(ch, prices)
 
     # --- posición abierta: parciales, stops, reentrada (cada ejecución) ---
@@ -1151,7 +1219,11 @@ def run_cycle(dry_run: bool, signals: bool = True):
             if sp and v >= MIN_TRADE_USD and prices[c] <= sp:
                 sell_long(ch, c, v, prices, "stop")
             elif sp and v <= -MIN_TRADE_USD and prices[c] >= sp:
-                if not close_short(ch, c, prices, pf, "stop"):
+                try:
+                    if not close_short(ch, c, prices, pf, "stop"):
+                        continue
+                except Exception as e:  # noqa: BLE001 - un corto que falla no debe impedir los stops del resto
+                    log.exception("ERROR cerrando el corto de %s en el stop (%s); se reintenta en 15 min", c, e)
                     continue
             else:
                 continue
@@ -1165,7 +1237,7 @@ def run_cycle(dry_run: bool, signals: bool = True):
         _, pf = portfolio(ch, prices)
     save_state(st)                       # antes de tidy/señales (red): lo gestionado en este ciclo ya queda escrito
     if not signals:
-        tidy_aave(ch, prices)
+        tidy_aave(ch, prices, st)
         save_state(st)
         log.info("Chequeo de stops completado.")
         return
@@ -1179,7 +1251,7 @@ def run_cycle(dry_run: bool, signals: bool = True):
         sig = int(trend_ema.signals(df, **STRATEGY_PARAMS).iloc[-1])
         if sig == -1 and not SHORTS_ENABLED:
             sig = 0
-        if sig == -1 and venue(c) == "dolomite" and not ch.dolo_ok:
+        if sig == -1 and venue(c) == "dolomite" and (not ch.dolo_ok or c in getattr(ch, "dolo_closing", set())):
             log.warning("%s: señal de corto pero Dolomite no disponible; se queda fuera", c)
             sig = 0
         atr = float(indicators.atr(df, ATR_N).iloc[-1])
@@ -1209,7 +1281,12 @@ def run_cycle(dry_run: bool, signals: bool = True):
                 st["stops"].pop(c, None)
                 st.get("pos", {}).pop(c, None)
         elif have <= -MIN_TRADE_USD and target >= 0:
-            if close_short(ch, c, prices, pf, f"señal {p['sig']:+d}"):
+            try:
+                closed = close_short(ch, c, prices, pf, f"señal {p['sig']:+d}")
+            except Exception as e:  # noqa: BLE001 - que no impida los cierres y ventas de las demás monedas
+                log.exception("ERROR cerrando el corto de %s por señal (%s); se reintenta", c, e)
+                closed = False
+            if closed:
                 realize_close(st, c, have, prices[c], f"señal {p['sig']:+d}", ch.dry_run)
                 st["stops"].pop(c, None)
                 st.get("pos", {}).pop(c, None)
@@ -1230,7 +1307,7 @@ def run_cycle(dry_run: bool, signals: bool = True):
             log.exception("ERROR abriendo %s (%s); el resto del ciclo sigue", c, e)
             equity, pf = portfolio(ch, prices)
     # 3) stops: toda posición tiene stop; nuevas entradas lo fijan hoy
-    tidy_aave(ch, prices)
+    tidy_aave(ch, prices, st)
     equity, pf = portfolio(ch, prices)
     pos_all = st.setdefault("pos", {})
     for c, p in plan.items():
@@ -1282,10 +1359,13 @@ def accumulate(ch: Chain, st: dict, prices: dict, pf: dict):
     if per_coin < ACCUM_MIN_USD:
         return
     shorts_open = any(pf["raw"].get(f"debt_{c}", 0.0) * prices.get(c, 1.0) > DOLO_DUST_USD for c in ASSETS)
-    if shorts_open and pf["raw"][USDC] < per_coin * len(ACCUM_COINS) + 0.5:
-        # con cortos abiertos solo se compra con el USDC libre de la wallet: nunca se toca la garantía
-        log.info("ACUMULACIÓN: %.2f$ pendientes; con cortos abiertos solo se usa USDC libre de la wallet (%.2f$): se espera",
-                 acc["pending_usd"], pf["raw"][USDC])
+    # con cortos abiertos solo se usa USDC libre: el de la wallet y, si está en espera en Dolomite, solo lo que deja la
+    # salud de la cuenta >= ACCUM_HF_MIN (2.0, más que el 1.5 de abrir posiciones): nunca la garantía que necesitan
+    free_dolo = (_max_withdraw_dolo(ch, pf["raw"], prices, ACCUM_HF_MIN)
+                 if shorts_open and PARK_USDC and ch.dolo_ok else 0.0)
+    if shorts_open and pf["raw"][USDC] + free_dolo < per_coin * len(ACCUM_COINS) + 0.5:
+        log.info("ACUMULACIÓN: %.2f$ pendientes; con cortos abiertos solo se usa USDC libre (wallet %.2f$ + Dolomite %.2f$): se espera",
+                 acc["pending_usd"], pf["raw"][USDC], free_dolo)
         return
     for c in ACCUM_COINS:
         if c not in prices:
@@ -1295,6 +1375,10 @@ def accumulate(ch: Chain, st: dict, prices: dict, pf: dict):
         tok = ASSETS[c]
         if not shorts_open:
             usdc_in_wallet(ch, per_coin, pf)
+        elif PARK_USDC and ch.dolo_ok and before[USDC] < per_coin:
+            w = min(per_coin - before[USDC] + 0.1, _max_withdraw_dolo(ch, before, prices, ACCUM_HF_MIN))
+            if w > 0.01:
+                ch.dolo_withdraw_usdc(w)
         usd = min(per_coin, ch.balances()[USDC]) if not ch.dry_run else per_coin
         if usd < ACCUM_MIN_USD:
             log.warning("ACUMULACIÓN %s: sin USDC libre (%.2f$); se intenta en el próximo ciclo", c, usd)
@@ -1337,7 +1421,9 @@ def test_short(coin: str = "ETH", usd: float = 10.0):
     time.sleep(5)
     equity1, pf = portfolio(ch, prices)
     close_short(ch, coin, prices, pf, "prueba")
-    tidy_aave(ch, prices)
+    st = load_state()
+    tidy_aave(ch, prices, st)
+    save_state(st)
     time.sleep(5)
     equity2, pf = portfolio(ch, prices)
     log.info("=== PRUEBA TERMINADA: equity %.2f -> %.2f -> %.2f (coste %.2f$) ===", equity0, equity1, equity2, equity0 - equity2)
