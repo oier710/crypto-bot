@@ -17114,3 +17114,12 @@ AssertionError: no conecta al RPC de Arbitrum
 2026-11-24 18:06:10,795 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-24 18:06:12,474 INFO USDC 189.24 (wallet 0.39 + Aave 0.00 + Dolomite 188.86) | ETH -17.51$ BTC -37.64$ ARB -12.26$ | deuda ETH 0.010466 BTC 0.000628 ARB 109.286769 | HF ∞ / Dolomite 2.43 | acumulado 0.00$ -> equity trading 121.83 USD (total 121.83)
 2026-11-24 18:06:15,480 INFO Chequeo de stops completado.
+2026-11-24 18:22:10,824 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-24 18:22:15,161 INFO USDC 189.24 (wallet 0.39 + Aave 0.00 + Dolomite 188.86) | ETH -17.48$ BTC -37.54$ ARB -12.23$ | deuda ETH 0.010466 BTC 0.000628 ARB 109.286971 | HF ∞ / Dolomite 2.43 | acumulado 0.00$ -> equity trading 121.99 USD (total 121.99)
+2026-11-24 18:22:15,180 WARNING GAS: quedan 0.00087 ETH (< 0.0012); recargo con 3.07$ de USDC
+2026-11-24 18:22:15,186 INFO DOLOMITE withdraw 3.38 USDC (cuenta 1)
+2026-11-24 18:22:17,082 INFO tx ok ded51c34899ff64aaf92123685865ce9f382b731c29775d8bf38f3f91e9f2836 gas=641367
+2026-11-24 18:22:19,908 INFO GAS: USDC -> ETH nativo | in=3069349 out~1824394419079967 wei
+2026-11-24 18:22:22,242 INFO tx ok 871ebb60c076ccde03e4446f2c9caf00800dbb637b48c0e8ec99a31c0e6fa001 gas=161187
+2026-11-24 18:22:24,727 WARNING GAS: recargados ~0.00181 ETH por 3.07$ (había 0.00087)
+2026-11-24 18:22:32,087 INFO Chequeo de stops completado.
