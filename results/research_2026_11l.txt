@@ -1,0 +1,29 @@
+# Investigación nov-2026 (12ª parte) — ¿parámetros propios para cada moneda? (pregunta de Oier)
+Datos: Coinbase 1h reales, evaluación 2024-04-23 -> 2026-11-24 (1ª mitad hasta 2025-08-09). Producción = EMA 20/60 + ADX > 20 en las tres. Rejilla de 48 combinaciones por moneda.
+Comprobación del simulador: diferencia máxima con producción 0.000000 $ (debe ser 0).
+
+## ¿Dónde queda 20/60/20 entre las 48 combinaciones de cada moneda? (periodo completo, por Sharpe)
+BTC: puesto 20/48 (Sharpe 0.02, retorno -5.3%) | mejor 10/40/ADX 25: Sharpe 0.70, retorno +35.9% | mediana de las 48: Sharpe -0.07
+ETH: puesto 2/48 (Sharpe 1.16, retorno +135.0%) | mejor 30/120/ADX 25: Sharpe 1.41, retorno +161.2% | mediana de las 48: Sharpe 0.71
+ARB: puesto 2/48 (Sharpe 1.34, retorno +304.1%) | mejor 30/60/ADX 20: Sharpe 1.60, retorno +468.6% | mediana de las 48: Sharpe 0.59
+
+## Pliegue A (elige 1ª, prueba 2ª)
+Elegido por moneda: BTC 15/40/ADX 15, ETH 20/60/ADX 20, ARB 30/60/ADX 20 | común: 20/60/ADX 20
+En la mitad usada para elegir (1ª MITAD): por moneda +72.3% (Sharpe 1.62) vs producción +46.3% (1.20)  <- aquí siempre gana: es lo que se ha optimizado
+En la mitad NO vista (2ª MITAD):
+  producción 20/60/20    retorno  +32.0%  caída -19.5%  Sharpe  1.00  meses en rojo 6/15  operaciones 73
+  POR MONEDA             retorno  +30.0%  caída -15.4%  Sharpe  0.92  meses en rojo 7/15  operaciones 77
+  COMÚN reoptimizado     retorno  +32.0%  caída -19.5%  Sharpe  1.00  meses en rojo 6/15  operaciones 73
+  por moneda, cada una sola en la mitad no vista: BTC +8.1% vs prod +17.1%; ETH +40.1% vs prod +40.1%; ARB +63.2% vs prod +51.5%
+
+## Pliegue B (elige 2ª, prueba 1ª)
+Elegido por moneda: BTC 10/40/ADX 25, ETH 30/120/ADX 25, ARB 15/40/ADX 20 | común: 30/120/ADX 25
+En la mitad usada para elegir (2ª MITAD): por moneda +74.7% (Sharpe 2.12) vs producción +32.0% (1.00)  <- aquí siempre gana: es lo que se ha optimizado
+En la mitad NO vista (1ª MITAD):
+  producción 20/60/20    retorno  +46.3%  caída -20.4%  Sharpe  1.20  meses en rojo 5/16  operaciones 71
+  POR MONEDA             retorno  +23.4%  caída -18.6%  Sharpe  0.81  meses en rojo 7/16  operaciones 58
+  COMÚN reoptimizado     retorno   -5.0%  caída -21.2%  Sharpe -0.07  meses en rojo 7/16  operaciones 61
+  por moneda, cada una sola en la mitad no vista: BTC +4.4% vs prod -18.2%; ETH +28.6% vs prod +73.3%; ARB +62.8% vs prod +151.9%
+
+## CONCLUSIÓN
+POR MONEDA NO PASA: elegir parámetros para cada moneda no mejora fuera de muestra (lo que gana en la mitad optimizada no se repite en la otra). Se mantiene 20/60/20 para todas.
