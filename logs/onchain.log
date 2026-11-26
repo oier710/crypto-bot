@@ -17488,3 +17488,14 @@ AssertionError: no conecta al RPC de Arbitrum
 2026-11-25 23:51:01,529 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
 2026-11-25 23:51:02,990 INFO USDC 186.20 (wallet 0.70 + Aave 0.00 + Dolomite 185.50) | ETH -17.60$ BTC -37.77$ ARB -12.31$ | deuda ETH 0.010467 BTC 0.000628 ARB 109.310550 | HF ∞ / Dolomite 2.37 | acumulado 0.00$ -> equity trading 118.53 USD (total 118.53)
 2026-11-25 23:51:05,522 INFO Chequeo de stops completado.
+2026-11-26 00:06:32,469 INFO Arbitrum One | cuenta 0x44Cc8F4417C5353686D93000431b240e9d187923 | Aave pool 0x794a6135 | Dolomite ok | dry_run=False
+2026-11-26 00:06:36,335 INFO USDC 186.20 (wallet 0.70 + Aave 0.00 + Dolomite 185.50) | ETH -17.56$ BTC -37.76$ ARB -12.39$ | deuda ETH 0.010467 BTC 0.000628 ARB 109.310747 | HF ∞ / Dolomite 2.37 | acumulado 0.00$ -> equity trading 118.49 USD (total 118.49)
+2026-11-26 00:06:39,112 INFO USDC 186.20 (wallet 0.70 + Aave 0.00 + Dolomite 185.50) | ETH -17.56$ BTC -37.76$ ARB -12.39$ | deuda ETH 0.010467 BTC 0.000628 ARB 109.310747 | HF ∞ / Dolomite 2.37 | acumulado 0.00$ -> equity trading 118.49 USD (total 118.49)
+2026-11-26 00:06:47,633 INFO BTC cierre=60383.51 señal=-1 ATR=3074.95 tengo=-37.76$ objetivo=-37.76$
+2026-11-26 00:06:56,106 INFO ETH cierre=1690.38 señal=-1 ATR=108.77 tengo=-17.56$ objetivo=-17.56$
+2026-11-26 00:07:05,061 INFO ARB cierre=0.11 señal=-1 ATR=0.01 tengo=-12.39$ objetivo=-12.39$
+2026-11-26 00:07:07,858 INFO USDC 186.20 (wallet 0.70 + Aave 0.00 + Dolomite 185.50) | ETH -17.56$ BTC -37.76$ ARB -12.39$ | deuda ETH 0.010467 BTC 0.000628 ARB 109.310753 | HF ∞ / Dolomite 2.37 | acumulado 0.00$ -> equity trading 118.49 USD (total 118.49)
+2026-11-26 00:07:17,560 INFO USDC 186.20 (wallet 0.70 + Aave 0.00 + Dolomite 185.50) | ETH -17.56$ BTC -37.76$ ARB -12.39$ | deuda ETH 0.010467 BTC 0.000628 ARB 109.310755 | HF ∞ / Dolomite 2.37 | acumulado 0.00$ -> equity trading 118.49 USD (total 118.49)
+2026-11-26 00:07:20,356 INFO USDC 186.20 (wallet 0.70 + Aave 0.00 + Dolomite 185.50) | ETH -17.56$ BTC -37.76$ ARB -12.39$ | deuda ETH 0.010467 BTC 0.000628 ARB 109.310756 | HF ∞ / Dolomite 2.37 | acumulado 0.00$ -> equity trading 118.49 USD (total 118.49)
+2026-11-26 00:07:20,357 INFO Resultado realizado acumulado: +0.92$ | equity trading 118.49$ (+2.74$ desde 115.75$) | acumulado {} = 0.00$ (coste 0.00$)
+2026-11-26 00:07:20,358 INFO Ciclo diario completado. Stops: {'ETH': 1858.7323663121492, 'ARB': 0.14775925498600614, 'BTC': 67366.6506806269} | posiciones: {'ETH': {'entrada': 1891.31, 'parciales': 1, 'ref': 1717.99}, 'ARB': {'entrada': 0.12, 'parciales': 0, 'ref': 0.12}, 'BTC': {'entrada': 61147.77, 'parciales': 0, 'ref': 61147.77}}
